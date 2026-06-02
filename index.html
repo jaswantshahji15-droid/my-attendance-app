@@ -1,4 +1,4 @@
-            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -137,7 +137,6 @@
 </div>
 
 <script>
-    // 🔔 YOUR LIVE DATABASE LINK DIRECTLY LOADED
     const FIREBASE_DB_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
 
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
@@ -149,7 +148,6 @@
         loadLiveFirebaseData();
     };
 
-    // Realtime Sync from Firebase
     function loadLiveFirebaseData() {
         document.getElementById('syncStatus').innerText = "🔄 Syncing...";
         document.getElementById('syncStatus').style.color = "#f39c12";
@@ -181,7 +179,9 @@
             method: "PUT",
             body: JSON.stringify(payload)
         }).then(() => {
-            loadLiveFirebaseData();
+            generateTableHeader();
+            renderMonthlyTable();
+            document.getElementById('syncStatus').innerText = "🟢 Live Connected";
         });
     }
 
@@ -286,8 +286,8 @@
             else if (totalHours >= 6.5 && totalHours < 7) { status = "P"; earnedWages = dayRate; }
             else { status = totalHours >= 3.5 ? "HD" : "A"; earnedWages = totalHours * (dayRate / 7); }
         } else {
-            if (totalHours >= 14) { status = "P+P"; earnedWages = dayRate * 2; otHours = totalHours - 8; }
-            else if (totalHours >= 11 && totalHours < 14) { status = "P+P"; earnedWages = dayRate * 1.5; otHours = totalHours - 8; }
+            if (totalHours >= 14) { status = "P+P"; earnedWages = dayRate * 2; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
+            else if (totalHours >= 11 && totalHours < 14) { status = "P+P"; earnedWages = dayRate * 1.5; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
             else if (totalHours >= 8 && totalHours < 11) { status = "P"; earnedWages = dayRate; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
             else if (totalHours >= 7 && totalHours < 8) { status = "P"; earnedWages = dayRate; }
             else { status = (totalHours >= 3 && totalHours <= 4) ? "HD" : (totalHours > 4 ? "P" : "A"); earnedWages = totalHours * (dayRate / 8); }
@@ -358,6 +358,4 @@
                     let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '';
                     rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
                         <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hoursWorked)}</b></div>${otText}</td>`;
-                } else {
-                    rowHtml += `<td><span style="color:#bdc3c7;">-</span></td>`;
-    
+   
