@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+            <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -137,8 +137,8 @@
 </div>
 
 <script>
-    // 🔔 PASTE YOUR COPIED FIREBASE LINK HERE BETWEEN THE QUOTES
-    const FIREBASE_DB_URL = "YOUR_FIREBASE_DATABASE_URL_HERE";
+    // 🔔 YOUR LIVE DATABASE LINK DIRECTLY LOADED
+    const FIREBASE_DB_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
 
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
     let currentSite = localStorage.getItem('current_selected_site') || 'site1';
@@ -146,10 +146,6 @@
 
     window.onload = function() {
         document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
-        if(FIREBASE_DB_URL === "YOUR_FIREBASE_DATABASE_URL_HERE") {
-            alert("⚠️ Please enter your Firebase URL in the code code first!");
-            return;
-        }
         loadLiveFirebaseData();
     };
 
@@ -361,4 +357,7 @@
 
                     let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '';
                     rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
-                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: 
+                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hoursWorked)}</b></div>${otText}</td>`;
+                } else {
+                    rowHtml += `<td><span style="color:#bdc3c7;">-</span></td>`;
+    
