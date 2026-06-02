@@ -94,11 +94,13 @@
         <p><strong>Performance Register (Monthly View)</strong></p>
     </div>
     
+    <!-- 1. Entry Form -->
     <h3>1. Daily Time Office Entry</h3>
     <div class="grid-form">
         <div class="form-group">
             <label>Worker Name</label>
-            <input type="text" id="wName" placeholder="e.g. Chandresh">
+            <!-- Auto fill triggered on typing name -->
+            <input type="text" id="wName" placeholder="e.g. Nitesh" onkeyup="checkAndAutofillWorker()">
         </div>
         <div class="form-group">
             <label>Per Day Wages (₹)</label>
@@ -137,10 +139,11 @@
         </div>
     </div>
 
+    <!-- 2. Search & Sheet -->
     <h3>2. Monthly Performance Register</h3>
     
     <div class="search-container">
-        <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter..." onkeyup="renderMonthlyTable()">
+        <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter sheet..." onkeyup="renderMonthlyTable()">
     </div>
 
     <div>
@@ -152,16 +155,18 @@
         <table>
             <thead>
                 <tr id="tableHeaderDays">
-                    </tr>
+                    <!-- Dynamic header 1 to 31 will load here -->
+                </tr>
             </thead>
             <tbody id="monthlyTableBody">
-                </tbody>
+                <!-- Monthly Rows -->
+            </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // Master database Structure: { 'Worker Name': { dayRate, hourRate, advance, dates: { '01': {in, out, status, etc} } } }
+    // Database structure
     let monthlyData = JSON.parse(localStorage.getItem('monthly_payroll_records')) || {};
 
     window.onload = function() {
@@ -181,13 +186,23 @@
         headerRow.innerHTML = html;
     }
 
+    // --- AUTOFILL LOGIC ---
+    function checkAndAutofillWorker() {
+        const nameInput = document.getElementById('wName').value.trim();
+        
+        // Agar database me is naam ka banda pehle se hai, toh rate auto fill kar do
+        if(monthlyData[nameInput]) {
+            document.getElementById('wDayRate').value = monthlyData[nameInput].dayRate;
+            document.getElementById('wHourRate').value = monthlyData[nameInput].hourRate;
+        }
+    }
+
     function calculateHours(inT, lOut, lIn, outT) {
         if(!inT || !outT) return 0;
         let start = new Date("2026-01-01 " + inT);
         let end = new Date("2026-01-01 " + outT);
         let diffMs = end - start;
         
-        // Lunch deduction
         if(lOut && lIn) {
             let lStart = new Date("2026-01-01 " + lOut);
             let lEnd = new Date("2026-01-01 " + lIn);
@@ -211,38 +226,35 @@
 
         if(!name || !dateVal) { alert("Please enter Name and select Date!"); return; }
 
-        // Extract day '01', '02' etc.
         const dayStr = dateVal.split('-')[2];
-
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
         
-        // --- AUTOMATIC STATUS RULES ---
         let status = "A"; 
         let otHours = 0;
 
         if (totalHours >= 8) {
-            status = "P"; // Present
-            otHours = totalHours - 8; // Overtime above 8 hours auto calculate
+            status = "P"; 
+            otHours = totalHours - 8; 
         } else if (totalHours >= 3 && totalHours <= 4) {
-            status = "HD"; // Half Day auto calculation
+            status = "HD"; 
         } else if (totalHours > 0) {
-            status = "P"; // General Present if between 4 and 8 hours (or customize as needed)
-            if(totalHours < 4 && totalHours > 0) status = "A"; // Less than 3 hours is Absent
+            status = "P"; 
+            if(totalHours < 3) status = "A"; 
         }
 
-        // Initialize worker if not exists
+        // Initialize or update existing worker
         if(!monthlyData[name]) {
             monthlyData[name] = { dayRate, hourRate, totalAdvance: 0, dates: {} };
         }
         
-        // Update rates and advance
+        // AGAR WAGES UPDATE KIYA HAI TOH AUTOMATIC NEW VALUE SET HO JAYEGI
         monthlyData[name].dayRate = dayRate;
         monthlyData[name].hourRate = hourRate;
+        
         if(advance > 0) {
             monthlyData[name].totalAdvance += advance;
         }
 
-        // Add daily log
         monthlyData[name].dates[dayStr] = {
             inTime, lunchOut, lunchIn, outTime,
             hoursWorked: totalHours,
@@ -252,11 +264,11 @@
 
         localStorage.setItem('monthly_payroll_records', JSON.stringify(monthlyData));
         
-        // Clear fields
+        // Reset name and advance, but let other settings remain
         document.getElementById('wName').value = '';
         document.getElementById('wAdvance').value = '0';
         
-        alert(`Entry Saved for ${name} on day ${dayStr}!`);
+        alert(`Entry Saved for ${name}!`);
         renderMonthlyTable();
     }
 
@@ -271,7 +283,6 @@
             let worker = monthlyData[workerName];
             let tr = document.createElement('tr');
             
-            // Col 1: Worker Info
             let rowHtml = `<td style="text-align:left; font-weight:bold; background:#eaeded;">
                 ${workerName}<br>
                 <span style="font-size:10px;color:#7f8c8d;">Rate: ₹${worker.dayRate}/d<br>OT: ₹${worker.hourRate}/hr</span>
@@ -281,7 +292,6 @@
             let totalHalfDay = 0;
             let totalOTHours = 0;
 
-            // Col 2 to 32: Days 01 to 31
             for (let i = 1; i <= 31; i++) {
                 let dayStr = i < 10 ? '0' + i : '' + i;
                 let dayData = worker.dates[dayStr];
@@ -310,13 +320,11 @@
                 }
             }
 
-            // Calculations
             let baseWages = (totalPresent * worker.dayRate) + (totalHalfDay * (worker.dayRate / 2));
             let otWages = totalOTHours * worker.hourRate;
             let grossWages = baseWages + otWages;
             let netPayable = grossWages - worker.totalAdvance;
 
-            // Final Summary Column
             rowHtml += `<td style="background:#f4f6f6; text-align:left;">
                 <div class="summary-text">P: ${totalPresent} | HD: ${totalHalfDay}</div>
                 <div class="summary-text" style="background:#fdf2e9;">Tot OT: ${totalOTHours.toFixed(1)} hrs</div>
@@ -333,10 +341,9 @@
     }
 
     function clearAllData() {
-        if(confirm("⚠️ Kya aap poore mahine ka sabhi workers ka data delete karna chahte hain?")) {
+        if(confirm("⚠️ WARNING: Kya aap poora data delete karna chahte hain?")) {
             monthlyData = {};
             localStorage.removeItem('monthly_payroll_records');
-            renderTable();
             renderMonthlyTable();
         }
     }
