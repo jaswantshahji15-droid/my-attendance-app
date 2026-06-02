@@ -51,14 +51,14 @@
     <div class="company-header">
         <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync</h1>
         <div style="margin-top: 8px;">
-            <span class="current-site-badge" id="badgeContainer">Active Site: <span id="currentSiteLabel">Site 1</span></span>
+            <span class="current-site-badge">Active Site: <span id="currentSiteLabel">Site 1</span></span>
             <span class="sync-badge" id="syncStatus">🔄 Live Connected</span>
         </div>
     </div>
     
     <div class="site-panel">
         <span class="site-label">📍 Select Working Site/Location:</span>
-        <select id="siteSelector" class="site-select">
+        <select id="siteSelector" class="site-select" onchange="switchSite()">
             <option value="site1" id="opt_site1">Site 1</option>
             <option value="site2" id="opt_site2">Site 2 (10-Day Cycle)</option>
             <option value="site3" id="opt_site3">Site 3</option>
@@ -76,7 +76,7 @@
         </div>
         <div class="form-group">
             <label>Per Day Wages (₹)</label>
-            <input type="number" id="wDayRate" value="500">
+            <input type="number" id="wDayRate" value="500" oninput="autoCalculateOTRate()">
         </div>
         <div class="form-group">
             <label>OT Rate/Hour (₹)</label>
@@ -145,20 +145,6 @@
 
     window.onload = function() {
         document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
-        
-        // Setup direct click event on dropdown to avoid any browser compatibility bug
-        document.getElementById('siteSelector').addEventListener('change', function() {
-            currentSite = this.value;
-            localStorage.setItem('current_selected_site', currentSite);
-            refreshSiteUiAndTables();
-        });
-
-        // Setup real-time OT calculations on Wages Input
-        document.getElementById('wDayRate').addEventListener('input', function() {
-            let dayRate = parseFloat(this.value) || 0;
-            document.getElementById('wHourRate').value = dayRate > 0 ? (Math.round((dayRate / 8) * 10) / 10) : 0;
-        });
-
         loadLiveFirebaseData();
     };
 
@@ -211,6 +197,12 @@
         renderMonthlyTable();
     }
 
+    function switchSite() {
+        currentSite = document.getElementById('siteSelector').value;
+        localStorage.setItem('current_selected_site', currentSite);
+        refreshSiteUiAndTables();
+    }
+
     function renameCurrentSite() {
         let oldName = siteNames[currentSite];
         let newName = prompt(`Apni select ki hui [${oldName}] ka naya naam dalein:`, oldName);
@@ -222,6 +214,11 @@
 
     function saveHeaderName() {
         saveToFirebase();
+    }
+
+    function autoCalculateOTRate() {
+        let dayRate = parseFloat(document.getElementById('wDayRate').value) || 0;
+        document.getElementById('wHourRate').value = dayRate > 0 ? (Math.round((dayRate / 8) * 10) / 10) : 0;
     }
 
     function generateTableHeader() {
@@ -360,4 +357,5 @@
                     else { c3.base += dayData.earnedWages; c3.otWages += dayData.otWagesEarned; }
 
                     let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '';
-                    rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?
+                    rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
+                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hour
