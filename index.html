@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Sync Multi-Site Attendance & 10-Day Payroll</title>
+    <title>Shramik Sync v2</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -49,7 +49,7 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync</h1>
+        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync v2</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge">Active Site: <span id="currentSiteLabel">Site 1</span></span>
             <span class="sync-badge" id="syncStatus">🔄 Live Connected</span>
@@ -358,4 +358,4 @@
 
                     let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '';
                     rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
-                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hour
+                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hoursWorked)}</b></div>${otText}</
