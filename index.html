@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Performance & Attendance Register</title>
+    <title>Smart Worker Attendance & Payroll Register</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -30,11 +30,45 @@
             text-align: center;
             margin-bottom: 15px;
             background: #eef2f7;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
+            border-left: 5px solid #2ecc71;
         }
-        .company-header h1 { margin: 0; font-size: 1.4rem; color: #2c3e50; }
-        .company-header p { margin: 4px 0 0 0; font-size: 12px; color: #7f8c8d; }
+        /* Style for editable text */
+        .editable-title {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            font-weight: bold;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .editable-title:hover {
+            background: #d5dbdb;
+            outline: 1px dashed #3498db;
+        }
+        .editable-title:focus {
+            background: #fff;
+            outline: 2px solid #2ecc71;
+            box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        }
+        .editable-subtitle {
+            margin: 6px 0 0 0;
+            font-size: 13px;
+            color: #7f8c8d;
+            display: block;
+            cursor: pointer;
+        }
+        .editable-subtitle:hover {
+            background: #d5dbdb;
+        }
+        .editable-subtitle:focus {
+            background: #fff;
+            outline: 1px solid #3498db;
+        }
         
         .grid-form {
             display: grid;
@@ -50,7 +84,6 @@
         label { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #495057; }
         input, select { padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; outline: none; }
         
-        /* Search Box */
         .search-container { margin: 10px 0; }
         .search-input { width: 100%; padding: 8px; border: 1px solid #b2bec3; border-radius: 4px; font-size: 13px; }
 
@@ -64,7 +97,6 @@
         .btn-danger { background-color: #e74c3c; }
         .btn-danger:hover { background-color: #c0392b; }
         
-        /* Professional Matrix Table Style */
         .table-responsive {
             overflow-x: auto;
             margin-top: 10px;
@@ -76,7 +108,6 @@
         td { padding: 5px 4px; border: 1px solid #dee2e6; vertical-align: top; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         
-        /* Inner Blocks for In/Out Timings */
         .time-block { font-size: 9px; color: #555; text-align: left; background: #f1f3f5; padding: 2px; border-radius: 3px; margin-top: 2px; line-height: 1.1; }
         .status-p { color: #27ae60; font-weight: bold; }
         .status-hd { color: #f39c12; font-weight: bold; }
@@ -90,9 +121,11 @@
 <body>
 
 <div class="container">
+    <!-- Editable Header Section -->
     <div class="company-header">
-        <h1>Adventures India Pvt. Ltd.</h1>
-        <p><strong>Performance Register (Monthly View)</strong></p>
+        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync</h1>
+        <p id="subTitle" class="editable-subtitle" contenteditable="true" onblur="saveHeaderName()">Smart Worker Attendance & Auto-Payroll Register</p>
+        <span style="font-size: 9px; color: #bdc3c7; display: block; margin-top: 4px;">(Click on text to edit name)</span>
     </div>
     
     <!-- 1. Entry Form -->
@@ -177,9 +210,25 @@
 
     window.onload = function() {
         document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
+        loadHeaderName(); // Load saved custom app name
         generateTableHeader();
         renderMonthlyTable();
     };
+
+    // Functions to Save & Load custom names dynamically
+    function saveHeaderName() {
+        const titleText = document.getElementById('mainTitle').innerText.trim();
+        const subtitleText = document.getElementById('subTitle').innerText.trim();
+        localStorage.setItem('custom_app_title', titleText);
+        localStorage.setItem('custom_app_subtitle', subtitleText);
+    }
+
+    function loadHeaderName() {
+        const savedTitle = localStorage.getItem('custom_app_title');
+        const savedSubtitle = localStorage.getItem('custom_app_subtitle');
+        if (savedTitle) document.getElementById('mainTitle').innerText = savedTitle;
+        if (savedSubtitle) document.getElementById('subTitle').innerText = savedSubtitle;
+    }
 
     function generateTableHeader() {
         const headerRow = document.getElementById('tableHeaderDays');
@@ -247,9 +296,7 @@
         let earnedWages = 0;
         let otWagesEarned = 0;
 
-        // --- NEW SLAB & SHIFT RULES ---
         if (shiftType === '7hr') {
-            // 7-Hour Shift Logic
             if (totalHours >= 7) {
                 status = "P";
                 earnedWages = dayRate; 
@@ -257,11 +304,10 @@
                 otWagesEarned = otHours * hourRate;
             } else if (totalHours >= 6.5 && totalHours < 7) {
                 status = "P";
-                earnedWages = dayRate; // Full wages if between 6:30 and 7 hours
+                earnedWages = dayRate; 
                 otHours = 0;
                 otWagesEarned = 0;
             } else {
-                // Hourly calculation if less than 6:30 hours (6.5 hours)
                 status = totalHours >= 3.5 ? "HD" : "A";
                 let hourlyRate = dayRate / 7;
                 earnedWages = totalHours * hourlyRate;
@@ -269,29 +315,27 @@
                 otWagesEarned = 0;
             }
         } else {
-            // Normal 8-Hour Shift Logic with Slab Multipliers
             if (totalHours >= 14) {
-                status = "P+P"; // 14 hours or more = Double dhiadi (2 days wages)
+                status = "P+P"; 
                 earnedWages = dayRate * 2; 
                 otHours = totalHours - 8;
-                otWagesEarned = 0; // Fixed double rate, no extra hourly OT
+                otWagesEarned = 0; 
             } else if (totalHours >= 11 && totalHours < 14) {
-                status = "P+P"; // 11 to 14 hours = 1.5 Days wages
+                status = "P+P"; 
                 earnedWages = dayRate * 1.5;
                 otHours = totalHours - 8;
-                otWagesEarned = 0; // Fixed 1.5x rate, no extra hourly OT
+                otWagesEarned = 0; 
             } else if (totalHours >= 8 && totalHours < 11) {
                 status = "P";
                 earnedWages = dayRate;
-                otHours = totalHours - 8; // Normal hourly OT below 11 hours
+                otHours = totalHours - 8; 
                 otWagesEarned = otHours * hourRate;
             } else if (totalHours >= 7 && totalHours < 8) {
                 status = "P";
-                earnedWages = dayRate; // Full wages for 7-8 hours
+                earnedWages = dayRate; 
                 otHours = 0;
                 otWagesEarned = 0;
             } else {
-                // Hourly wages if less than 7 hours
                 status = (totalHours >= 3 && totalHours <= 4) ? "HD" : (totalHours > 4 ? "P" : "A");
                 let hourlyRate = dayRate / 8;
                 earnedWages = totalHours * hourlyRate;
