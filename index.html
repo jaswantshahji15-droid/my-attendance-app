@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync v4</title>
+    <title>Shramik Sync v7</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -26,14 +26,15 @@
         .btn-danger { background-color: #e74c3c; }
         .table-responsive { overflow-x: auto; margin-top: 10px; border: 1px solid #dee2e6; border-radius: 6px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        th { background-color: #34495e; color: white; padding: 6px 4px; font-weight: 600; border: 1px solid #4f5d6c; }
-        td { padding: 5px 4px; border: 1px solid #dee2e6; vertical-align: top; }
+        th { background-color: #34495e; color: white; padding: 8px 4px; font-weight: 600; border: 1px solid #4f5d6c; }
+        td { padding: 6px 4px; border: 1px solid #dee2e6; vertical-align: top; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .time-block { font-size: 9px; color: #555; text-align: left; background: #f1f3f5; padding: 2px; border-radius: 3px; margin-top: 2px; line-height: 1.1; }
-        .status-p { color: #27ae60; font-weight: bold; }
-        .status-hd { color: #f39c12; font-weight: bold; }
-        .status-a { color: #c0392b; font-weight: bold; }
-        .status-pp { color: #9b59b6; font-weight: bold; }
+        .time-block { font-size: 9px; color: #444; text-align: left; background: #f1f3f5; padding: 4px; border-radius: 4px; margin-top: 3px; line-height: 1.2; border: 1px solid #e2e6ea; }
+        .status-p { color: #27ae60; font-weight: bold; font-size: 12px; }
+        .status-hd { color: #f39c12; font-weight: bold; font-size: 12px; }
+        .status-a { color: #c0392b; font-weight: bold; font-size: 12px; }
+        .status-pp { color: #9b59b6; font-weight: bold; font-size: 12px; }
+        .running-total { font-size: 9px; color: #1e8449; font-weight: bold; background: #e8f8f5; padding: 2px 3px; border-radius: 3px; margin-top: 3px; text-align: center; border: 1px dashed #2ecc71; }
         .summary-text { font-size: 10px; text-align: left; background: #e8f8f5; padding: 3px; border-radius: 3px; font-weight: 600; margin-top: 2px; }
         .wages-text { font-size: 10px; text-align: left; background: #fef9e7; padding: 3px; border-radius: 3px; font-weight: 600; margin-top: 2px; color: #b7950b; }
         .current-site-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
@@ -49,7 +50,7 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync v4</h1>
+        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync v7</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
             <span class="sync-badge" id="syncStatus">🔄 Syncing with Database...</span>
@@ -76,11 +77,11 @@
         </div>
         <div class="form-group">
             <label>Per Day Wages (₹)</label>
-            <input type="number" id="wDayRate" value="500" oninput="autoCalculateOTRate()">
+            <input type="number" id="wDayRate" value="1200" oninput="autoCalculateOTRate()">
         </div>
         <div class="form-group">
             <label>OT Rate/Hour (₹)</label>
-            <input type="number" id="wHourRate" value="62.5">
+            <input type="number" id="wHourRate" value="150">
         </div>
         <div class="form-group">
             <label>Shift Option</label>
@@ -137,7 +138,6 @@
 </div>
 
 <script>
-    // Firebase URL Configured Safely without halting UI execution
     const FIREBASE_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
     
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
@@ -146,11 +146,7 @@
 
     window.onload = function() {
         document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
-        
-        // Step 1: Immediately Load Local Cache to keep UI working and interactive
         loadFromLocalStorage();
-        
-        // Step 2: Fetch background updates from Firebase without blocking UI
         fetchFromDatabase();
     };
 
@@ -170,7 +166,7 @@
         updateSyncStatus("🔄 Syncing from Cloud...", "#e67e22");
         try {
             const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 6000); // 6 seconds timeout maximum
+            const id = setTimeout(() => controller.abort(), 6000);
 
             const res = await fetch(`${FIREBASE_URL}master_data.json`, { signal: controller.signal });
             clearTimeout(id);
@@ -182,7 +178,6 @@
                     if (cloudData.siteNames) siteNames = cloudData.siteNames;
                     if (cloudData.appTitle) document.getElementById('mainTitle').innerText = cloudData.appTitle;
                     
-                    // Backup cloud data locally
                     localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
                     localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
                     localStorage.setItem('shramik_app_title', document.getElementById('mainTitle').innerText);
@@ -194,13 +189,12 @@
                 }
             }
         } catch (err) {
-            console.log("Firebase network delay, running on local engine safely:", err);
+            console.log("Firebase network delay, running safely:", err);
             updateSyncStatus("⚠️ Offline Mode (Saved on Device)", "#c0392b");
         }
     }
 
     async function saveAllDataToCloudAndLocal() {
-        // Local Save
         localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
         localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
         localStorage.setItem('shramik_app_title', document.getElementById('mainTitle').innerText.trim());
@@ -208,7 +202,6 @@
         refreshSiteUiAndTables();
         updateSyncStatus("⏳ Saving changes to Cloud...", "#e67e22");
 
-        // Background Cloud Save
         try {
             let payload = {
                 allSitesRecords: allSitesRecords,
@@ -222,7 +215,7 @@
             });
             updateSyncStatus("🟢 Saved on Mobile & Laptop", "#27ae60");
         } catch (err) {
-            updateSyncStatus("⚠️ Saved Locally (Will sync when internet returns)", "#c0392b");
+            updateSyncStatus("⚠️ Saved Locally (Will sync online later)", "#c0392b");
         }
     }
 
@@ -274,13 +267,13 @@
 
     function generateTableHeader() {
         const headerRow = document.getElementById('tableHeaderDays');
-        let html = '<th style="text-align:left; min-width:120px;">Worker Details</th>';
+        let html = '<th style="text-align:left; min-width:130px;">Worker Details</th>';
         for (let i = 1; i <= 31; i++) {
             let dayStr = i < 10 ? '0' + i : i;
             let cycleClass = (currentSite === 'site2') ? (i <= 10 ? "class='cycle-header-1'" : (i <= 20 ? "class='cycle-header-2'" : "class='cycle-header-3'")) : "";
-            html += `<th ${cycleClass} style="min-width:75px;">${dayStr}</th>`;
+            html += `<th ${cycleClass} style="min-width:105px;">Day ${dayStr}</th>`;
         }
-        html += `<th style="min-width:${currentSite === 'site2' ? '140px' : '120px'}; background:#2c3e50;">${currentSite === 'site2' ? '10-Day Cycle Wise Split Breakup' : 'Monthly Summary & Net Payable'}</th>`;
+        html += `<th style="min-width:${currentSite === 'site2' ? '150px' : '130px'}; background:#2c3e50;">${currentSite === 'site2' ? '10-Day Cycle Wise Split Breakup' : 'Monthly Summary & Net Payable'}</th>`;
         headerRow.innerHTML = html;
     }
 
@@ -333,18 +326,33 @@
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
         let status = "A"; let otHours = 0; let earnedWages = 0; let otWagesEarned = 0;
 
+        // NEW SMART WAGES LOGIC (Hourly breakdown if shift rule triggers)
         if (shiftType === '7hr') {
-            if (totalHours >= 7) { status = "P"; earnedWages = dayRate; otHours = totalHours - 7; otWagesEarned = otHours * hourRate; }
-            else if (totalHours >= 6.5 && totalHours < 7) { status = "P"; earnedWages = dayRate; }
-            else { status = totalHours >= 3.5 ? "HD" : "A"; earnedWages = totalHours * (dayRate / 7); }
+            if (totalHours >= 7) { 
+                status = "P"; earnedWages = dayRate; otHours = totalHours - 7; 
+            } else if (totalHours >= 6 && totalHours < 7) { 
+                status = "P"; earnedWages = dayRate; // 6 to 7 gets full wages
+            } else { 
+                status = totalHours >= 3.5 ? "HD" : "A"; 
+                earnedWages = totalHours * (dayRate / 7); // Hourly calculations if under 6 hours
+            }
         } else {
-            if (totalHours >= 14) { status = "P+P"; earnedWages = dayRate * 2; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
-            else if (totalHours >= 11 && totalHours < 14) { status = "P+P"; earnedWages = dayRate * 1.5; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
-            else if (totalHours >= 8 && totalHours < 11) { status = "P"; earnedWages = dayRate; otHours = totalHours - 8; otWagesEarned = otHours * hourRate; }
-            else if (totalHours >= 7 && totalHours < 8) { status = "P"; earnedWages = dayRate; }
-            else { status = (totalHours >= 3 && totalHours <= 4) ? "HD" : (totalHours > 4 ? "P" : "A"); earnedWages = totalHours * (dayRate / 8); }
+            // Normal 8 Hour Shift
+            if (totalHours >= 14) { 
+                status = "P+P"; earnedWages = dayRate * 2; otHours = totalHours - 8; 
+            } else if (totalHours >= 11 && totalHours < 14) { 
+                status = "P+P"; earnedWages = dayRate * 1.5; otHours = totalHours - 8; 
+            } else if (totalHours >= 8 && totalHours < 11) { 
+                status = "P"; earnedWages = dayRate; otHours = totalHours - 8; 
+            } else if (totalHours >= 7 && totalHours < 8) { 
+                status = "P"; earnedWages = dayRate; // 7 to 8 gets full wages
+            } else { 
+                status = (totalHours >= 3 && totalHours <= 4) ? "HD" : (totalHours > 4 ? "P" : "A"); 
+                earnedWages = totalHours * (dayRate / 8); // Hourly calculations if under 7 hours
+            }
         }
-        if (totalHours === 0) status = "A";
+        if (totalHours === 0) { status = "A"; earnedWages = 0; }
+        otWagesEarned = otHours * hourRate;
 
         if(!allSitesRecords[currentSite]) allSitesRecords[currentSite] = {};
         let currentSiteData = allSitesRecords[currentSite];
@@ -388,6 +396,8 @@
             </td>`;
 
             let mPresent = 0, mHD = 0, mAbsent = 0, mPP = 0, mOT = 0, mBaseWages = 0, mOTWages = 0;
+            let runningSum = 0; 
+            
             let c1 = { p:0, pp:0, hd:0, base:0, otWages:0 }, c2 = { p:0, pp:0, hd:0, base:0, otWages:0 }, c3 = { p:0, pp:0, hd:0, base:0, otWages:0 };
 
             for (let i = 1; i <= 31; i++) {
@@ -401,13 +411,28 @@
                     else { mAbsent++; }
                     
                     mOT += dayData.otHours; mBaseWages += dayData.earnedWages || 0; mOTWages += dayData.otWagesEarned || 0;
+                    
+                    let dayTotalEarned = (dayData.earnedWages || 0) + (dayData.otWagesEarned || 0);
+                    runningSum += dayTotalEarned; 
+
                     if(i <= 10) { c1.base += dayData.earnedWages; c1.otWages += dayData.otWagesEarned; }
                     else if(i <= 20) { c2.base += dayData.earnedWages; c2.otWages += dayData.otWagesEarned; }
                     else { c3.base += dayData.earnedWages; c3.otWages += dayData.otWagesEarned; }
 
-                    let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '';
-                    rowHtml += `<td><span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
-                        <div class="time-block">I: ${dayData.inTime}<br>O: ${dayData.outTime}<br><b>H: ${formatToHoursMinutes(dayData.hoursWorked)}</b></div>${otText}</td>`;
+                    let otText = dayData.otHours > 0 ? `<br><span style="color:#e67e22;font-weight:bold;">OT:${formatToHoursMinutes(dayData.otHours)}</span>` : '<br><span style="color:#bdc3c7;">OT:00:00</span>';
+                    
+                    rowHtml += `<td>
+                        <span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
+                        <div class="time-block">
+                            In: ${dayData.inTime || '-'}<br>
+                            L-Out: ${dayData.lunchOut || '-'}<br>
+                            L-In: ${dayData.lunchIn || '-'}<br>
+                            Out: ${dayData.outTime || '-'}<br>
+                            <b>Hrs: ${formatToHoursMinutes(dayData.hoursWorked)}</b>
+                        </div>
+                        ${otText}
+                        <div class="running-total">Total: ₹${runningSum.toFixed(0)}</div>
+                    </td>`;
                 } else {
                     rowHtml += `<td><span style="color:#bdc3c7;">-</span></td>`;
                 }
@@ -445,11 +470,11 @@
         csvContent += `Report For Site: ${siteNames[currentSite]}\n`;
         if(currentSite === 'site2') {
             csvContent += "Worker Name,Day Rate,OT Rate,";
-            for(let i=1; i<=31; i++) csvContent += `Day ${i},`;
+            for(let i=1; i<=31; i++) csvContent += `Day ${i} Info,Day ${i} Cumulative Total,`;
             csvContent += "C1 Present,C1 Gross,C1 Adv,C1 Net,C2 Present,C2 Gross,C2 Adv,C2 Net,C3 Present,C3 Gross,C3 Adv,C3 Net\n";
         } else {
             csvContent += "Worker Name,Day Rate,OT Rate,Shift Type,";
-            for(let i=1; i<=31; i++) csvContent += `Day ${i},`;
+            for(let i=1; i<=31; i++) csvContent += `Day ${i} Info,Day ${i} Cumulative Total,`;
             csvContent += "Total Present,Total Double Shift,Total HalfDay,Gross Wages,Advance Less,Net Payable\n";
         }
         for (let name in currentSiteData) {
@@ -457,19 +482,27 @@
             let rowStr = `"${name}",${worker.dayRate},${worker.hourRate},`;
             if(currentSite !== 'site2') rowStr += `"${worker.shiftType || 'normal'}",`;
             let mPresent = 0, mHalfDay = 0, mPP = 0;
+            let runningSum = 0;
             let c1 = { p:0, pp:0, hd:0, base:0, ot:0 }, c2 = { p:0, pp:0, hd:0, base:0, ot:0 }, c3 = { p:0, pp:0, hd:0, base:0, ot:0 };
+            
             for(let i=1; i<=31; i++) {
                 let dayStr = i < 10 ? '0' + i : '' + i;
                 let d = worker.dates ? worker.dates[dayStr] : null;
                 if(d) {
-                    rowStr += `"${d.status} (${formatToHoursMinutes(d.hoursWorked)})",`;
                     if(d.status === 'P') { mPresent++; if(i<=10) c1.p++; else if(i<=20) c2.p++; else c3.p++; }
                     if(d.status === 'HD') { mHalfDay++; if(i<=10) c1.hd++; else if(i<=20) c2.hd++; else c3.hd++; }
                     if(d.status === 'P+P') { mPP++; if(i<=10) c1.pp++; else if(i<=20) c2.pp++; else c3.pp++; }
                     if(i<=10) { c1.base += d.earnedWages; c1.ot += d.otWagesEarned; }
                     else if(i<=20) { c2.base += d.earnedWages; c2.ot += d.otWagesEarned; }
                     else { c3.base += d.earnedWages; c3.ot += d.otWagesEarned; }
-                } else { rowStr += `"-",`; }
+                    
+                    runningSum += ((d.earnedWages || 0) + (d.otWagesEarned || 0));
+                    
+                    let cellInfo = `${d.status} (In:${d.inTime}|L-Out:${d.lunchOut}|L-In:${d.lunchIn}|Out:${d.outTime}|Hrs:${formatToHoursMinutes(d.hoursWorked)}|OT:${formatToHoursMinutes(d.otHours)})`;
+                    rowStr += `"${cellInfo}","₹${runningSum.toFixed(0)}",`;
+                } else { 
+                    rowStr += `"-","-",`; 
+                }
             }
             if(currentSite === 'site2') {
                 let g1 = c1.base + c1.ot; let n1 = g1 - (worker.cycle1Advance || 0);
@@ -486,7 +519,7 @@
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Report_${siteNames[currentSite].replace(/\s+/g, '_')}.csv`);
+        link.setAttribute("download", `Advanced_Report_${siteNames[currentSite].replace(/\s+/g, '_')}.csv`);
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 </script>
