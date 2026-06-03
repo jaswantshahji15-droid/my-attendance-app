@@ -9,7 +9,7 @@
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h2, h3 { color: #2c3e50; margin: 5px 0 10px 0; border-bottom: 2px solid #3498db; padding-bottom: 5px; font-size: 1.2rem; }
         .company-header { text-align: center; margin-bottom: 15px; background: #eef2f7; padding: 12px; border-radius: 6px; border-left: 5px solid #2ecc71; }
-        .editable-title { margin: 0; font-size: 1.5rem; color: #2c3e50; font-weight: bold; display: inline-block; padding: 2px 8px; border-radius: 4px; cursor: pointer; }
+        .editable-title { margin: 0; font-size: 1.5rem; color: #2c3e50; font-weight: bold; display: inline-block; padding: 2px 8px; border-radius: 4px; }
         .site-panel { background: #ebf5fb; padding: 10px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #aed6f1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .site-label { font-size: 12px; font-weight: bold; color: #2c3e50; }
         .site-select { padding: 6px 10px; font-size: 13px; font-weight: bold; border-radius: 4px; border: 2px solid #3498db; background: white; color: #2c3e50; outline: none; }
@@ -50,10 +50,10 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title" contenteditable="true" onblur="saveHeaderName()">Shramik Sync v8</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync v8</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
-            <span class="sync-badge" id="syncStatus">🔄 Syncing with Database...</span>
+            <span class="sync-badge" id="syncStatus">🔄 Loading Database...</span>
         </div>
     </div>
     
@@ -144,52 +144,44 @@
     let currentSite = localStorage.getItem('current_selected_site') || 'site1';
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
 
-    // Hamesha sahi aaj ki date set karne wala function
     function setTodayDate() {
-        let today = new Date();
-        let yyyy = today.getFullYear();
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('wDate').value = `${yyyy}-${mm}-${dd}`;
+        try {
+            let today = new Date();
+            let yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('wDate').value = `${yyyy}-${mm}-${dd}`;
+        } catch(e) { console.log(e); }
     }
 
     window.onload = function() {
-        setTodayDate(); // Pehle date set hogi
+        setTodayDate();
         loadFromLocalStorage();
         fetchFromDatabase();
     };
 
     function loadFromLocalStorage() {
-        let savedRecords = localStorage.getItem('shramik_records');
-        let savedNames = localStorage.getItem('shramik_site_names');
-        let savedTitle = localStorage.getItem('shramik_app_title');
-
-        if(savedRecords) allSitesRecords = JSON.parse(savedRecords);
-        if(savedNames) siteNames = JSON.parse(savedNames);
-        if(savedTitle) document.getElementById('mainTitle').innerText = savedTitle;
-
+        try {
+            let savedRecords = localStorage.getItem('shramik_records');
+            let savedNames = localStorage.getItem('shramik_site_names');
+            if(savedRecords) allSitesRecords = JSON.parse(savedRecords);
+            if(savedNames) siteNames = JSON.parse(savedNames);
+        } catch(e) { console.log(e); }
         refreshSiteUiAndTables();
     }
 
     async function fetchFromDatabase() {
         updateSyncStatus("🔄 Syncing from Cloud...", "#e67e22");
         try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 6000);
-
-            const res = await fetch(`${FIREBASE_URL}master_data.json`, { signal: controller.signal });
-            clearTimeout(id);
-            
+            const res = await fetch(`${FIREBASE_URL}master_data.json`);
             if (res.ok) {
                 const cloudData = await res.json();
                 if (cloudData) {
                     if (cloudData.allSitesRecords) allSitesRecords = cloudData.allSitesRecords;
                     if (cloudData.siteNames) siteNames = cloudData.siteNames;
-                    if (cloudData.appTitle) document.getElementById('mainTitle').innerText = cloudData.appTitle;
                     
                     localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
                     localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
-                    localStorage.setItem('shramik_app_title', document.getElementById('mainTitle').innerText);
                     
                     refreshSiteUiAndTables();
                     updateSyncStatus("🟢 Connected & Synced", "#27ae60");
@@ -198,58 +190,54 @@
                 }
             }
         } catch (err) {
-            console.log("Firebase network delay, running safely:", err);
             updateSyncStatus("⚠️ Offline Mode (Saved on Device)", "#c0392b");
         } finally {
-            setTodayDate(); // Cloud se sync hone ke baad agar date hat jaye toh wapas lagane ke liye secure backup step
+            setTodayDate();
         }
     }
 
     async function saveAllDataToCloudAndLocal() {
         localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
         localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
-        localStorage.setItem('shramik_app_title', document.getElementById('mainTitle').innerText.trim());
         
         refreshSiteUiAndTables();
-        updateSyncStatus("⏳ Saving changes to Cloud...", "#e67e22");
+        updateSyncStatus("⏳ Saving changes...", "#e67e22");
 
         try {
             let payload = {
                 allSitesRecords: allSitesRecords,
                 siteNames: siteNames,
-                appTitle: document.getElementById('mainTitle').innerText.trim(),
                 lastUpdated: new Date().toISOString()
             };
             await fetch(`${FIREBASE_URL}master_data.json`, {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
-            updateSyncStatus("🟢 Saved on Mobile & Laptop", "#27ae60");
+            updateSyncStatus("🟢 Connected & Synced", "#27ae60");
         } catch (err) {
-            updateSyncStatus("⚠️ Saved Locally (Will sync online later)", "#c0392b");
+            updateSyncStatus("⚠️ Saved Locally (Offline)", "#c0392b");
         }
     }
 
     function updateSyncStatus(msg, color) {
         let el = document.getElementById('syncStatus');
-        if(el) {
-            el.innerText = msg;
-            el.style.color = color;
-        }
+        if(el) { el.innerText = msg; el.style.color = color; }
     }
 
     function refreshSiteUiAndTables() {
-        document.getElementById('siteSelector').value = currentSite;
-        for(let i=1; i<=5; i++) {
-            if(document.getElementById(`opt_site${i}`)) {
-                document.getElementById(`opt_site${i}`).innerText = siteNames[`site${i}`];
+        try {
+            document.getElementById('siteSelector').value = currentSite;
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`opt_site${i}`)) {
+                    document.getElementById(`opt_site${i}`).innerText = siteNames[`site${i}`];
+                }
             }
-        }
-        document.getElementById('currentSiteLabel').innerText = "Active Site: " + siteNames[currentSite];
-        document.getElementById('registerModeBadge').innerText = (currentSite === 'site2') ? "(⚠️ 10-Day Split Mode Active)" : "(Full Month Mode)";
-        
-        generateTableHeader();
-        renderMonthlyTable();
+            document.getElementById('currentSiteLabel').innerText = "Active Site: " + siteNames[currentSite];
+            document.getElementById('registerModeBadge').innerText = (currentSite === 'site2') ? "(⚠️ 10-Day Split Mode Active)" : "(Full Month Mode)";
+            
+            generateTableHeader();
+            renderMonthlyTable();
+        } catch(e) { console.log(e); }
     }
 
     function switchSite() {
@@ -265,10 +253,6 @@
             siteNames[currentSite] = newName.trim();
             saveAllDataToCloudAndLocal();
         }
-    }
-
-    function saveHeaderName() {
-        saveAllDataToCloudAndLocal();
     }
 
     function autoCalculateOTRate() {
@@ -339,7 +323,9 @@
 
         if (shiftType === '7hr') {
             if (totalHours >= 7) { 
-                status = "P"; earnedWages = dayRate; otHours = totalHours - 7; 
+                status = "P"; earnedWages = dayRate; 
+                // 7hr shift me 7 ghante ke upar jaate hi OT start ho jayega
+                otHours = totalHours - 7; 
             } else if (totalHours >= 6 && totalHours < 7) { 
                 status = "P"; earnedWages = dayRate; 
             } else { 
@@ -347,15 +333,17 @@
                 earnedWages = totalHours * (dayRate / 7); 
             }
         } else {
+            // NORMAL SHIFT LOGIC (8 HOUR DUTY)
             if (totalHours >= 14) { 
                 status = "P+P"; earnedWages = dayRate * 2; 
-                otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
+                if (totalHours > 8.6667) { otHours = totalHours - 8; }
             } else if (totalHours >= 11 && totalHours < 14) { 
                 status = "P+P"; earnedWages = dayRate * 1.5; 
-                otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
+                if (totalHours > 8.6667) { otHours = totalHours - 8; }
             } else if (totalHours >= 8 && totalHours < 11) { 
                 status = "P"; earnedWages = dayRate; 
-                otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
+                // YAHAN BADLAV HAI: Agar kul ghante 8 ghante 40 minute (8.6667) se upar hain, tabhi otHours count hoga (jaise 9 ghante par pure 1 ghante ka OT milega)
+                if (totalHours > 8.6667) { otHours = totalHours - 8; } else { otHours = 0; }
             } else if (totalHours >= 7 && totalHours < 8) { 
                 status = "P"; earnedWages = dayRate; 
             } else { 
@@ -385,4 +373,20 @@
 
         wRecord.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
 
-        saveAllDataToC
+        saveAllDataToCloudAndLocal();
+        document.getElementById('wName').value = '';
+        document.getElementById('wAdvance').value = '0';
+        setTodayDate();
+    }
+
+    function renderMonthlyTable() {
+        try {
+            const tbody = document.getElementById('monthlyTableBody');
+            tbody.innerHTML = '';
+            const searchQ = document.getElementById('wSearch').value.toLowerCase().trim();
+            let currentSiteData = allSitesRecords[currentSite] || {};
+
+            for (let workerName in currentSiteData) {
+                if(searchQ && !workerName.toLowerCase().includes(searchQ)) continue;
+
+                let worker =
