@@ -144,8 +144,17 @@
     let currentSite = localStorage.getItem('current_selected_site') || 'site1';
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
 
+    // Hamesha sahi aaj ki date set karne wala function
+    function setTodayDate() {
+        let today = new Date();
+        let yyyy = today.getFullYear();
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('wDate').value = `${yyyy}-${mm}-${dd}`;
+    }
+
     window.onload = function() {
-        document.getElementById('wDate').value = new Date().toISOString().split('T')[0];
+        setTodayDate(); // Pehle date set hogi
         loadFromLocalStorage();
         fetchFromDatabase();
     };
@@ -191,6 +200,8 @@
         } catch (err) {
             console.log("Firebase network delay, running safely:", err);
             updateSyncStatus("⚠️ Offline Mode (Saved on Device)", "#c0392b");
+        } finally {
+            setTodayDate(); // Cloud se sync hone ke baad agar date hat jaye toh wapas lagane ke liye secure backup step
         }
     }
 
@@ -326,7 +337,6 @@
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
         let status = "A"; let otHours = 0; let earnedWages = 0; let otWagesEarned = 0;
 
-        // UPDATED LOGIC: Overtime calculates above 8 hours 40 minutes (8.67 hours)
         if (shiftType === '7hr') {
             if (totalHours >= 7) { 
                 status = "P"; earnedWages = dayRate; otHours = totalHours - 7; 
@@ -337,7 +347,6 @@
                 earnedWages = totalHours * (dayRate / 7); 
             }
         } else {
-            // Normal 8 Hour Shift
             if (totalHours >= 14) { 
                 status = "P+P"; earnedWages = dayRate * 2; 
                 otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
@@ -346,7 +355,7 @@
                 otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
             } else if (totalHours >= 8 && totalHours < 11) { 
                 status = "P"; earnedWages = dayRate; 
-                otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; // Trigger OT only if > 8hr 40min
+                otHours = totalHours >= 8.6667 ? totalHours - 8 : 0; 
             } else if (totalHours >= 7 && totalHours < 8) { 
                 status = "P"; earnedWages = dayRate; 
             } else { 
@@ -376,12 +385,4 @@
 
         wRecord.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
 
-        saveAllDataToCloudAndLocal();
-        document.getElementById('wName').value = '';
-        document.getElementById('wAdvance').value = '0';
-    }
-
-    function renderMonthlyTable() {
-        const tbody = document.getElementById('monthlyTableBody');
-        tbody.innerHTML = '';
-        const searchQ = document.getEleme
+        saveAllDataToC
