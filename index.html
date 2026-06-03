@@ -115,7 +115,6 @@
         </div>
     </div>
 
-    <!-- NEW DEDICATED DELETE ENTRY BOX -->
     <h3>⚠️ Delete Specific Entry</h3>
     <div class="delete-box">
         <div class="form-group">
@@ -155,18 +154,28 @@
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
 
     function setTodayDate() {
-        let today = new Date();
-        let yyyy = today.getFullYear();
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('wDate').value = `${yyyy}-${mm}-${dd}`;
-        document.getElementById('delDate').value = `${yyyy}-${mm}-${dd}`;
+        try {
+            let today = new Date();
+            let yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            
+            let finalDateStr = `${yyyy}-${mm}-${dd}`;
+            
+            let wDateInput = document.getElementById('wDate');
+            let delDateInput = document.getElementById('delDate');
+            
+            if(wDateInput) wDateInput.value = finalDateStr;
+            if(delDateInput) delDateInput.value = finalDateStr;
+        } catch(e) {
+            console.error("Date set karne me dikkat aayi: ", e);
+        }
     }
 
     window.onload = function() {
-        setTodayDate();
         loadFromLocalStorage();
         fetchFromDatabase();
+        setTimeout(setTodayDate, 200);
     };
 
     function loadFromLocalStorage() {
@@ -208,16 +217,25 @@
     }
 
     function refreshSiteUiAndTables() {
-        document.getElementById('siteSelector').value = currentSite;
-        for(let i=1; i<=5; i++) {
-            if(document.getElementById(`opt_site${i}`)) document.getElementById(`opt_site${i}`).innerText = siteNames[`site${i}`];
+        if(document.getElementById('siteSelector')) {
+            document.getElementById('siteSelector').value = currentSite;
         }
-        document.getElementById('currentSiteLabel').innerText = "Active Site: " + siteNames[currentSite];
-        document.getElementById('registerModeBadge').innerText = (currentSite === 'site2') ? "(⚠️ 10-Day Split Mode Active)" : "(Full Month Mode)";
+        for(let i=1; i<=5; i++) {
+            if(document.getElementById(`opt_site${i}`)) {
+                document.getElementById(`opt_site${i}`).innerText = siteNames[`site${i}`];
+            }
+        }
+        if(document.getElementById('currentSiteLabel')) {
+            document.getElementById('currentSiteLabel').innerText = "Active Site: " + siteNames[currentSite];
+        }
+        if(document.getElementById('registerModeBadge')) {
+            document.getElementById('registerModeBadge').innerText = (currentSite === 'site2') ? "(⚠️ 10-Day Split Mode Active)" : "(Full Month Mode)";
+        }
         generateTableHeader();
         renderMonthlyTable();
     }
 
+    // FIXED: Drop-down change hote hi data refresh hoga completely
     function switchSite() {
         currentSite = document.getElementById('siteSelector').value;
         localStorage.setItem('current_selected_site', currentSite);
@@ -240,6 +258,7 @@
 
     function generateTableHeader() {
         const headerRow = document.getElementById('tableHeaderDays');
+        if(!headerRow) return;
         let html = '<th style="text-align:left; min-width:130px;">Worker Details</th>';
         for (let i = 1; i <= 31; i++) {
             let dayStr = i < 10 ? '0' + i : i;
@@ -261,10 +280,11 @@
 
     function calculateHours(inT, lOut, lIn, outT) {
         if(!inT || !outT) return 0;
-        let start = new Date("2026-01-01 " + inT), end = new Date("2026-01-01 " + outT);
+        let todayY = new Date().getFullYear();
+        let start = new Date(`${todayY}-01-01 ` + inT), end = new Date(`${todayY}-01-01 ` + outT);
         let diffMs = end - start;
         if(lOut && lIn) {
-            let lStart = new Date("2026-01-01 " + lOut), lEnd = new Date("2026-01-01 " + lIn);
+            let lStart = new Date(`${todayY}-01-01 ` + lOut), lEnd = new Date(`${todayY}-01-01 ` + lIn);
             if(lEnd > lStart) diffMs -= (lEnd - lStart);
         }
         return diffMs / (1000 * 60 * 60) > 0 ? diffMs / (1000 * 60 * 60) : 0;
@@ -333,7 +353,6 @@
         setTodayDate();
     }
 
-    // FUNCTION TO DELETE SINGLE DATE ENTRY FOR A WORKER
     function deleteSpecificSingleEntry() {
         const name = document.getElementById('delName').value.trim();
         const dateVal = document.getElementById('delDate').value;
@@ -360,6 +379,7 @@
 
     function renderMonthlyTable() {
         const tbody = document.getElementById('monthlyTableBody');
+        if(!tbody) return;
         tbody.innerHTML = '';
         const searchQ = document.getElementById('wSearch').value.toLowerCase().trim();
         let currentSiteData = allSitesRecords[currentSite] || {};
@@ -371,16 +391,4 @@
             let tr = document.createElement('tr');
             let rowHtml = `<td style="text-align:left; font-weight:bold; background:#eaeded;">${workerName}<br><span style="font-size:10px;color:#7f8c8d;">Rate: ₹${worker.dayRate}/d</span></td>`;
 
-            let mPresent = 0, mHD = 0, mAbsent = 0, mPP = 0, mBaseWages = 0, mOTWages = 0, runningSum = 0;
-
-            for (let i = 1; i <= 31; i++) {
-                let dayStr = i < 10 ? '0' + i : '' + i;
-                let dayData = worker.dates ? worker.dates[dayStr] : null;
-
-                if(dayData) {
-                    if(dayData.status === 'P') mPresent++;
-                    else if(dayData.status === 'HD') mHD++;
-                    else if(dayData.status === 'P+P') mPP++;
-                    
-                    mBaseWages += dayData.earnedWages || 0; mOTWages += dayData.otWagesEarned || 0;
-                    runningSum += ((dayData.earnedWages || 0) + (dayData.otWa
+            
