@@ -15,6 +15,7 @@
         .site-select { padding: 6px 10px; font-size: 13px; font-weight: bold; border-radius: 4px; border: 2px solid #3498db; background: white; color: #2c3e50; }
         .rename-btn { background-color: #34495e; color: white; padding: 6px 10px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; }
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e9ecef; }
+        .delete-box { background: #fdf2f2; border: 1px solid #f5b7b1; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #495057; }
         input, select { padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; }
@@ -38,8 +39,6 @@
         .summary-text { font-size: 10px; text-align: left; background: #e8f8f5; padding: 3px; border-radius: 3px; font-weight: 600; margin-top: 2px; }
         .wages-text { font-size: 10px; text-align: left; background: #fef9e7; padding: 3px; border-radius: 3px; font-weight: 600; margin-top: 2px; color: #b7950b; }
         .current-site-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
-        .cycle-box { border: 1px dashed #7f8c8d; padding: 4px; margin-bottom: 4px; border-radius: 4px;}
-        .cycle-title { font-weight: bold; font-size: 10px; text-align: center; color: white; border-radius: 3px; padding: 2px; margin-bottom: 3px;}
         .sync-badge { font-size: 12px; color: #27ae60; font-weight: bold; margin-left: 10px; background: #e8f8f5; padding: 2px 6px; border-radius: 4px; border: 1px solid #2ecc71; }
     </style>
 </head>
@@ -116,6 +115,20 @@
         </div>
     </div>
 
+    <!-- NEW DEDICATED DELETE ENTRY BOX -->
+    <h3>⚠️ Delete Specific Entry</h3>
+    <div class="delete-box">
+        <div class="form-group">
+            <label>Worker Name</label>
+            <input type="text" id="delName" placeholder="Name to delete...">
+        </div>
+        <div class="form-group">
+            <label>Select Date</label>
+            <input type="date" id="delDate">
+        </div>
+        <button class="btn-danger" onclick="deleteSpecificSingleEntry()">🗑️ Delete This Date Entry</button>
+    </div>
+
     <h3>2. Monthly Performance Register <span id="registerModeBadge" style="font-size:12px; color:#e74c3c;"></span></h3>
     <div class="search-container">
         <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter sheet..." onkeyup="renderMonthlyTable()">
@@ -147,6 +160,7 @@
         let mm = String(today.getMonth() + 1).padStart(2, '0');
         let dd = String(today.getDate()).padStart(2, '0');
         document.getElementById('wDate').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('delDate').value = `${yyyy}-${mm}-${dd}`;
     }
 
     window.onload = function() {
@@ -292,7 +306,6 @@
             else if (totalHours >= 11) { status = "P+P"; earnedWages = dayRate * 1.5; if (totalHours > 8.6667) otHours = totalHours - 8; } 
             else if (totalHours >= 8) { 
                 status = "P"; earnedWages = dayRate; 
-                // CRITICAL FIXED RULE: OT strictly 8:40 (8.6667 Hrs) ke BAAD hi chalu hoga!
                 if (totalHours > 8.6667) { otHours = totalHours - 8; } else { otHours = 0; }
             } 
             else if (totalHours >= 7) { status = "P"; earnedWages = dayRate; } 
@@ -320,6 +333,31 @@
         setTodayDate();
     }
 
+    // FUNCTION TO DELETE SINGLE DATE ENTRY FOR A WORKER
+    function deleteSpecificSingleEntry() {
+        const name = document.getElementById('delName').value.trim();
+        const dateVal = document.getElementById('delDate').value;
+
+        if(!name || !dateVal) { alert("Please type Worker Name and Select Date to delete!"); return; }
+
+        let currentSiteData = allSitesRecords[currentSite] || {};
+        if(!currentSiteData[name]) { alert(`Worker "${name}" is site par nahi mila!`); return; }
+
+        const dayInt = parseInt(dateVal.split('-')[2]);
+        const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
+
+        if(currentSiteData[name].dates && currentSiteData[name].dates[dayStr]) {
+            if(confirm(`Kya aap sachme ${name} ki Date: ${dayStr} ki entry permanently delete karna chahte hain?`)) {
+                delete currentSiteData[name].dates[dayStr];
+                saveAllDataToCloudAndLocal();
+                alert("Entry successfully delete ho gayi!");
+                document.getElementById('delName').value = '';
+            }
+        } else {
+            alert(`Is worker ki is date (${dayStr}) par koi entry nahi mili.`);
+        }
+    }
+
     function renderMonthlyTable() {
         const tbody = document.getElementById('monthlyTableBody');
         tbody.innerHTML = '';
@@ -345,31 +383,4 @@
                     else if(dayData.status === 'P+P') mPP++;
                     
                     mBaseWages += dayData.earnedWages || 0; mOTWages += dayData.otWagesEarned || 0;
-                    runningSum += ((dayData.earnedWages || 0) + (dayData.otWagesEarned || 0));
-
-                    rowHtml += `<td>
-                        <span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
-                        <div class="time-block">Hrs: ${formatToHoursMinutes(dayData.hoursWorked)}<br>OT: ${formatToHoursMinutes(dayData.otHours)}</div>
-                        <div class="running-total">₹${runningSum.toFixed(0)}</div>
-                    </td>`;
-                } else {
-                    rowHtml += `<td>-</td>`;
-                }
-            }
-
-            let grossWages = mBaseWages + mOTWages; let netPayable = grossWages - (worker.totalAdvance || 0);
-            rowHtml += `<td style="background:#f4f6f6; text-align:left;"><div class="summary-text">Gross: ₹${grossWages.toFixed(0)}</div><div class="summary-text" style="color:red;">Adv: ₹${(worker.totalAdvance || 0).toFixed(0)}</div><div class="summary-text" style="background:green;color:white;font-weight:bold;padding:2px;">Net: ₹${netPayable.toFixed(0)}</div></td>`;
-            tr.innerHTML = rowHtml; tbody.appendChild(tr);
-        }
-    }
-
-    function clearAllData() {
-        if(confirm("Kya aap data saaf karna chahte hain?")) { allSitesRecords[currentSite] = {}; saveAllDataToCloudAndLocal(); }
-    }
-
-    function exportToCSV() {
-        alert("CSV generated");
-    }
-</script>
-</body>
-</html>
+                    runningSum += ((dayData.earnedWages || 0) + (dayData.otWa
