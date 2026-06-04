@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shramik Sync Ultimate Master Register v9.9</title>
+    <!-- Core Firebase Production SDK Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -64,13 +65,16 @@
 <body>
 
 <div class="container">
+    <!-- Inline Dynamic Editable Title Header -->
     <div class="editable-header-container">
         <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Ultimate Master Register v9.9" oninput="saveHeadingTitle()">
     </div>
     <div id="siteIndicator" class="site-indicator">Workspace Block: Site 1</div>
 
+    <!-- Active Cloud Synchronization Status Badge -->
     <div id="syncStatus" class="status-box sync-offline">🔄 Initializing Core Database Connection System...</div>
 
+    <!-- Multi-Device Connection Setup Panel -->
     <div class="setup-box">
         <div class="setup-title">🔗 Multi-Device Sync Configuration (Laptop & Mobile Connection)</div>
         <div class="sync-config-area">
@@ -79,6 +83,7 @@
         </div>
     </div>
 
+    <!-- Site/Project Workspace Selector Switcher -->
     <div class="setup-box" style="margin-top: -5px;">
         <div class="setup-title">📍 Active Operational Site Area</div>
         <select id="selSite" onchange="switchSiteEngine()" style="width: 100%; padding: 8px; font-weight: bold; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fff; height: 40px;">
@@ -90,6 +95,7 @@
         </select>
     </div>
 
+    <!-- Data Input Form Management Layer -->
     <div class="form-title"><span>📝 Daily Shift & Advance Ledger Entry Form</span></div>
     <div class="grid-inputs">
         <div class="field-group">
@@ -138,12 +144,14 @@
     </div>
     <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Write Record to Master Database</button>
 
+    <!-- Interactive Segment Tabs for Site 2 Auto-Blocking Logic -->
     <div class="cycle-tabs" id="cycleTabsArea" style="display:none;">
         <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">📅 Cycle Block 1: Day 01 - 10</button>
         <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">📅 Cycle Block 2: Day 11 - 20</button>
         <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">📅 Cycle Block 3: Day 21 - End</button>
     </div>
 
+    <!-- Live Performance Cross-Matrix Ledger Grid View -->
     <div class="form-title"><span>📊 Operational Grid Matrix Data Sheet</span></div>
     <div class="table-container">
         <table>
@@ -154,6 +162,7 @@
         </table>
     </div>
 
+    <!-- Correction / High-Risk Administrative Command Block -->
     <div class="delete-section">
         <div class="form-title" style="color:#dc2626; margin-top:0; border-left-color:#dc2626; font-size:14px;">⚠️ Correction Engine (Galti Thik Karein - Delete Record)</div>
         <p style="font-size:12px; margin: -5px 0 12px 0; color:#64748b;">Agar kisi date par data galat chadh gaya ho, toh us worker ka exact naam aur date chun kar niche diye gaye button se use hata sakte hain.</p>
@@ -366,17 +375,4 @@
         currentCycleBlock = 1;
         
         document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
-        if(document.getElementById('tab1')) document.getElementById('tab1').classList.add('active');
-
-        renderAppUI();
-    }
-
-    function changeDayCycleSegment(blockNum) {
-        currentCycleBlock = blockNum;
-        document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('tab' + blockNum).classList.add('active');
-        renderAppUI();
-    }
-
-    function buildPerformanceGridStructure() {
-        let headRow = document.getElementByI
+        if(document.
