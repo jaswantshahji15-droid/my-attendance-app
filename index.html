@@ -1,13 +1,13 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync v8</title>
+    <title>Shramik Sync Master v9.1</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2, h3 { color: #2c3e50; margin: 5px 0 10px 0; border-bottom: 2px solid #3498db; padding-bottom: 5px; font-size: 1.2rem; }
+        h2, h3 { color: #2c3e50; margin: 15px 0 10px 0; border-bottom: 2px solid #3498db; padding-bottom: 5px; font-size: 1.2rem; }
         .company-header { text-align: center; margin-bottom: 15px; background: #eef2f7; padding: 12px; border-radius: 6px; border-left: 5px solid #2ecc71; }
         .editable-title { margin: 0; font-size: 1.5rem; color: #2c3e50; font-weight: bold; }
         .site-panel { background: #ebf5fb; padding: 10px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #aed6f1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -18,8 +18,11 @@
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #495057; }
         input, select { padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; }
-        .search-container { margin: 10px 0; }
-        .search-input { width: 100%; padding: 8px; border: 1px solid #b2bec3; border-radius: 4px; font-size: 13px; }
+        .search-container { margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+        .search-input { width: 100%; padding: 8px; border: 1px solid #b2bec3; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+        .cycle-tabs { display: none; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { background: #bdc3c7; color: #2c3e50; padding: 6px 12px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: #e67e22; color: white; }
         button { background-color: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
         button:hover { background-color: #2980b9; }
         .btn-success { background-color: #2ecc71; }
@@ -29,25 +32,26 @@
         th { background-color: #34495e; color: white; padding: 8px 4px; font-weight: 600; border: 1px solid #4f5d6c; }
         td { padding: 6px 4px; border: 1px solid #dee2e6; vertical-align: top; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .time-block { font-size: 9px; color: #444; text-align: left; background: #f1f3f5; padding: 4px; border-radius: 4px; margin-top: 3px; line-height: 1.2; }
+        .time-block { font-size: 9px; color: #444; text-align: left; background: #f1f3f5; padding: 4px; border-radius: 4px; margin-top: 3px; line-height: 1.3; border: 1px solid #dcdde1; }
         .status-p { color: #27ae60; font-weight: bold; font-size: 12px; }
         .status-hd { color: #f39c12; font-weight: bold; font-size: 12px; }
         .status-a { color: #c0392b; font-weight: bold; font-size: 12px; }
         .status-pp { color: #9b59b6; font-weight: bold; font-size: 12px; }
         .running-total { font-size: 9px; color: #1e8449; font-weight: bold; background: #e8f8f5; padding: 2px 3px; border-radius: 3px; margin-top: 3px; text-align: center; border: 1px dashed #2ecc71; }
-        .summary-text { font-size: 10px; text-align: left; background: #e8f8f5; padding: 3px; border-radius: 3px; font-weight: 600; margin-top: 2px; }
+        .summary-text { font-size: 10px; text-align: left; background: #e8f8f5; padding: 4px; border-radius: 3px; font-weight: 600; margin-top: 2px; border: 1px solid #a3e4d7; }
         .current-site-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
         .sync-badge { font-size: 12px; color: #27ae60; font-weight: bold; margin-left: 10px; background: #e8f8f5; padding: 2px 6px; border-radius: 4px; border: 1px solid #2ecc71; }
+        .delete-box { background: #fdf2f2; border: 1px solid #f5b7b1; padding: 12px; border-radius: 6px; margin-top: 20px; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title">Shramik Sync v8</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.1</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
-            <span class="sync-badge" id="syncStatus">🟢 System Ready</span>
+            <span class="sync-badge" id="syncStatus">🟢 System Live (Sync Active)</span>
         </div>
     </div>
     
@@ -55,7 +59,7 @@
         <span class="site-label">📍 Select Working Site/Location:</span>
         <select id="siteSelector" class="site-select" onchange="switchSite()">
             <option value="site1" id="opt_site1">Site 1</option>
-            <option value="site2" id="opt_site2">Site 2 (10-Day Cycle)</option>
+            <option value="site2" id="opt_site2">Site 2 (10-Day Cycle Mode)</option>
             <option value="site3" id="opt_site3">Site 3</option>
             <option value="site4" id="opt_site4">Site 4</option>
             <option value="site5" id="opt_site5">Site 5</option>
@@ -80,8 +84,8 @@
         <div class="form-group">
             <label>Shift Option</label>
             <select id="wShift">
-                <option value="normal">Normal (8 Hr Duty)</option>
-                <option value="7hr">7-Hour Shift</option>
+                <option value="normal">Normal (8.5 Hr System)</option>
+                <option value="7hr">7-Hour Shift System</option>
             </select>
         </div>
         <div class="form-group">
@@ -105,7 +109,7 @@
             <input type="time" id="wOutTime" value="18:00">
         </div>
         <div class="form-group">
-            <label>Advance (₹)</label>
+            <label>Advance Entry (₹)</label>
             <input type="number" id="wAdvance" value="0">
         </div>
         <div class="form-group" style="justify-content: flex-end;">
@@ -113,12 +117,18 @@
         </div>
     </div>
 
-    <h3>2. Monthly Performance Register <span id="registerModeBadge" style="font-size:12px; color:#e74c3c;"></span></h3>
+    <h3>2. Monthly Performance Register <span id="registerModeBadge" style="font-size:12px; color:#e67e22;"></span></h3>
+    
     <div class="search-container">
+        <div class="cycle-tabs" id="cycleTabsContainer">
+            <button class="tab-btn active" id="tab1" onclick="switchCycleTab(1)">Cycle: Day 01-10</button>
+            <button class="tab-btn" id="tab2" onclick="switchCycleTab(2)">Cycle: Day 11-20</button>
+            <button class="tab-btn" id="tab3" onclick="switchCycleTab(3)">Cycle: Day 21-Month End</button>
+        </div>
         <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter sheet..." onkeyup="renderMonthlyTable()">
     </div>
 
-    <div>
+    <div style="margin-bottom: 10px;">
         <button onclick="exportToCSV()">💾 Download Excel (CSV)</button>
         <button class="btn-danger" onclick="clearAllData()">🗑️ Clear Current Site Data</button>
     </div>
@@ -129,6 +139,19 @@
             <tbody id="monthlyTableBody"></tbody>
         </table>
     </div>
+
+    <h3>⚠️ Delete Specific Entry</h3>
+    <div class="delete-box">
+        <div class="form-group">
+            <label>Worker Name</label>
+            <input type="text" id="delName" placeholder="Name to delete...">
+        </div>
+        <div class="form-group">
+            <label>Select Date</label>
+            <input type="date" id="delDate">
+        </div>
+        <button class="btn-danger" onclick="deleteSpecificSingleEntry()">🗑️ Delete This Date Entry</button>
+    </div>
 </div>
 
 <script>
@@ -136,7 +159,8 @@
     
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
     let currentSite = localStorage.getItem('current_selected_site') || 'site1';
-    let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
+    let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle Mode)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
+    let activeCycleTab = 1;
 
     function setTodayDate() {
         let today = new Date();
@@ -145,15 +169,15 @@
         let dd = String(today.getDate()).padStart(2, '0');
         let finalDateStr = `${yyyy}-${mm}-${dd}`;
         
-        let elDate = document.getElementById('wDate');
-        if(elDate) elDate.value = finalDateStr;
+        document.getElementById('wDate').value = finalDateStr;
+        document.getElementById('delDate').value = finalDateStr;
     }
 
     window.onload = function() {
-        generateTableHeader();
         loadFromLocalStorage();
         setTodayDate();
-        fetchFromDatabase();
+        fetchFromDatabaseLive();
+        setInterval(fetchFromDatabaseLive, 5000);
     };
 
     function loadFromLocalStorage() {
@@ -164,7 +188,7 @@
         refreshSiteUiAndTables();
     }
 
-    function fetchFromDatabase() {
+    function fetchFromDatabaseLive() {
         fetch(`${FIREBASE_URL}master_data.json`)
         .then(res => { if(res.ok) return res.json(); })
         .then(cloudData => {
@@ -173,11 +197,13 @@
                 if (cloudData.siteNames) siteNames = cloudData.siteNames;
                 localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
                 localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
+                document.getElementById('syncStatus').innerText = "🟢 System Live (Sync Active)";
                 refreshSiteUiAndTables();
             }
         })
-        .catch(err => console.log("Offline mode"))
-        .finally(() => { setTodayDate(); });
+        .catch(err => {
+            document.getElementById('syncStatus').innerText = "🟡 Offline Mode (Local Saved)";
+        });
     }
 
     function saveAllDataToCloudAndLocal() {
@@ -187,34 +213,49 @@
         
         let payload = { allSitesRecords: allSitesRecords, siteNames: siteNames, lastUpdated: new Date().toISOString() };
         fetch(`${FIREBASE_URL}master_data.json`, { method: 'PUT', body: JSON.stringify(payload) })
-        .catch(err => console.log("Saved locally"));
+        .catch(err => console.log("Saved Local"));
     }
 
     function refreshSiteUiAndTables() {
-        let sel = document.getElementById('siteSelector');
-        if(sel) sel.value = currentSite;
+        document.getElementById('siteSelector').value = currentSite;
 
         for(let i=1; i<=5; i++) {
             let opt = document.getElementById(`opt_site${i}`);
             if(opt) opt.innerText = siteNames[`site${i}`];
         }
         
-        let lbl = document.getElementById('currentSiteLabel');
-        if(lbl) lbl.innerText = "Active Site: " + siteNames[currentSite];
+        document.getElementById('currentSiteLabel').innerText = "Active Site: " + siteNames[currentSite];
         
+        let tabsCont = document.getElementById('cycleTabsContainer');
         let bdg = document.getElementById('registerModeBadge');
-        if(bdg) bdg.innerText = (currentSite === 'site2') ? "(⚠️ 10-Day Split Mode Active)" : "(Full Month Mode)";
         
+        if(currentSite === 'site2') {
+            tabsCont.style.display = 'flex';
+            bdg.innerText = "(⚠️ 10-Day Split Mode Active)";
+        } else {
+            tabsCont.style.display = 'none';
+            bdg.innerText = "(Full Month View)";
+        }
+        
+        generateTableHeader();
         renderMonthlyTable();
     }
 
     function switchSite() {
-        let sel = document.getElementById('siteSelector');
-        if(sel) {
-            currentSite = sel.value;
-            localStorage.setItem('current_selected_site', currentSite);
-            refreshSiteUiAndTables();
-        }
+        currentSite = document.getElementById('siteSelector').value;
+        localStorage.setItem('current_selected_site', currentSite);
+        activeCycleTab = 1; 
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab1').classList.add('active');
+        refreshSiteUiAndTables();
+    }
+
+    function switchCycleTab(tabNum) {
+        activeCycleTab = tabNum;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab' + tabNum).classList.add('active');
+        generateTableHeader();
+        renderMonthlyTable();
     }
 
     function renameCurrentSite() {
@@ -234,12 +275,22 @@
     function generateTableHeader() {
         const headerRow = document.getElementById('tableHeaderDays');
         if(!headerRow) return;
+        
         let html = '<th style="text-align:left; min-width:130px;">Worker Details</th>';
-        for (let i = 1; i <= 31; i++) {
-            let dayStr = i < 10 ? '0' + i : i;
-            html += `<th style="min-width:105px;">Day ${dayStr}</th>`;
+        
+        let startDay = 1, endDay = 31;
+        if(currentSite === 'site2') {
+            if(activeCycleTab === 1) { startDay = 1; endDay = 10; }
+            else if(activeCycleTab === 2) { startDay = 11; endDay = 20; }
+            else if(activeCycleTab === 3) { startDay = 21; endDay = 31; }
         }
-        html += `<th style="min-width:130px; background:#2c3e50;">Summary & Net Payable</th>`;
+
+        for (let i = startDay; i <= endDay; i++) {
+            let dayStr = i < 10 ? '0' + i : i;
+            html += `<th style="min-width:115px;">Day ${dayStr}</th>`;
+        }
+        
+        html += `<th style="min-width:150px; background:#2c3e50;">${currentSite === 'site2' ? 'Selected 10-Day Cycle Summary' : 'Full Month Summary & Net'}</th>`;
         headerRow.innerHTML = html;
     }
 
@@ -249,7 +300,9 @@
         if(currentSiteData[nameInput]) {
             document.getElementById('wDayRate').value = currentSiteData[nameInput].dayRate;
             document.getElementById('wHourRate').value = currentSiteData[nameInput].hourRate;
-            document.getElementById('wShift').value = currentSiteData[nameInput].shiftType || 'normal';
+            if(currentSiteData[nameInput].shiftType) {
+                document.getElementById('wShift').value = currentSiteData[nameInput].shiftType;
+            }
         }
     }
 
@@ -291,35 +344,52 @@
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
         let status = "A"; let otHours = 0; let earnedWages = 0; let otWagesEarned = 0;
 
-        if (shiftType === '7hr') {
-            if (totalHours >= 7) { status = "P"; earnedWages = dayRate; otHours = totalHours - 7; } 
-            else if (totalHours >= 6) { status = "P"; earnedWages = dayRate; } 
-            else { status = totalHours >= 3.5 ? "HD" : "A"; earnedWages = totalHours * (dayRate / 7); }
+        if(shiftType === '7hr') {
+            if (totalHours >= 12) {
+                status = "P+P"; earnedWages = dayRate * 2; otHours = 0;
+            } else if (totalHours >= 9.5) {
+                status = "P"; earnedWages = dayRate; otWagesEarned = dayRate * 0.5; otHours = totalHours - 7;
+            } else if (totalHours >= 5.5) {
+                status = "P"; earnedWages = dayRate;
+                if (totalHours > 7) { otHours = totalHours - 7; otWagesEarned = otHours * hourRate; }
+            } else {
+                status = "HD"; earnedWages = totalHours * (dayRate / 7);
+            }
         } else {
-            if (totalHours >= 14) { status = "P+P"; earnedWages = dayRate * 2; if (totalHours > 8.6667) otHours = totalHours - 8; } 
-            else if (totalHours >= 11) { status = "P+P"; earnedWages = dayRate * 1.5; if (totalHours > 8.6667) otHours = totalHours - 8; } 
-            else if (totalHours >= 8) { 
-                status = "P"; earnedWages = dayRate; 
-                if (totalHours > 8.6667) { otHours = totalHours - 8; } else { otHours = 0; }
-            } 
-            else if (totalHours >= 7) { status = "P"; earnedWages = dayRate; } 
-            else { status = totalHours >= 3.5 ? "HD" : "A"; earnedWages = totalHours * (dayRate / 8); }
+            if (totalHours >= 13.5) {
+                status = "P+P"; earnedWages = dayRate * 2; otHours = 0;
+            } else if (totalHours >= 11) {
+                status = "P"; earnedWages = dayRate; otWagesEarned = dayRate * 0.5; otHours = totalHours - 8.5; 
+            } else if (totalHours >= 7) {
+                status = "P"; earnedWages = dayRate;
+                if (totalHours > 8.5) { otHours = totalHours - 8.5; otWagesEarned = otHours * hourRate; }
+            } else {
+                status = "HD"; earnedWages = totalHours * (dayRate / 8);
+            }
         }
-        if (totalHours === 0) { status = "A"; earnedWages = 0; }
-        otWagesEarned = otHours * hourRate;
+
+        if (totalHours === 0) { status = "A"; earnedWages = 0; otWagesEarned = 0; }
 
         if(!allSitesRecords[currentSite]) allSitesRecords[currentSite] = {};
         let currentSiteData = allSitesRecords[currentSite];
 
         if(!currentSiteData[name]) {
-            currentSiteData[name] = { dayRate, hourRate, shiftType, totalAdvance: 0, dates: {} };
+            currentSiteData[name] = { dayRate, hourRate, shiftType, dates: {}, advances: {} };
         }
         
         let wRecord = currentSiteData[name];
         wRecord.dayRate = dayRate; wRecord.hourRate = hourRate; wRecord.shiftType = shiftType;
-        if(advance > 0) wRecord.totalAdvance += advance;
+        
+        if(!wRecord.advances) wRecord.advances = {};
+        if(advance > 0) {
+            wRecord.advances[dayStr] = (wRecord.advances[dayStr] || 0) + advance;
+        }
 
-        wRecord.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
+        wRecord.dates[dayStr] = { 
+            inTime, lunchOut, lunchIn, outTime, 
+            hoursWorked: totalHours, otHours, status, 
+            earnedWages, otWagesEarned 
+        };
 
         saveAllDataToCloudAndLocal();
         document.getElementById('wName').value = '';
@@ -327,55 +397,6 @@
         setTodayDate();
     }
 
-    function renderMonthlyTable() {
-        const tbody = document.getElementById('monthlyTableBody');
-        if(!tbody) return;
-        tbody.innerHTML = '';
-        const searchQ = document.getElementById('wSearch').value.toLowerCase().trim();
-        let currentSiteData = allSitesRecords[currentSite] || {};
-
-        for (let workerName in currentSiteData) {
-            if(searchQ && !workerName.toLowerCase().includes(searchQ)) continue;
-
-            let worker = currentSiteData[workerName];
-            let tr = document.createElement('tr');
-            let rowHtml = `<td style="text-align:left; font-weight:bold; background:#eaeded;">${workerName}<br><span style="font-size:10px;color:#7f8c8d;">Rate: ₹${worker.dayRate}/d</span></td>`;
-
-            let mPresent = 0, mHD = 0, mAbsent = 0, mPP = 0, mBaseWages = 0, mOTWages = 0, runningSum = 0;
-
-            for (let i = 1; i <= 31; i++) {
-                let dayStr = i < 10 ? '0' + i : '' + i;
-                let dayData = worker.dates ? worker.dates[dayStr] : null;
-
-                if(dayData) {
-                    if(dayData.status === 'P') mPresent++;
-                    else if(dayData.status === 'HD') mHD++;
-                    else if(dayData.status === 'P+P') mPP++;
-                    
-                    mBaseWages += dayData.earnedWages || 0; mOTWages += dayData.otWagesEarned || 0;
-                    runningSum += ((dayData.earnedWages || 0) + (dayData.otWagesEarned || 0));
-
-                    rowHtml += `<td>
-                        <span class="${dayData.status === 'P' ? 'status-p' : (dayData.status === 'HD' ? 'status-hd' : (dayData.status==='P+P'?'status-pp':'status-a'))}">${dayData.status}</span>
-                        <div class="time-block">Hrs: ${formatToHoursMinutes(dayData.hoursWorked)}<br>OT: ${formatToHoursMinutes(dayData.otHours)}</div>
-                        <div class="running-total">₹${runningSum.toFixed(0)}</div>
-                    </td>`;
-                } else {
-                    rowHtml += `<td>-</td>`;
-                }
-            }
-
-            let grossWages = mBaseWages + mOTWages; let netPayable = grossWages - (worker.totalAdvance || 0);
-            rowHtml += `<td style="background:#f4f6f6; text-align:left;"><div class="summary-text">Gross: ₹${grossWages.toFixed(0)}</div><div class="summary-text" style="color:red;">Adv: ₹${(worker.totalAdvance || 0).toFixed(0)}</div><div class="summary-text" style="background:green;color:white;font-weight:bold;padding:2px;">Net: ₹${netPayable.toFixed(0)}</div></td>`;
-            tr.innerHTML = rowHtml; tbody.appendChild(tr);
-        }
-    }
-
-    function clearAllData() {
-        if(confirm("Kya aap data saaf karna chahte hain?")) { allSitesRecords[currentSite] = {}; saveAllDataToCloudAndLocal(); }
-    }
-
-    function exportToCSV() { alert("CSV generated"); }
-</script>
-</body>
-</html>
+    function deleteSpecificSingleEntry() {
+        const name = document.getElementById('delName').value.trim();
+        const dateVal = document.getElementById
