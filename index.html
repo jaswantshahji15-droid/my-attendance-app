@@ -1,401 +1,382 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.7</title>
-    <!-- Core Firebase Production SDK Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 12px; color: #333; }
-        .container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); box-sizing: border-box; }
-        
-        .editable-header-container { text-align: center; margin-bottom: 5px; }
-        .editable-header { width: 100%; border: none; background: transparent; text-align: center; font-size: 24px; font-weight: 800; color: #1e293b; padding: 6px; box-sizing: border-box; border-radius: 6px; transition: all 0.2s; }
-        
-        .site-indicator { text-align: center; font-weight: 700; color: #2563eb; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .status-box { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: 700; font-size: 13px; text-align: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
-        .sync-active { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; }
-        .sync-offline { color: #b45309; background: #fef3c7; border: 1px solid #fde68a; }
-        
-        .setup-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .setup-title { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .sync-config-area { display: flex; gap: 10px; flex-wrap: wrap; }
-        .sync-config-area input { flex: 1; min-width: 260px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
-        
-        .form-title { font-size: 16px; font-weight: 700; color: #1e293b; margin: 20px 0 12px 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .field-group { display: flex; flex-direction: column; }
-        .field-group label { font-size: 11px; font-weight: 700; margin-bottom: 5px; color: #475569; text-transform: uppercase; }
-        .field-group input, .field-group select { padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; height: 38px; box-sizing: border-box; outline: none; background-color: #fff; }
-        
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
-        .btn-save { background: #16a34a; color: white; width: 100%; margin-top: 15px; height: 44px; font-size: 15px; box-shadow: 0 2px 4px rgba(22,163,74,0.2); }
-        .btn-save:hover { background: #15803d; }
-        .btn-connect { background: #2563eb; color: white; }
-        .btn-danger { background: #dc2626; color: white; }
-        
-        .cycle-tabs { display: flex; gap: 8px; margin-bottom: 15px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-item { background: #e2e8f0; color: #475569; padding: 10px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; }
-        .tab-item.active { background: #2563eb; color: white; }
-        
-        .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; background: #fff; }
-        th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: center; vertical-align: top; }
-        th { background: #f8fafc; font-weight: 700; color: #334155; border-bottom: 2px solid #cbd5e1; }
-        .worker-col { text-align: left; background: #f8fafc; font-weight: 700; min-width: 140px; border-right: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 1; }
-        .cell-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px; border-radius: 4px; font-size: 10px; text-align: left; margin-top: 5px; line-height: 1.4; color: #475569; }
-        
-        .badge { font-weight: 800; padding: 3px 6px; border-radius: 4px; font-size: 9px; display: inline-block; text-transform: uppercase; }
-        .badge-P { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .badge-HD { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
-        .badge-PP { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-        .badge-A { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        
-        .delete-section { background: #fff5f5; border: 1px solid #fee2e2; padding: 16px; border-radius: 8px; margin-top: 30px; }
-    </style>
+    <title>Shramik Sync Master v9.8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="bg-slate-100 font-sans text-gray-800">
 
-<div class="container">
-    <div class="editable-header-container">
-        <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Master v9.7" oninput="saveHeadingTitle()">
-    </div>
-    <div id="siteIndicator" class="site-indicator">Workspace Block: Site 1</div>
-
-    <!-- Smart Sync Status Badge (Will adapt automatically) -->
-    <div id="syncStatus" class="status-box sync-offline">🔄 Initializing Form & Checking Saved Data...</div>
-
-    <!-- Manual Connection Linker Field -->
-    <div class="setup-box">
-        <div class="setup-title">🔗 Laptop & Mobile Live Connection Setup:</div>
-        <div class="sync-config-area">
-            <input type="text" id="firebaseUrlInput" placeholder="Paste your Firebase Realtime Database URL here (e.g. https://xyz.firebaseio.com/)">
-            <button class="btn btn-connect" onclick="applyCustomDatabaseLink()">Link Devices</button>
-        </div>
-    </div>
-
-    <!-- Site Switcher Selector -->
-    <div class="setup-box" style="margin-top:-5px;">
-        <div class="setup-title">📍 Select Working Site/Location:</div>
-        <select id="selSite" onchange="switchSiteEngine()" style="width: 100%; padding: 8px; font-weight: bold; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fff; height: 40px;">
-            <option value="site1">Site 1 (Standard View)</option>
-            <option value="site2">Site 2 (10-Day Cycle Mode)</option>
-            <option value="site3">Site 3 (Standard View)</option>
-            <option value="site4">Site 4 (Standard View)</option>
-            <option value="site5">Site 5 (Standard View)</option>
-        </select>
-    </div>
-
-    <!-- Input Data Entry Layout Layer -->
-    <div class="form-title"><span>📝 1. Daily Time Office Entry Form</span></div>
-    <div class="grid-inputs">
-        <div class="field-group">
-            <label>Worker Name</label>
-            <input type="text" id="wName" placeholder="e.g. Ram" onkeyup="autofillWorkerData()">
-        </div>
-        <div class="field-group">
-            <label>Per Day Wages (₹)</label>
-            <input type="number" id="wWages" value="1200" oninput="autoCalcOtRate()">
-        </div>
-        <div class="field-group">
-            <label>OT Rate/Hour (₹)</label>
-            <input type="number" id="wOtRate" value="150">
-        </div>
-        <div class="field-group">
-            <label>Shift Option</label>
-            <select id="wShift">
-                <option value="normal">Normal Shift (8.0 Hr System)</option>
-                <option value="7hr">7 Hour Short Shift System</option>
-            </select>
-        </div>
-        <div class="field-group">
-            <label>Select Date</label>
-            <input type="date" id="wDate">
-        </div>
-        <div class="field-group">
-            <label>In Time</label>
-            <input type="time" id="wIn" value="09:00">
-        </div>
-        <div class="field-group">
-            <label>Lunch Out</label>
-            <input type="time" id="wLOut" value="13:00">
-        </div>
-        <div class="field-group">
-            <label>Lunch In</label>
-            <input type="time" id="wLIn" value="14:00">
-        </div>
-        <div class="field-group">
-            <label>Out Time</label>
-            <input type="time" id="wOut" value="18:00">
-        </div>
-        <div class="field-group">
-            <label>Advance Entry (₹)</label>
-            <input type="number" id="wAdv" value="0">
-        </div>
-    </div>
-    <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save Entry (Data Sync Karein)</button>
-
-    <!-- Cycle Segment Navigation Area Control tabs for Site 2 -->
-    <div class="cycle-tabs" id="cycleTabsArea" style="display:none;">
-        <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">📅 Day 01 - 10</button>
-        <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">📅 Day 11 - 20</button>
-        <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">📅 Day 21 - End</button>
-    </div>
-
-    <!-- Primary Calculations Output Matrix Table Grid -->
-    <div class="form-title"><span>📊 2. Monthly Performance Register Matrix</span></div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr id="tableHeadRow"></tr>
-            </thead>
-            <tbody id="tableBodyData"></tbody>
-        </table>
-    </div>
-
-    <!-- Administrative Data Pure/Purge Block Layer -->
-    <div class="delete-section">
-        <div class="form-title" style="color:#dc2626; margin-top:0; border-left-color:#dc2626; font-size:14px;">⚠️ Delete Specific Entry (Galti Thik Karein)</div>
-        <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-            <div class="field-group" style="flex:1; min-width:180px;">
-                <label>Worker Name</label>
-                <input type="text" id="delName" placeholder="Enter name precisely">
-            </div>
-            <div class="field-group" style="flex:1; min-width:140px;">
-                <label>Select Date</label>
-                <input type="date" id="delDate">
-            </div>
-            <button class="btn btn-danger" style="height:38px;" onclick="deleteTargetRecord()">🗑️ Delete This Date Entry</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // System Local Data Cache Storage Mapping Engine 
-    let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
-    let currentSite = 'site1';
-    let currentCycleBlock = 1; 
-    let firebaseRef = null;
-    let savedDbUrl = localStorage.getItem('user_configured_firebase_url') || "";
-
-    window.addEventListener('DOMContentLoaded', () => {
-        let today = new Date();
-        let isoToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        
-        document.getElementById('wDate').value = isoToday;
-        document.getElementById('delDate').value = isoToday;
-
-        if(localStorage.getItem('main_heading_title')) {
-            document.getElementById('mainHeading').value = localStorage.getItem('main_heading_title');
-        }
-
-        if(savedDbUrl) {
-            document.getElementById('firebaseUrlInput').value = savedDbUrl;
-        }
-
-        // UNBREAKABLE OFFLINE FIRST ENGINE: Safely restore local backup data instantly!
-        if(localStorage.getItem('shramik_local_backup')) {
-            try { 
-                memoryDB = JSON.parse(localStorage.getItem('shramik_local_backup')); 
-            } catch(e){ console.error("Backup tracking reading bypass."); }
-        }
-
-        initializeDatabaseEngine();
-        renderAppUI();
-    });
-
-    function saveHeadingTitle() {
-        localStorage.setItem('main_heading_title', document.getElementById('mainHeading').value);
-    }
-
-    function applyCustomDatabaseLink() {
-        let inputUrl = document.getElementById('firebaseUrlInput').value.trim();
-        if(!inputUrl) {
-            alert("❌ Kripya valid Firebase Realtime Database URL dalein!");
-            return;
-        }
-        localStorage.setItem('user_configured_firebase_url', inputUrl);
-        alert("✔️ Database Configuration saved! Phone aur Laptop ko jodne ke liye webpage reload ho raha hai...");
-        window.location.reload();
-    }
-
-    function initializeDatabaseEngine() {
-        // Safe Intercept Fail-Safe Routine
-        setTimeout(() => {
-            if(!firebaseRef) {
-                activateUnrestrictedOfflineStandaloneMode();
-            }
-        }, 3000);
-
-        if(!savedDbUrl) {
-            activateUnrestrictedOfflineStandaloneMode();
-            return;
-        }
-
-        try {
-            if (firebase.apps.length === 0) {
-                firebase.initializeApp({ databaseURL: savedDbUrl });
-            }
-            firebaseRef = firebase.database().ref('shramik_master_db');
+    <div class="max-w-5xl mx-auto my-6 p-4">
+        <div class="bg-white rounded-t-lg shadow-md border-b p-4 text-center">
+            <h1 class="text-xl font-bold text-blue-900 flex justify-center items-center gap-2">
+                🚀 Shramik Sync Master v9.8 (Time Mode)
+            </h1>
+            <p class="text-xs font-semibold text-blue-600 mt-1" id="workspaceBlock">WORKSPACE BLOCK: SITE 1</p>
             
-            firebaseRef.on('value', (snapshot) => {
-                let incoming = snapshot.val();
-                if(incoming) {
-                    memoryDB = incoming;
-                    localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
-                } else {
-                    firebaseRef.set(memoryDB);
-                }
-                document.getElementById('syncStatus').className = "status-box sync-active";
-                document.getElementById('syncStatus').innerHTML = "🟢 System Live (Sync Active) • Laptop + Mobile Successfully Connected!";
-                renderAppUI();
-            }, (error) => {
-                activateUnrestrictedOfflineStandaloneMode();
-            });
-        } catch (err) {
-            activateUnrestrictedOfflineStandaloneMode();
-        }
-    }
+            <div id="syncStatus" class="mt-2 text-xs py-1 px-3 bg-yellow-100 text-yellow-800 rounded-full inline-block font-medium animate-pulse">
+                🔄 Connecting to Master Database System...
+            </div>
+        </div>
 
-    function activateUnrestrictedOfflineStandaloneMode() {
-        document.getElementById('syncStatus').className = "status-box sync-offline";
-        document.getElementById('syncStatus').innerHTML = "⚡ Standalone Offline Engine Active (Data will save to local memory safely!)";
-        renderAppUI();
-    }
+        <div class="bg-white p-4 shadow-sm border-b grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-red-600 uppercase mb-1">📍 Active Operational Site Area</label>
+                <select id="siteSelect" class="w-full border p-2 rounded text-sm bg-gray-50 font-medium focus:ring-2 focus:ring-blue-500">
+                    <option value="site1">Site 1 (Standard View)</option>
+                    <option value="site2">Site 2 (10-Day Payment Roster View)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">✏️ Rename Selected Site</label>
+                <div class="flex gap-2">
+                    <input type="text" id="siteRenameInput" placeholder="Naya naam dalein..." class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500">
+                    <button onclick="renameSite()" class="bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold hover:bg-blue-700 transition">Rename</button>
+                </div>
+            </div>
+        </div>
 
-    function pushUpdatedStateToCloud() {
-        localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
-        if(firebaseRef) {
-            firebaseRef.set(memoryDB)
-                .then(() => console.log("Cloud sync stream dispatched."))
-                .catch(err => console.error("Sync deferred:", err.message));
-        }
-        renderAppUI();
-    }
+        <div class="bg-white p-5 shadow-sm border-b">
+            <h2 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-1">📝 1. Daily Time Office Entry Form</h2>
+            
+            <form id="entryForm" onsubmit="saveEntry(event)" class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Worker Name</label>
+                    <input type="text" id="workerName" list="workerSuggestions" placeholder="e.g. Ram" required class="w-full border p-2 rounded focus:ring-1 focus:ring-blue-500 font-semibold">
+                    <datalist id="workerSuggestions"></datalist>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Per Day Wages (₹)</label>
+                    <input type="number" id="perDayWages" placeholder="600" required oninput="autoCalculateOTRate()" class="w-full border p-2 rounded font-semibold">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">OT Rate/Hour (₹)</label>
+                    <input type="number" id="otRateHour" placeholder="Auto" readonly class="w-full border p-2 rounded bg-gray-100 font-bold text-blue-700">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Shift Option</label>
+                    <select id="shiftOption" class="w-full border p-2 rounded font-semibold bg-white">
+                        <option value="8">Normal Shift (8:00 Hr System)</option>
+                        <option value="7">Short Shift (7:00 Hr System)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Select Date</label>
+                    <input type="date" id="selectDate" required class="w-full border p-2 rounded font-semibold">
+                </div>
 
-    function autoCalcOtRate() {
-        let dWages = parseFloat(document.getElementById('wWages').value) || 0;
-        document.getElementById('wOtRate').value = dWages > 0 ? Math.round(dWages / 8) : 0;
-    }
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">In Time</label>
+                    <input type="time" id="inTime" value="09:00" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Lunch Out</label>
+                    <input type="time" id="lunchOut" value="13:00" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Lunch In</label>
+                    <input type="time" id="lunchIn" value="14:00" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Out Time</label>
+                    <input type="time" id="outTime" value="18:00" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Advance Entry (₹)</label>
+                    <input type="number" id="advanceEntry" value="0" class="w-full border p-2 rounded text-red-600 font-bold">
+                </div>
 
-    function autofillWorkerData() {
-        let nameInp = document.getElementById('wName').value.trim();
-        let activeRecords = memoryDB[currentSite] || {};
-        if(activeRecords[nameInp]) {
-            document.getElementById('wWages').value = activeRecords[nameInp].baseWages || 1200;
-            document.getElementById('wOtRate').value = activeRecords[nameInp].hourlyOtRate || 150;
-            if(activeRecords[nameInp].shiftMode) {
-                document.getElementById('wShift').value = activeRecords[nameInp].shiftMode;
-            }
-        }
-    }
+                <div class="col-span-2 md:col-span-5 mt-2">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded shadow transition text-sm flex justify-center items-center gap-2">
+                        💾 Save Entry (Data Sync Karein)
+                    </button>
+                </div>
+            </form>
+        </div>
 
-    function processAttendanceMath(inTime, lOut, lIn, outTime, baseWages, otRate, shiftType) {
-        if(!inTime || !outTime) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
+        <div class="bg-white p-4 shadow-sm rounded-b-lg">
+            <h2 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1">📊 2. Monthly Performance Register Matrix</h2>
+            
+            <div class="overflow-x-auto">
+                <table id="standardTable" class="w-full text-left text-xs border-collapse border border-gray-200">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
+                            <th class="p-2 border">Date</th>
+                            <th class="p-2 border">Worker Name</th>
+                            <th class="p-2 border">Base Wage</th>
+                            <th class="p-2 border">Timing (In-Out)</th>
+                            <th class="p-2 border">Net Working Hours</th>
+                            <th class="p-2 border">OT Duration</th>
+                            <th class="p-2 border">OT Income</th>
+                            <th class="p-2 border">Adv. Cut</th>
+                            <th class="p-2 border">Net Payout</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixBody"></tbody>
+                </table>
 
-        let start = new Date("2026-01-01 " + inTime);
-        let end = new Date("2026-01-01 " + outTime);
-        let diffMs = end - start;
+                <div id="rosterContainer" class="hidden space-y-6"></div>
+            </div>
+        </div>
 
-        if(lOut && lIn) {
-            let lStart = new Date("2026-01-01 " + lOut);
-            let lEnd = new Date("2026-01-01 " + lIn);
-            if(lEnd > lStart) diffMs -= (lEnd - lStart);
-        }
+        <div class="bg-red-50 p-4 mt-4 border border-red-200 rounded-lg">
+            <h3 class="text-xs font-bold text-red-700 mb-2 flex items-center gap-1">⚠️ Delete Specific Entry (Galti Thik Karein)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">Worker Name Precisely</label>
+                    <input type="text" id="deleteWorkerName" placeholder="Enter name precisely" class="w-full border p-2 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">Select Date</label>
+                    <input type="date" id="deleteDate" class="w-full border p-2 rounded bg-white">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="deleteSpecificEntry()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition flex justify-center items-center gap-1">
+                        🗑️ Delete This Date Entry
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        let workingHours = diffMs / 3600000;
-        if(workingHours <= 0) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
+    <script>
+        // ==========================================
+        // 🛠️ FIREBASE CONFIGURATION (ENTER YOUR DATA HERE)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyYOUR_ACTUAL_API_KEY_HERE",
+            authDomain: "your-app.firebaseapp.com",
+            databaseURL: "https://your-app-default-rtdb.firebaseio.com",
+            projectId: "your-app",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:12345:web:abcdef"
+        };
 
-        let status = 'A', otHrs = 0, earned = 0, otEarned = 0;
-        let standardShiftCap = (shiftType === '7hr') ? 7.0 : 8.0;
+        // Initialize Firebase Realtime Cloud Core
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        if(workingHours < (standardShiftCap - 1.5)) {
-            status = 'HD';
-            earned = workingHours * (baseWages / standardShiftCap); 
-        } 
-        else if(workingHours >= (standardShiftCap - 1.5) && workingHours <= standardShiftCap) {
-            status = 'P';
-            earned = baseWages;
-        } 
-        else if(workingHours > standardShiftCap) {
-            status = 'P';
-            earned = baseWages;
-            otHrs = workingHours - standardShiftCap;
+        let currentSite = "site1";
+        let localDB = {}; 
+        let workerRegistry = {}; 
+        let siteNames = { site1: "Site 1 (Standard View)", site2: "Site 2 (10-Day Payment Roster View)" };
 
-            if(workingHours >= 13.0) {
-                status = 'PP'; 
-                earned = baseWages * 2; 
-                otHrs = 0;
-                otEarned = 0;
-            } else if(workingHours >= 11.0) {
-                otEarned = baseWages * 0.5; 
+        const syncStatus = document.getElementById("syncStatus");
+        const workspaceBlock = document.getElementById("workspaceBlock");
+        const matrixBody = document.getElementById("matrixBody");
+        const rosterContainer = document.getElementById("rosterContainer");
+        const standardTable = document.getElementById("standardTable");
+
+        document.getElementById("selectDate").value = new Date().toISOString().split('T')[0];
+
+        // Realtime Sync Status Indicators
+        db.ref(".info/connected").on("value", (snap) => {
+            if (snap.val() === true) {
+                syncStatus.className = "mt-2 text-xs py-1 px-3 bg-emerald-100 text-emerald-800 rounded-full inline-block font-medium";
+                syncStatus.innerText = "⚡ Connected & Live Synchronized with Firebase Master System";
             } else {
-                otEarned = otHrs * otRate; 
+                syncStatus.className = "mt-2 text-xs py-1 px-3 bg-red-100 text-red-800 rounded-full inline-block font-medium animate-pulse";
+                syncStatus.innerText = "⚠️ Network Offline. Working in Sync Recovery Mode...";
+            }
+        });
+
+        // Pull and Sync updates cross platform instantly
+        db.ref("shramik_master_db").on("value", (snapshot) => {
+            const data = snapshot.val();
+            localDB = data ? data.entries : {};
+            workerRegistry = data ? data.registry : {};
+            siteNames = data && data.siteNames ? data.siteNames : siteNames;
+            
+            updateWorkerSuggestions();
+            updateWorkspaceView();
+        });
+
+        function autoCalculateOTRate() {
+            const perDayWages = parseFloat(document.getElementById("perDayWages").value) || 0;
+            const shiftHours = parseFloat(document.getElementById("shiftOption").value) || 8;
+            if (perDayWages > 0) {
+                document.getElementById("otRateHour").value = (perDayWages / shiftHours).toFixed(2);
+            }
+        }
+        document.getElementById("shiftOption").addEventListener("change", autoCalculateOTRate);
+
+        function parseTimeToMinutes(tStr) {
+            const [h, m] = tStr.split(":").map(Number);
+            return h * 60 + m;
+        }
+
+        // Minutes format back to readable pure HH:MM text format string
+        function convertMinutesToTimeModeString(totalMinutes) {
+            if (totalMinutes <= 0) return "00:00";
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = Math.round(totalMinutes % 60);
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        // ==========================================
+        // 🧮 PURE TIME MODE BRACKET WAGE CALCULATOR
+        // ==========================================
+        function calculateWagesInTimeMode(inT, lOut, lIn, outT, perDayWage, shiftHour, advance) {
+            const morningMin = parseTimeToMinutes(lOut) - parseTimeToMinutes(inT);
+            const eveningMin = parseTimeToMinutes(outT) - parseTimeToMinutes(lIn);
+            const totalMin = Math.max(0, morningMin + eveningMin);
+
+            const shiftMinutes = shiftHour * 60; // 480 mins for 8h, 420 mins for 7h
+            const fullDayMaxCapMinutes = 8 * 60 + 30; // 8:30 Hours -> 510 minutes
+            const halfDayOTMinutes = 11 * 60;       // 11:00 Hours -> 660 minutes
+            const doubleDhyadiMinutes = 13 * 60 + 30; // 13:30 Hours -> 810 minutes
+
+            let calculatedWage = 0;
+            let otMinutes = 0;
+            let otIncome = 0;
+
+            const ratePerMinute = perDayWage / shiftMinutes;
+
+            if (totalMin < shiftMinutes) {
+                // Shift se kam kaam karne par minute configuration rules pro-rata
+                calculatedWage = ratePerMinute * totalMin;
+            } else if (totalMin >= shiftMinutes && totalMin <= fullDayMaxCapMinutes) {
+                // Full Day bracket (eg: 8:00 to 8:30)
+                calculatedWage = perDayWage;
+            } else if (totalMin > fullDayMaxCapMinutes && totalMin < halfDayOTMinutes) {
+                // Normal OT Minutes criteria
+                calculatedWage = perDayWage;
+                otMinutes = totalMin - shiftMinutes;
+                otIncome = otMinutes * ratePerMinute;
+            } else if (totalMin >= halfDayOTMinutes && totalMin < doubleDhyadiMinutes) {
+                // Fixed Half Day Extra Overtime bonus tier
+                calculatedWage = perDayWage * 1.5;
+                otMinutes = totalMin - shiftMinutes;
+                otIncome = perDayWage * 0.5;
+            } else if (totalMin >= doubleDhyadiMinutes) {
+                // Double Wage Multiplier Limit
+                calculatedWage = perDayWage * 2.0;
+                otMinutes = totalMin - shiftMinutes;
+                otIncome = perDayWage;
+            }
+
+            const netPayout = (calculatedWage + otIncome) - advance;
+
+            return {
+                workingHoursStr: convertMinutesToTimeModeString(totalMin),
+                otHoursStr: convertMinutesToTimeModeString(otMinutes),
+                otIncome: Math.round(otIncome),
+                netPayout: Math.round(netPayout)
+            };
+        }
+
+        function saveEntry(e) {
+            e.preventDefault();
+            const worker = document.getElementById("workerName").value.trim();
+            const wage = parseFloat(document.getElementById("perDayWages").value);
+            const shift = parseFloat(document.getElementById("shiftOption").value);
+            const date = document.getElementById("selectDate").value;
+            const inTime = document.getElementById("inTime").value;
+            const lunchOut = document.getElementById("lunchOut").value;
+            const lunchIn = document.getElementById("lunchIn").value;
+            const outTime = document.getElementById("outTime").value;
+            const advance = parseFloat(document.getElementById("advanceEntry").value) || 0;
+
+            if(!worker || !date) return;
+
+            const analysis = calculateWagesInTimeMode(inTime, lunchOut, lunchIn, outTime, wage, shift, advance);
+            const recordKey = `${date}_${worker}`.replace(/[.#$\[\]]/g, "-");
+
+            db.ref(`shramik_master_db/entries/${currentSite}/${recordKey}`).set({
+                worker, date, wage, shift, inTime, lunchOut, lunchIn, outTime, advance,
+                calculations: analysis
+            });
+
+            db.ref(`shramik_master_db/registry/${worker}`).set({ wage, shift });
+
+            document.getElementById("workerName").value = "";
+            document.getElementById("advanceEntry").value = "0";
+            alert("Entry Synchronized Successfully in Cloud Database!");
+        }
+
+        document.getElementById("workerName").addEventListener("change", function(e){
+            const name = e.target.value.trim();
+            if(workerRegistry[name]){
+                document.getElementById("perDayWages").value = workerRegistry[name].wage;
+                document.getElementById("shiftOption").value = workerRegistry[name].shift;
+                autoCalculateOTRate();
+            }
+        });
+
+        function updateWorkerSuggestions() {
+            const dl = document.getElementById("workerSuggestions");
+            dl.innerHTML = "";
+            Object.keys(workerRegistry).forEach(name => {
+                let opt = document.createElement("option");
+                opt.value = name;
+                dl.appendChild(opt);
+            });
+        }
+
+        function deleteSpecificEntry() {
+            const name = document.getElementById("deleteWorkerName").value.trim();
+            const date = document.getElementById("deleteDate").value;
+            if (!name || !date) {
+                alert("Worker aur Date dono parameters precisely select karein.");
+                return;
+            }
+            if(confirm(`Kya aap sach me ${name} ki ${date} ki entry permanently delete karna chahte hain?`)) {
+                const targetKey = `${date}_${name}`.replace(/[.#$\[\]]/g, "-");
+                db.ref(`shramik_master_db/entries/${currentSite}/${targetKey}`).remove()
+                .then(() => {
+                    alert("Entry Purged Successfully.");
+                    document.getElementById("deleteWorkerName").value = "";
+                });
             }
         }
 
-        return { hrs: workingHours, otHrs: otHrs, status: status, earned: earned, otEarned: otEarned };
-    }
-
-    function renderAppUI() {
-        document.getElementById('selSite').value = currentSite;
-        document.getElementById('siteIndicator').innerText = "Workspace Block: " + currentSite.toUpperCase();
-        
-        let tabContainer = document.getElementById('cycleTabsArea');
-        if(currentSite === 'site2') {
-            tabContainer.style.display = 'flex';
-        } else {
-            tabContainer.style.display = 'none';
-        }
-        buildPerformanceGridStructure();
-    }
-
-    function switchSiteEngine() {
-        currentSite = document.getElementById('selSite').value;
-        currentCycleBlock = 1;
-        
-        document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
-        if(document.getElementById('tab1')) document.getElementById('tab1').classList.add('active');
-
-        renderAppUI();
-    }
-
-    function changeDayCycleSegment(blockNum) {
-        currentCycleBlock = blockNum;
-        document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('tab' + blockNum).classList.add('active');
-        renderAppUI();
-    }
-
-    function buildPerformanceGridStructure() {
-        let headRow = document.getElementById('tableHeadRow');
-        let headerHtml = '<th style="text-align:left; padding-left:12px; position: sticky; left: 0; z-index: 2; background: #f8fafc; border-right: 2px solid #cbd5e1;">Worker Name</th>';
-        
-        let dayStart = 1, dayEnd = 31;
-        if(currentSite === 'site2') {
-            if(currentCycleBlock === 1) { dayStart = 1; dayEnd = 10; }
-            else if(currentCycleBlock === 2) { dayStart = 11; dayEnd = 20; }
-            else if(currentCycleBlock === 3) { dayStart = 21; dayEnd = 31; }
+        function renameSite() {
+            const newName = document.getElementById("siteRenameInput").value.trim();
+            if(!newName) return;
+            db.ref(`shramik_master_db/siteNames/${currentSite}`).set(newName);
+            document.getElementById("siteRenameInput").value = "";
         }
 
-        for(let d = dayStart; d <= dayEnd; d++) {
-            headerHtml += `<th>Day ${String(d).padStart(2,'0')}</th>`;
+        document.getElementById("siteSelect").addEventListener("change", function(e) {
+            currentSite = e.target.value;
+            updateWorkspaceView();
+        });
+
+        function updateWorkspaceView() {
+            const activeTitle = siteNames[currentSite] || currentSite.toUpperCase();
+            workspaceBlock.innerText = `WORKSPACE BLOCK: ${activeTitle.toUpperCase()}`;
+            document.getElementById("siteSelect").options[0].text = siteNames.site1;
+            document.getElementById("siteSelect").options[1].text = siteNames.site2;
+
+            const siteData = localDB[currentSite] || {};
+            const sortedRecords = Object.values(siteData).sort((a,b) => b.date.localeCompare(a.date));
+
+            if (currentSite === "site1") {
+                standardTable.classList.remove("hidden");
+                rosterContainer.classList.add("hidden");
+                renderStandardView(sortedRecords);
+            } else {
+                standardTable.classList.add("hidden");
+                rosterContainer.classList.remove("hidden");
+                renderRosterTenDayView(sortedRecords);
+            }
         }
-        headerHtml += '<th style="background:#2563eb; color:white; min-width:150px;">Total Calculation</th>';
-        headRow.innerHTML = headerHtml;
 
-        populateTableRowsData(dayStart, dayEnd);
-    }
-
-    function populateTableRowsData(start, end) {
-        let tableBody = document.getElementById('tableBodyData');
-        tableBody.innerHTML = '';
-
-        let siteDataMap = memoryDB[currentSite] || {};
-        let workerKeys = Object.keys(siteDataMap);
-
-        if(workerKeys.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="42" style="padding:32px; color:#94a3b8; font-size:13px; font-weight:bold; background:#fafafa;">Koi data nahi mila. Form 
+        function renderStandardView(records) {
+            matrixBody.innerHTML = "";
+            if(records.length === 0) {
+                matrixBody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-400">Koi entry available nahi hai.</td></tr>`;
+                return;
+            }
+            records.forEach(r => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b hover:bg-slate-50 font-medium text-gray-700";
+                tr.innerHTML = `
+                    <td class="p-2 border font-bold text-blue-600">${r.date}</td>
+                    <td class="p-2 border font-semibold">${r.worker}</td>
+                    <td class="p-2 border">₹${r.wage} <span class="text-[10px] text-gray-400">(${r.shift}:00h Shift)</span></td>
+                    <td class="p-2 border text-gray-500 text-[11px]">${r.inTime}-${r.lunchOut} | ${r.lunch
