@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.5</title>
+    <title>Shramik Sync Master v9.6</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -48,10 +48,10 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.5</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.6</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
-            <span class="sync-badge" id="syncStatus">🟢 Core Engine Fixed</span>
+            <span class="sync-badge" id="syncStatus">🟢 Fixed & Ready</span>
         </div>
     </div>
     
@@ -65,7 +65,7 @@
             <option value="site5">Site 5</option>
         </select>
         <button class="rename-btn" onclick="renameCurrentSite()">✏️ Rename Site</button>
-        <button style="background-color: #e74c3c; font-size: 11px;" onclick="forceResetStorage()">💥 Clear All Data</button>
+        <button style="background-color: #e74c3c; font-size: 11px;" onclick="forceResetStorage()">💥 Factory Reset Everything</button>
     </div>
     
     <h3>1. Daily Time Office Entry</h3>
@@ -167,33 +167,24 @@
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    // Protection on load
     window.addEventListener("DOMContentLoaded", function() {
         try {
             let savedRecords = localStorage.getItem('shramik_records');
             let savedNames = localStorage.getItem('shramik_site_names');
             let savedSite = localStorage.getItem('current_selected_site');
             
-            if(savedRecords) {
-                let parsed = JSON.parse(savedRecords);
-                if(typeof parsed === 'object') {
-                    // Back-migration support for old v8 data structure
-                    if(!parsed.site1 && parsed.dates) {
-                        allSitesRecords.site1 = parsed; 
-                    } else {
-                        allSitesRecords = parsed;
-                    }
-                }
-            }
+            if(savedRecords) allSitesRecords = JSON.parse(savedRecords);
             if(savedNames) siteNames = JSON.parse(savedNames);
             if(savedSite) currentSite = savedSite;
         } catch(e) {
-            console.error("Data load auto-repair triggered", e);
+            console.error(e);
         }
         
         let tStr = getFormattedTodayDate();
-        if(document.getElementById('wDate')) document.getElementById('wDate').value = tStr;
-        if(document.getElementById('delDate')) document.getElementById('delDate').value = tStr;
+        let wd = document.getElementById('wDate');
+        let dd = document.getElementById('delDate');
+        if(wd) wd.value = tStr;
+        if(dd) dd.value = tStr;
         
         buildUiLogic();
     });
@@ -207,11 +198,7 @@
 
     function buildUiLogic() {
         let sel = document.getElementById('siteSelector');
-        if(sel) {
-            sel.value = currentSite;
-            // Fallback match check if value mismatched
-            if(sel.selectedIndex === -1) { sel.value = "site1"; currentSite = "site1"; }
-        }
+        if(sel) sel.value = currentSite;
 
         let label = document.getElementById('currentSiteLabel');
         if(label) label.innerText = "Active: " + (siteNames[currentSite] || currentSite);
@@ -219,9 +206,8 @@
         let tabsCont = document.getElementById('cycleTabsContainer');
         let bdg = document.getElementById('registerModeBadge');
         
-        // Anti-crash fix: Match safely regardless of text casing
-        if(currentSite.toLowerCase().includes('site2')) {
-            if(tabsCont) tabsCont.style.style.setProperty('display', 'flex', 'important');
+        if(currentSite === 'site2') {
+            if(tabsCont) tabsCont.style.setProperty('display', 'flex', 'important');
             if(bdg) bdg.innerText = "(⚠️ 10-Day Cycle Mode)";
         } else {
             if(tabsCont) tabsCont.style.display = 'none';
@@ -256,7 +242,7 @@
 
     function renameCurrentSite() {
         let oldName = siteNames[currentSite] || currentSite;
-        let newName = prompt(`Enter new name for current selected site:`, oldName);
+        let newName = prompt(`Enter new name:`, oldName);
         if (newName && newName.trim() !== "") {
             siteNames[currentSite] = newName.trim();
             saveState();
@@ -276,7 +262,7 @@
         let html = '<th style="text-align:left; min-width:140px;">Worker Details</th>';
         let start = 1, end = 31;
         
-        if(currentSite.toLowerCase().includes('site2')) {
+        if(currentSite === 'site2') {
             if(activeCycleTab === 1) { start = 1; end = 10; }
             else if(activeCycleTab === 2) { start = 11; end = 20; }
             else if(activeCycleTab === 3) { start = 21; end = 31; }
@@ -318,66 +304,68 @@
     }
 
     function saveDailyAttendance() {
-        const name = document.getElementById('wName').value.trim();
-        const dayRate = parseFloat(document.getElementById('wDayRate').value) || 0;
-        const hourRate = parseFloat(document.getElementById('wHourRate').value) || 0;
-        const shiftType = document.getElementById('wShift').value;
-        let dateVal = document.getElementById('wDate').value;
-        const inTime = document.getElementById('wInTime').value;
-        const lunchOut = document.getElementById('wLunchOut').value;
-        const lunchIn = document.getElementById('wLunchIn').value;
-        const outTime = document.getElementById('wOutTime').value;
-        const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
+        try {
+            const name = document.getElementById('wName').value.trim();
+            const dayRate = parseFloat(document.getElementById('wDayRate').value) || 0;
+            const hourRate = parseFloat(document.getElementById('wHourRate').value) || 0;
+            const shiftType = document.getElementById('wShift').value;
+            let dateVal = document.getElementById('wDate').value;
+            const inTime = document.getElementById('wInTime').value;
+            const lunchOut = document.getElementById('wLunchOut').value;
+            const lunchIn = document.getElementById('wLunchIn').value;
+            const outTime = document.getElementById('wOutTime').value;
+            const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
 
-        if(!name) { alert("Please enter Worker Name!"); return; }
-        if(!dateVal) dateVal = getFormattedTodayDate();
+            if(!name) { alert("Please enter Worker Name!"); return; }
+            if(!dateVal) dateVal = getFormattedTodayDate();
 
-        let dayStr = String(dateVal.split('-')[2]).padStart(2, '0');
-        let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
-        
-        let status = "A", otHours = 0, earnedWages = 0, otWagesEarned = 0;
+            let dayStr = String(dateVal.split('-')[2]).padStart(2, '0');
+            let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
+            
+            let status = "A", otHours = 0, earnedWages = 0, otWagesEarned = 0;
 
-        if(totalHours > 0) {
-            let baseDuty = (shiftType === '7hr') ? 7 : 8.5;
-            if(shiftType === '7hr') {
-                if(totalHours >= 12) { status = "P+P"; earnedWages = dayRate * 2; }
-                else if(totalHours >= 9.5) { status = "P"; earnedWages = dayRate; otHours = totalHours - 7; otWagesEarned = dayRate * 0.5; }
-                else if(totalHours >= 5.5) { status = "P"; earnedWages = dayRate; if(totalHours > 7) { otHours = totalHours - 7; otWagesEarned = otHours * hourRate; } }
-                else { status = "HD"; earnedWages = dayRate / 2; }
-            } else {
-                if(totalHours >= 13.5) { status = "P+P"; earnedWages = dayRate * 2; }
-                else if(totalHours >= 11) { status = "P"; earnedWages = dayRate; otHours = totalHours - 8.5; otWagesEarned = dayRate * 0.5; }
-                else if(totalHours >= 7) { status = "P"; earnedWages = dayRate; if(totalHours > 8.5) { otHours = totalHours - 8.5; otWagesEarned = otHours * hourRate; } }
-                else { status = "HD"; earnedWages = dayRate / 2; }
+            if(totalHours > 0) {
+                if(shiftType === '7hr') {
+                    if(totalHours >= 12) { status = "P+P"; earnedWages = dayRate * 2; }
+                    else if(totalHours >= 9.5) { status = "P"; earnedWages = dayRate; otHours = totalHours - 7; otWagesEarned = dayRate * 0.5; }
+                    else if(totalHours >= 5.5) { status = "P"; earnedWages = dayRate; if(totalHours > 7) { otHours = totalHours - 7; otWagesEarned = otHours * hourRate; } }
+                    else { status = "HD"; earnedWages = dayRate / 2; }
+                } else {
+                    if(totalHours >= 13.5) { status = "P+P"; earnedWages = dayRate * 2; }
+                    else if(totalHours >= 11) { status = "P"; earnedWages = dayRate; otHours = totalHours - 8.5; otWagesEarned = dayRate * 0.5; }
+                    else if(totalHours >= 7) { status = "P"; earnedWages = dayRate; if(totalHours > 8.5) { otHours = totalHours - 8.5; otWagesEarned = otHours * hourRate; } }
+                    else { status = "HD"; earnedWages = dayRate / 2; }
+                }
             }
+
+            if(!allSitesRecords[currentSite]) allSitesRecords[currentSite] = {};
+            if(!allSitesRecords[currentSite][name]) {
+                allSitesRecords[currentSite][name] = { dayRate, hourRate, shiftType, dates: {}, advances: {} };
+            }
+
+            let w = allSitesRecords[currentSite][name];
+            w.dayRate = dayRate; w.hourRate = hourRate; w.shiftType = shiftType;
+            if(!w.dates) w.dates = {}; if(!w.advances) w.advances = {};
+
+            if(advance > 0) w.advances[dayStr] = (w.advances[dayStr] || 0) + advance;
+            if(totalHours > 0) {
+                w.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
+            }
+
+            saveState();
+            document.getElementById('wName').value = '';
+            document.getElementById('wAdvance').value = '0';
+            alert("Entry saved successfully!");
+        } catch(err) {
+            alert("Save Error: " + err.message);
         }
-
-        if(!allSitesRecords[currentSite]) allSitesRecords[currentSite] = {};
-        if(!allSitesRecords[currentSite][name]) {
-            allSitesRecords[currentSite][name] = { dayRate, hourRate, shiftType, dates: {}, advances: {} };
-        }
-
-        let w = allSitesRecords[currentSite][name];
-        w.dayRate = dayRate; w.hourRate = hourRate; w.shiftType = shiftType;
-        if(!w.dates) w.dates = {}; if(!w.advances) w.advances = {};
-
-        if(advance > 0) w.advances[dayStr] = (w.advances[dayStr] || 0) + advance;
-        if(totalHours > 0) {
-            w.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
-        }
-
-        saveState();
-        document.getElementById('wName').value = '';
-        document.getElementById('wAdvance').value = '0';
-        alert("Entry saved successfully!");
     }
 
     function safeRenderTable() {
         try {
             renderCoreEngine();
         } catch(e) {
-            console.error("Critical block caught", e);
-            document.getElementById('monthlyTableBody').innerHTML = `<tr><td colspan="15" style="color:red;padding:15px;font-weight:bold;">⚠️ Error loading view. Please select another site or refresh.</td></tr>`;
+            document.getElementById('monthlyTableBody').innerHTML = `<tr><td colspan="15" style="color:red;padding:15px;font-weight:bold;">⚠️ Error loading view. Please select another site.</td></tr>`;
         }
     }
 
@@ -391,6 +379,22 @@
         let cData = allSitesRecords[currentSite] || {};
 
         let start = 1, end = 31;
-        if(currentSite.toLowerCase().includes('site2')) {
+        if(currentSite === 'site2') {
             if(activeCycleTab === 1) { start = 1; end = 10; }
-            else if(activeCycleTab === 2) { start = 11; end = 20;
+            else if(activeCycleTab === 2) { start = 11; end = 20; }
+            else if(activeCycleTab === 3) { start = 21; end = 31; }
+        }
+
+        let hasData = false;
+        for(let wName in cData) {
+            if(filter && !wName.toLowerCase().includes(filter)) continue;
+            hasData = true;
+
+            let worker = cData[wName];
+            let dRate = worker.dayRate || 0;
+            let tr = document.createElement('tr');
+            
+            let row = `<td style="text-align:left; font-weight:bold; background:#f2f4f4;">${wName}<br><span style="font-size:10px;color:#7f8c8d;">₹${dRate}/d</span></td>`;
+            let gross = 0, advTotal = 0, runSum = 0;
+
+            fo
