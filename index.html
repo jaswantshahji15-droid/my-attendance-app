@@ -3,35 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance Register System - Live Sync</title>
-    <!-- Standard Firebase v8 SDK -->
+    <title>Performance Register System</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; }
         .container { max-width: 100%; margin: 0 auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-        .status-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; font-size: 13px; }
-        .sync-active { color: #27ae60; background: #e8f4fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; display: block; border: 1px solid #d4edda; }
+        
+        /* Editable Heading Style */
+        .editable-header {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+        .editable-header:focus {
+            background: #eef5fc;
+            outline: 1px dashed #007bff;
+            border-radius: 4px;
+        }
+
+        .site-indicator { text-align: center; font-weight: bold; color: #0056b3; margin-bottom: 15px; font-size: 14px; }
+        .status-box { padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; font-size: 13px; text-align: center; }
+        .sync-active { color: #27ae60; background: #e8f4fd; border: 1px solid #d4edda; }
+        .sync-offline { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; }
+        
         .setup-box { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .form-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin: 15px 0 10px 0; border-left: 4px solid #007bff; padding-left: 8px; }
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #fff; border: 1px solid #e6e9ed; padding: 15px; border-radius: 6px; }
         .field-group { display: flex; flex-direction: column; }
         .field-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #333; }
         .field-group input, .field-group select { padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; height: 32px; box-sizing: border-box; }
+        
         .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .btn-save { background: #28a745; color: white; width: 100%; margin-top: 15px; height: 40px; font-size: 15px; }
-        .btn-action { background: #6c757d; color: white; height: 32px; }
         .btn-danger { background: #dc3545; color: white; }
+        
         .cycle-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
         .tab-item { background: #e2e3e5; color: #383d41; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
         .tab-item.active { background: #007bff; color: white; }
+        
         .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #ccc; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
         th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; vertical-align: top; }
         th { background: #f1f5f9; font-weight: bold; }
         .worker-col { text-align: left; background: #f8fafc; font-weight: bold; min-width: 120px; }
         .cell-box { background: #f9f9f9; border: 1px solid #ddd; padding: 4px; border-radius: 3px; font-size: 10px; text-align: left; margin-top: 4px; line-height: 1.3; }
+        
         .badge { font-weight: bold; padding: 2px 5px; border-radius: 3px; font-size: 9px; display: inline-block; }
         .badge-P { background: #d4edda; color: #155724; }
         .badge-HD { background: #fff3cd; color: #856404; }
@@ -43,15 +67,14 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2>Performance Register System</h2>
-        <div id="siteIndicator" style="font-weight: bold; color: #0056b3; margin-top: 5px;">Site: Site 1</div>
-    </div>
+    <!-- TOUCH TO EDIT HEADING -->
+    <input type="text" id="mainHeading" class="editable-header" value="Performance Register System" oninput="saveHeadingTitle()">
+    <div id="siteIndicator" class="site-indicator">Site: Site 1</div>
 
-    <!-- Live Status Element -->
-    <div id="syncStatus" class="sync-active">🔄 Initializing Cloud Database Connection...</div>
+    <!-- Connection Status -->
+    <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Database System...</div>
 
-    <!-- Workspace Configuration Area -->
+    <!-- Site Selector -->
     <div class="setup-box">
         <strong>📍 Select Site Area:</strong>
         <select id="selSite" onchange="switchSiteEngine()" style="padding:6px; font-weight:bold;">
@@ -61,10 +84,9 @@
             <option value="site4">Site 4</option>
             <option value="site5">Site 5</option>
         </select>
-        <button class="btn btn-action" onclick="renameSiteEngine()">✏️ Rename Current Site</button>
     </div>
 
-    <!-- Entry UI Form Component -->
+    <!-- Attendance Form -->
     <div class="form-title">📝 Day Time Office Logger</div>
     <div class="grid-inputs">
         <div class="field-group">
@@ -113,14 +135,14 @@
     </div>
     <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save Log</button>
 
-    <!-- Cycle Controllers for Site 2 -->
+    <!-- Cycle Tabs for Site 2 -->
     <div class="cycle-tabs" id="cycleTabsArea" style="display:none; margin-top:20px;">
         <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">Day 01-10</button>
         <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">Day 11-20</button>
         <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">Day 21-End</button>
     </div>
 
-    <!-- Output View Grid Component -->
+    <!-- Data Table -->
     <div class="form-title">📊 Performance Matrix View:</div>
     <div class="table-container">
         <table>
@@ -131,10 +153,9 @@
         </table>
     </div>
 
-    <!-- Delete Operation System Module -->
+    <!-- Correction / Delete Section -->
     <div class="delete-section">
-        <div class="form-title" style="color:#dc3545; margin-top:0; border-left-color:#dc3545;">⚠️ Delete / Correction Option (Galti Thik Karein)</div>
-        <p style="font-size:12px; margin:0 0 10px 0; color:#666;">Agar kisi date me entry galat ho jaye, toh worker ka naam aur date daal kar yahan se uda sakte hain.</p>
+        <div class="form-title" style="color:#dc3545; margin-top:0; border-left-color:#dc3545;">⚠️ Delete Entry (Galti Thik Karein)</div>
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
             <div class="field-group" style="flex:1; min-width:180px;">
                 <label>Exact Worker Name</label>
@@ -151,19 +172,17 @@
 
 <script>
     // ==========================================
-    // CRITICAL CONNECTION: APNA FIREBASE URL NIPATAYEIN
+    // APNA FIREBASE REALTIME DATABASE URL YAHA DAALEIN
     // ==========================================
     const FIREBASE_DB_URL = "YOUR_FIREBASE_DB_URL_HERE"; 
 
     let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
-    let siteNamesMap = { site1:"Site 1", site2:"Site 2 (10-Day Auto Block Payment)", site3:"Site 3", site4:"Site 4", site5:"Site 5" };
     let currentSite = 'site1';
     let currentCycleBlock = 1; 
     let firebaseRef = null;
 
-    // --- On Load Lifecycle Init ---
     window.addEventListener('DOMContentLoaded', () => {
-        // Strict Setup for Default Date Inputs
+        // Set Default Dates
         let today = new Date();
         let yyyy = today.getFullYear();
         let mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -173,20 +192,35 @@
         document.getElementById('wDate').value = isoToday;
         document.getElementById('delDate').value = isoToday;
 
-        if(localStorage.getItem('shramik_names_custom')) {
-            try { siteNamesMap = JSON.parse(localStorage.getItem('shramik_names_custom')); } catch(e){}
+        // Load Saved Title Heading
+        if(localStorage.getItem('main_heading_title')) {
+            document.getElementById('mainHeading').value = localStorage.getItem('main_heading_title');
         }
-        if(localStorage.getItem('shramik_current_site_id')) {
-            currentSite = localStorage.getItem('shramik_current_site_id');
+
+        // Load Offline Data First (Safety Net - Game Changer)
+        if(localStorage.getItem('shramik_local_backup')) {
+            try { memoryDB = JSON.parse(localStorage.getItem('shramik_local_backup')); } catch(e){}
         }
 
         initializeDatabaseConnection();
+        renderAppUI();
     });
 
+    function saveHeadingTitle() {
+        let val = document.getElementById('mainHeading').value;
+        localStorage.setItem('main_heading_title', val);
+    }
+
     function initializeDatabaseConnection() {
+        // Timeout Protection: Agar 4 second me Firebase connect nahi hua, toh offline mode chalu kardo hang kiye bina
+        setTimeout(() => {
+            if(!firebaseRef) {
+                setOfflineModeNotice();
+            }
+        }, 4000);
+
         if(!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("YOUR_FIREBASE_DB_URL_HERE")) {
-            document.getElementById('syncStatus').className = "status-box";
-            document.getElementById('syncStatus').innerHTML = "⚠️ Mode: Offline (Local Storage Only) - Mandatorily configure your Firebase URL inside the source code text.";
+            setOfflineModeNotice();
             return;
         }
 
@@ -196,29 +230,34 @@
             }
             firebaseRef = firebase.database().ref('shramik_master_db');
             
-            // Continuous Live Server Sync Engine (Keeps Laptop & Mobile connected 24/7)
             firebaseRef.on('value', (snapshot) => {
                 let incomingData = snapshot.val();
                 if(incomingData) {
                     memoryDB = incomingData;
-                } else {
-                    firebaseRef.set(memoryDB);
+                    localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
                 }
-                document.getElementById('syncStatus').className = "sync-active";
-                document.getElementById('syncStatus').innerHTML = "🟢 Live Database Sync Connected Successfully";
+                document.getElementById('syncStatus').className = "status-box sync-active";
+                document.getElementById('syncStatus').innerHTML = "🟢 Live Cloud Sync Connected (Active)";
                 renderAppUI();
             }, (error) => {
-                console.error("Database connection failed:", error);
+                setOfflineModeNotice();
             });
         } catch (err) {
-            console.error("Critical Firebase System Error:", err);
+            setOfflineModeNotice();
         }
     }
 
+    function setOfflineModeNotice() {
+        document.getElementById('syncStatus').className = "status-box sync-offline";
+        document.getElementById('syncStatus').innerHTML = "⚠️ Working Offline Mode (Data Saving Locally on Phone)";
+    }
+
     function pushUpdatedStateToCloud() {
+        localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
         if(firebaseRef) {
-            firebaseRef.set(memoryDB).catch(err => alert("Sync Failure: " + err.message));
+            firebaseRef.set(memoryDB).catch(err => console.log("Cloud sync delayed..."));
         }
+        renderAppUI();
     }
 
     function autoCalcOtRate() {
@@ -238,7 +277,6 @@
         }
     }
 
-    // --- Strict Calculation Engine ---
     function processAttendanceMath(inTime, lOut, lIn, outTime, baseWages, otRate, shiftType) {
         if(!inTime || !outTime) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
 
@@ -286,10 +324,9 @@
         return { hrs: workingHours, otHrs: otHrs, status: status, earned: earned, otEarned: otEarned };
     }
 
-    // --- Layout Renderer Modules ---
     function renderAppUI() {
         document.getElementById('selSite').value = currentSite;
-        document.getElementById('siteIndicator').innerText = "Site: " + (siteNamesMap[currentSite] || currentSite);
+        document.getElementById('siteIndicator').innerText = "Site: " + currentSite.toUpperCase();
         
         let tabContainer = document.getElementById('cycleTabsArea');
         if(currentSite === 'site2') {
@@ -302,7 +339,6 @@
 
     function switchSiteEngine() {
         currentSite = document.getElementById('selSite').value;
-        localStorage.setItem('shramik_current_site_id', currentSite);
         currentCycleBlock = 1;
         
         document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
@@ -316,16 +352,6 @@
         document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab' + blockNum).classList.add('active');
         renderAppUI();
-    }
-
-    function renameSiteEngine() {
-        let currentLabel = siteNamesMap[currentSite] || currentSite;
-        let updatedLabel = prompt("Enter Custom Title For This Workspace Area:", currentLabel);
-        if(updatedLabel && updatedLabel.trim() !== "") {
-            siteNamesMap[currentSite] = updatedLabel.trim();
-            localStorage.setItem('shramik_names_custom', JSON.stringify(siteNamesMap));
-            renderAppUI();
-        }
     }
 
     function buildPerformanceGridStructure() {
@@ -356,7 +382,7 @@
         let workerKeys = Object.keys(siteDataMap);
 
         if(workerKeys.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#aaa; font-weight:bold;">No operational logs submitted for this site view workspace.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#aaa; font-weight:bold;">No logs found. Form bharke data save karein.</td></tr>`;
             return;
         }
 
@@ -410,4 +436,91 @@
             </td>`;
 
             rowElement.innerHTML = rowHtmlStr;
-            tableBo
+            tableBody.appendChild(rowElement);
+        });
+    }
+
+    function saveAttendanceRecord() {
+        let name = document.getElementById('wName').value.trim();
+        let wages = parseFloat(document.getElementById('wWages').value) || 0;
+        let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
+        let shift = document.getElementById('wShift').value;
+        let rawDate = document.getElementById('wDate').value;
+        
+        let inTime = document.getElementById('wIn').value;
+        let lOut = document.getElementById('wLOut').value;
+        let lIn = document.getElementById('wLIn').value;
+        let outTime = document.getElementById('wOut').value;
+        let advAmount = parseFloat(document.getElementById('wAdv').value) || 0;
+
+        if(!name || !rawDate) {
+            alert("❌ Name aur Date bharna zaroori hai!");
+            return;
+        }
+
+        let parts = rawDate.split('-'); 
+        let dayToken = String(parts[2]).padStart(2, '0');
+
+        if(!memoryDB[currentSite]) memoryDB[currentSite] = {};
+        if(!memoryDB[currentSite][name]) {
+            memoryDB[currentSite][name] = { baseWages: wages, hourlyOtRate: otRate, shiftMode: shift, attendance: {}, advances: {} };
+        }
+
+        let workerNode = memoryDB[currentSite][name];
+        workerNode.baseWages = wages;
+        workerNode.hourlyOtRate = otRate;
+        workerNode.shiftMode = shift;
+
+        if(!workerNode.attendance) workerNode.attendance = {};
+        if(!workerNode.advances) workerNode.advances = {};
+
+        if(advAmount > 0) {
+            workerNode.advances[dayToken] = (parseFloat(workerNode.advances[dayToken]) || 0) + advAmount;
+        }
+
+        let mathObj = processAttendanceMath(inTime, lOut, lIn, outTime, wages, otRate, shift);
+        if(mathObj.hrs > 0) {
+            workerNode.attendance[dayToken] = {
+                inTime: inTime, lunchOut: lOut, lunchIn: lIn, outTime: outTime,
+                hrsWorked: mathObj.hrs, otHrs: mathObj.otHrs,
+                status: mathObj.status, earned: mathObj.earned, otEarned: mathObj.otEarned
+            };
+        } else {
+            workerNode.attendance[dayToken] = {
+                inTime: "-", lunchOut: "-", lunchIn: "-", outTime: "-",
+                hrsWorked: 0, otHrs: 0, status: 'A', earned: 0, otEarned: 0
+            };
+        }
+
+        pushUpdatedStateToCloud();
+        document.getElementById('wName').value = '';
+        document.getElementById('wAdv').value = '0';
+        alert(`✔️ Save Ho Gaya! ${name} का डेटा Day ${dayToken} पर सुरक्षित है।`);
+    }
+
+    function deleteTargetRecord() {
+        let name = document.getElementById('delName').value.trim();
+        let targetRawDate = document.getElementById('delDate').value;
+
+        if(!name || !targetRawDate) {
+            alert("⚠️ Name aur Date bharein!");
+            return;
+        }
+
+        let dayToken = String(targetRawDate.split('-')[2]).padStart(2, '0');
+        
+        if(memoryDB[currentSite] && memoryDB[currentSite][name]) {
+            let targetWorkerNode = memoryDB[currentSite][name];
+            if(targetWorkerNode.attendance) delete targetWorkerNode.attendance[dayToken];
+            if(targetWorkerNode.advances) delete targetWorkerNode.advances[dayToken];
+            
+            alert(`🗑️ Day ${dayToken} ka record delete ho gaya.`);
+            pushUpdatedStateToCloud();
+            document.getElementById('delName').value = '';
+        } else {
+            alert("❌ Name nahi mila.");
+        }
+    }
+</script>
+</body>
+</html>
