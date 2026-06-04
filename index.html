@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.1</title>
+    <title>Shramik Sync Master v9.2</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -48,10 +48,10 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.1</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.2</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
-            <span class="sync-badge" id="syncStatus">🟢 System Live (Sync Active)</span>
+            <span class="sync-badge" id="syncStatus">🟢 System Ready (Local Storage Active)</span>
         </div>
     </div>
     
@@ -129,7 +129,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button onclick="exportToCSV()">💾 Download Excel (CSV)</button>
+        <button class="btn-success" onclick="exportToCSV()">💾 Download Excel (CSV)</button>
         <button class="btn-danger" onclick="clearAllData()">🗑️ Clear Current Site Data</button>
     </div>
     
@@ -155,8 +155,6 @@
 </div>
 
 <script>
-    const FIREBASE_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
-    
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
     let currentSite = localStorage.getItem('current_selected_site') || 'site1';
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle Mode)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
@@ -176,8 +174,6 @@
     window.onload = function() {
         loadFromLocalStorage();
         setTodayDate();
-        fetchFromDatabaseLive();
-        setInterval(fetchFromDatabaseLive, 5000);
     };
 
     function loadFromLocalStorage() {
@@ -188,32 +184,10 @@
         refreshSiteUiAndTables();
     }
 
-    function fetchFromDatabaseLive() {
-        fetch(`${FIREBASE_URL}master_data.json`)
-        .then(res => { if(res.ok) return res.json(); })
-        .then(cloudData => {
-            if(cloudData) {
-                if (cloudData.allSitesRecords) allSitesRecords = cloudData.allSitesRecords;
-                if (cloudData.siteNames) siteNames = cloudData.siteNames;
-                localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
-                localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
-                document.getElementById('syncStatus').innerText = "🟢 System Live (Sync Active)";
-                refreshSiteUiAndTables();
-            }
-        })
-        .catch(err => {
-            document.getElementById('syncStatus').innerText = "🟡 Offline Mode (Local Saved)";
-        });
-    }
-
     function saveAllDataToCloudAndLocal() {
         localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
         localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
         refreshSiteUiAndTables();
-        
-        let payload = { allSitesRecords: allSitesRecords, siteNames: siteNames, lastUpdated: new Date().toISOString() };
-        fetch(`${FIREBASE_URL}master_data.json`, { method: 'PUT', body: JSON.stringify(payload) })
-        .catch(err => console.log("Saved Local"));
     }
 
     function refreshSiteUiAndTables() {
@@ -290,7 +264,7 @@
             html += `<th style="min-width:115px;">Day ${dayStr}</th>`;
         }
         
-        html += `<th style="min-width:150px; background:#2c3e50;">${currentSite === 'site2' ? 'Selected 10-Day Cycle Summary' : 'Full Month Summary & Net'}</th>`;
+        html += `<th style="min-width:150px; background:#2c3e50;">Summary & Net Payable</th>`;
         headerRow.innerHTML = html;
     }
 
@@ -336,7 +310,7 @@
         const outTime = document.getElementById('wOutTime').value;
         const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
 
-        if(!name || !dateVal) { alert("Please enter Name and select Date!"); return; }
+        if(!name || !dateVal) { alert("Bhai, Naam aur Date dono daalna zaroori hai!"); return; }
 
         const dayInt = parseInt(dateVal.split('-')[2]);
         const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
@@ -395,8 +369,35 @@
         document.getElementById('wName').value = '';
         document.getElementById('wAdvance').value = '0';
         setTodayDate();
+        alert("Entry Successfully Save Ho Gayi Hai!");
     }
 
     function deleteSpecificSingleEntry() {
         const name = document.getElementById('delName').value.trim();
-        const dateVal = document.getElementById
+        const dateVal = document.getElementById('delDate').value;
+
+        if(!name || !dateVal) { alert("Please type Worker Name and Select Date!"); return; }
+
+        let currentSiteData = allSitesRecords[currentSite] || {};
+        if(!currentSiteData[name]) { alert(`Worker "${name}" nahi mila!`); return; }
+
+        const dayInt = parseInt(dateVal.split('-')[2]);
+        const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
+
+        if((currentSiteData[name].dates && currentSiteData[name].dates[dayStr]) || (currentSiteData[name].advances && currentSiteData[name].advances[dayStr])) {
+            if(confirm(`Kya aap ${name} ka Date: ${dayStr} ka data permanently clear karna chahte hain?`)) {
+                if(currentSiteData[name].dates) delete currentSiteData[name].dates[dayStr];
+                if(currentSiteData[name].advances) delete currentSiteData[name].advances[dayStr];
+                saveAllDataToCloudAndLocal();
+                alert("Entry delete ho gayi!");
+                document.getElementById('delName').value = '';
+            }
+        } else {
+            alert("Is date par koi attendance ya advance record nahi mila.");
+        }
+    }
+
+    function renderMonthlyTable() {
+        const tbody = document.getElementById('monthlyTableBody');
+        if(!tbody) return;
+    
