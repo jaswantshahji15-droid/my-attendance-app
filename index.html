@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.6</title>
+    <title>Shramik Sync Master v9.7</title>
+    <!-- Core Firebase Production SDK Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -17,7 +18,7 @@
         
         .status-box { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: 700; font-size: 13px; text-align: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
         .sync-active { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; }
-        .sync-offline { color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; }
+        .sync-offline { color: #b45309; background: #fef3c7; border: 1px solid #fde68a; }
         
         .setup-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .setup-title { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -60,30 +61,35 @@
 
 <div class="container">
     <div class="editable-header-container">
-        <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Master v9.6" oninput="saveHeadingTitle()">
+        <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Master v9.7" oninput="saveHeadingTitle()">
     </div>
     <div id="siteIndicator" class="site-indicator">Workspace Block: Site 1</div>
 
-    <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Master Database System...</div>
+    <!-- Smart Sync Status Badge (Will adapt automatically) -->
+    <div id="syncStatus" class="status-box sync-offline">🔄 Initializing Form & Checking Saved Data...</div>
 
-    <div class="setup-box" style="display: none;">
-        <div class="setup-title">🔗 Database Endpoint Config</div>
+    <!-- Manual Connection Linker Field -->
+    <div class="setup-box">
+        <div class="setup-title">🔗 Laptop & Mobile Live Connection Setup:</div>
         <div class="sync-config-area">
-            <input type="text" id="firebaseUrlInput">
+            <input type="text" id="firebaseUrlInput" placeholder="Paste your Firebase Realtime Database URL here (e.g. https://xyz.firebaseio.com/)">
+            <button class="btn btn-connect" onclick="applyCustomDatabaseLink()">Link Devices</button>
         </div>
     </div>
 
-    <div class="setup-box">
-        <div class="setup-title">📍 Active Operational Site Area (Site Select Karein)</div>
+    <!-- Site Switcher Selector -->
+    <div class="setup-box" style="margin-top:-5px;">
+        <div class="setup-title">📍 Select Working Site/Location:</div>
         <select id="selSite" onchange="switchSiteEngine()" style="width: 100%; padding: 8px; font-weight: bold; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fff; height: 40px;">
             <option value="site1">Site 1 (Standard View)</option>
-            <option value="site2">Site 2 (10-Day Automated Cycle Mode)</option>
+            <option value="site2">Site 2 (10-Day Cycle Mode)</option>
             <option value="site3">Site 3 (Standard View)</option>
             <option value="site4">Site 4 (Standard View)</option>
             <option value="site5">Site 5 (Standard View)</option>
         </select>
     </div>
 
+    <!-- Input Data Entry Layout Layer -->
     <div class="form-title"><span>📝 1. Daily Time Office Entry Form</span></div>
     <div class="grid-inputs">
         <div class="field-group">
@@ -132,12 +138,14 @@
     </div>
     <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save Entry (Data Sync Karein)</button>
 
+    <!-- Cycle Segment Navigation Area Control tabs for Site 2 -->
     <div class="cycle-tabs" id="cycleTabsArea" style="display:none;">
         <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">📅 Day 01 - 10</button>
         <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">📅 Day 11 - 20</button>
         <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">📅 Day 21 - End</button>
     </div>
 
+    <!-- Primary Calculations Output Matrix Table Grid -->
     <div class="form-title"><span>📊 2. Monthly Performance Register Matrix</span></div>
     <div class="table-container">
         <table>
@@ -148,6 +156,7 @@
         </table>
     </div>
 
+    <!-- Administrative Data Pure/Purge Block Layer -->
     <div class="delete-section">
         <div class="form-title" style="color:#dc2626; margin-top:0; border-left-color:#dc2626; font-size:14px;">⚠️ Delete Specific Entry (Galti Thik Karein)</div>
         <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
@@ -165,13 +174,12 @@
 </div>
 
 <script>
-    // AUTOMATIC DEFAULT DATABASE SET-UP (Aapka permanent database URL yaheen fix kar diya hai)
-    const DEFAULT_FIREBASE_URL = "https://shramik-sync-master-default-rtdb.firebaseio.com/"; 
-
+    // System Local Data Cache Storage Mapping Engine 
     let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
     let currentSite = 'site1';
     let currentCycleBlock = 1; 
     let firebaseRef = null;
+    let savedDbUrl = localStorage.getItem('user_configured_firebase_url') || "";
 
     window.addEventListener('DOMContentLoaded', () => {
         let today = new Date();
@@ -184,8 +192,15 @@
             document.getElementById('mainHeading').value = localStorage.getItem('main_heading_title');
         }
 
+        if(savedDbUrl) {
+            document.getElementById('firebaseUrlInput').value = savedDbUrl;
+        }
+
+        // UNBREAKABLE OFFLINE FIRST ENGINE: Safely restore local backup data instantly!
         if(localStorage.getItem('shramik_local_backup')) {
-            try { memoryDB = JSON.parse(localStorage.getItem('shramik_local_backup')); } catch(e){}
+            try { 
+                memoryDB = JSON.parse(localStorage.getItem('shramik_local_backup')); 
+            } catch(e){ console.error("Backup tracking reading bypass."); }
         }
 
         initializeDatabaseEngine();
@@ -196,16 +211,33 @@
         localStorage.setItem('main_heading_title', document.getElementById('mainHeading').value);
     }
 
+    function applyCustomDatabaseLink() {
+        let inputUrl = document.getElementById('firebaseUrlInput').value.trim();
+        if(!inputUrl) {
+            alert("❌ Kripya valid Firebase Realtime Database URL dalein!");
+            return;
+        }
+        localStorage.setItem('user_configured_firebase_url', inputUrl);
+        alert("✔️ Database Configuration saved! Phone aur Laptop ko jodne ke liye webpage reload ho raha hai...");
+        window.location.reload();
+    }
+
     function initializeDatabaseEngine() {
+        // Safe Intercept Fail-Safe Routine
         setTimeout(() => {
             if(!firebaseRef) {
-                setOfflineModeNotice();
+                activateUnrestrictedOfflineStandaloneMode();
             }
-        }, 5000);
+        }, 3000);
+
+        if(!savedDbUrl) {
+            activateUnrestrictedOfflineStandaloneMode();
+            return;
+        }
 
         try {
             if (firebase.apps.length === 0) {
-                firebase.initializeApp({ databaseURL: DEFAULT_FIREBASE_URL });
+                firebase.initializeApp({ databaseURL: savedDbUrl });
             }
             firebaseRef = firebase.database().ref('shramik_master_db');
             
@@ -218,27 +250,28 @@
                     firebaseRef.set(memoryDB);
                 }
                 document.getElementById('syncStatus').className = "status-box sync-active";
-                document.getElementById('syncStatus').innerHTML = "🟢 System Live (Sync Active) • Connected Successfully";
+                document.getElementById('syncStatus').innerHTML = "🟢 System Live (Sync Active) • Laptop + Mobile Successfully Connected!";
                 renderAppUI();
             }, (error) => {
-                setOfflineModeNotice();
+                activateUnrestrictedOfflineStandaloneMode();
             });
         } catch (err) {
-            setOfflineModeNotice();
+            activateUnrestrictedOfflineStandaloneMode();
         }
     }
 
-    function setOfflineModeNotice() {
+    function activateUnrestrictedOfflineStandaloneMode() {
         document.getElementById('syncStatus').className = "status-box sync-offline";
-        document.getElementById('syncStatus').innerHTML = "⚠️ Working Offline (Local Storage Active) • Checking Database Connection...";
+        document.getElementById('syncStatus').innerHTML = "⚡ Standalone Offline Engine Active (Data will save to local memory safely!)";
+        renderAppUI();
     }
 
     function pushUpdatedStateToCloud() {
         localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
         if(firebaseRef) {
             firebaseRef.set(memoryDB)
-                .then(() => console.log("State synced."))
-                .catch(err => console.error(err.message));
+                .then(() => console.log("Cloud sync stream dispatched."))
+                .catch(err => console.error("Sync deferred:", err.message));
         }
         renderAppUI();
     }
@@ -365,5 +398,4 @@
         let workerKeys = Object.keys(siteDataMap);
 
         if(workerKeys.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="42" style="padding:32px; color:#94a3b8; font-size:13px; font-weight:bold; background:#fafafa;">Koi data nahi mila. Entry
-    
+            tableBody.innerHTML = `<tr><td colspan="42" style="padding:32px; color:#94a3b8; font-size:13px; font-weight:bold; background:#fafafa;">Koi data nahi mila. Form 
