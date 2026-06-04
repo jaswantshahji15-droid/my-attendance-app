@@ -3,411 +3,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adventures India Pvt. Ltd. - Performance Register</title>
-    <!-- Firebase core SDK and database for Live Mobile-Laptop Sync -->
+    <title>Performance Register System - Live Sync</title>
+    <!-- Standard Firebase v8 SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; color: #333; }
-        .container { max-width: 100%; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        /* Company Header matching 1000312736_3.png */
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .company-header h2 { margin: 0; font-size: 18px; font-weight: bold; }
-        .company-header p { margin: 4px 0; font-size: 13px; }
-
-        .sync-banner { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .sync-banner input { padding: 4px; width: 250px; font-size: 12px; }
-        
-        .control-panel { display: flex; gap: 10px; align-items: center; background: #e9ecef; padding: 10px; border-radius: 4px; margin-bottom: 15px; flex-wrap: wrap; }
-        .site-select { padding: 6px; font-weight: bold; font-size: 14px; }
-        
-        /* Input Form Block */
-        .entry-box { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px; }
-        .entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 11px; font-weight: bold; margin-bottom: 3px; }
-        .form-group input, .form-group select { padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 3px; }
-        
-        /* Filter Tabs for Site 2 (1-10, 11-20, 21-31) */
-        .tab-bar { display: flex; gap: 5px; margin: 15px 0; }
-        .tab-btn { background: #6c757d; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 3px; font-size: 12px; font-weight: bold; }
-        .tab-btn.active { background: #007bff; }
-
-        /* Screenshot Format Table Styling */
-        .table-wrapper { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { border: 1px solid #aaa; padding: 4px; text-align: center; vertical-align: top; }
-        th { background: #e0e0e0; font-weight: bold; }
-        .worker-meta-cell { text-align: left; background: #f2f2f2; font-weight: bold; min-width: 150px; }
-        
-        /* Inner cell stack matching 1000312736_3.png row structure conceptually */
-        .time-block { text-align: left; font-size: 10px; background: #fafafa; padding: 3px; border: 1px solid #ddd; margin-top: 3px; border-radius: 2px; }
-        .status-badge { font-weight: bold; display: inline-block; padding: 1px 4px; border-radius: 2px; font-size: 10px; }
-        .status-P { background: #d4edda; color: #155724; }
-        .status-HD { background: #fff3cd; color: #856404; }
-        .status-PP { background: #e2d9f3; color: #4b2394; }
-        .status-A { background: #f8d7da; color: #721c24; }
-
-        .running-sum { font-size: 9px; color: #0056b3; font-weight: bold; margin-top: 2px; border-top: 1px dashed #bbb; padding-top: 2px; }
-        .summary-box { text-align: left; background: #f1f9ff; padding: 4px; border-radius: 3px; font-size: 10px; font-weight: bold; border: 1px solid #bee5eb; }
-        
-        .action-zone { background: #fff5f5; border: 1px solid #feb2b2; padding: 12px; border-radius: 4px; margin-top: 20px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; }
+        .container { max-width: 100%; margin: 0 auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        .status-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; font-size: 13px; }
+        .sync-active { color: #27ae60; background: #e8f4fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; display: block; border: 1px solid #d4edda; }
+        .setup-box { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .form-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin: 15px 0 10px 0; border-left: 4px solid #007bff; padding-left: 8px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #fff; border: 1px solid #e6e9ed; padding: 15px; border-radius: 6px; }
+        .field-group { display: flex; flex-direction: column; }
+        .field-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #333; }
+        .field-group input, .field-group select { padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; height: 32px; box-sizing: border-box; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .btn-save { background: #28a745; color: white; width: 100%; margin-top: 15px; height: 40px; font-size: 15px; }
+        .btn-action { background: #6c757d; color: white; height: 32px; }
+        .btn-danger { background: #dc3545; color: white; }
+        .cycle-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab-item { background: #e2e3e5; color: #383d41; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
+        .tab-item.active { background: #007bff; color: white; }
+        .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
+        th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; vertical-align: top; }
+        th { background: #f1f5f9; font-weight: bold; }
+        .worker-col { text-align: left; background: #f8fafc; font-weight: bold; min-width: 120px; }
+        .cell-box { background: #f9f9f9; border: 1px solid #ddd; padding: 4px; border-radius: 3px; font-size: 10px; text-align: left; margin-top: 4px; line-height: 1.3; }
+        .badge { font-weight: bold; padding: 2px 5px; border-radius: 3px; font-size: 9px; display: inline-block; }
+        .badge-P { background: #d4edda; color: #155724; }
+        .badge-HD { background: #fff3cd; color: #856404; }
+        .badge-PP { background: #e2d9f3; color: #4b2394; }
+        .badge-A { background: #f8d7da; color: #721c24; }
+        .delete-section { background: #fdf2f2; border: 1px solid #f8d7da; padding: 15px; border-radius: 6px; margin-top: 25px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Company Header Block aligned with 1000312736_3.png format -->
-    <div class="company-header">
-        <h2 id="displayCompanyName">Company Name: Adventures India Pvt. Ltd.</h2>
-        <p><b>Performance Register System</b></p>
-        <p id="displaySiteName">Site: Site 1</p>
+    <div class="header">
+        <h2>Performance Register System</h2>
+        <div id="siteIndicator" style="font-weight: bold; color: #0056b3; margin-top: 5px;">Site: Site 1</div>
     </div>
 
-    <!-- Live Cloud Synchronization Input -->
-    <div class="sync-banner">
-        <strong>🌐 Mobile-Laptop Live Sync Connection:</strong>
-        <input type="text" id="fbUrlInput" placeholder="Paste Firebase Realtime Database URL here...">
-        <button class="tab-btn" style="background:#28a745;" onclick="connectToCloud()">Connect Devices</button>
-        <span id="syncStatus" style="font-weight:bold; color:orange;">⚠️ Mode: Offline (Local Storage Only)</span>
-    </div>
+    <!-- Live Status Element -->
+    <div id="syncStatus" class="sync-active">🔄 Initializing Cloud Database Connection...</div>
 
-    <!-- Controls for Site Navigation and Rename -->
-    <div class="control-panel">
+    <!-- Workspace Configuration Area -->
+    <div class="setup-box">
         <strong>📍 Select Site Area:</strong>
-        <select id="siteDropdown" class="site-select" onchange="handleSiteSwitch()">
+        <select id="selSite" onchange="switchSiteEngine()" style="padding:6px; font-weight:bold;">
             <option value="site1">Site 1</option>
             <option value="site2">Site 2 (10-Day Auto Block Payment)</option>
             <option value="site3">Site 3</option>
             <option value="site4">Site 4</option>
             <option value="site5">Site 5</option>
         </select>
-        <button class="tab-btn" style="background:#4b5563;" onclick="triggerSiteRename()">✏️ Rename Current Site</button>
+        <button class="btn btn-action" onclick="renameSiteEngine()">✏️ Rename Current Site</button>
     </div>
 
-    <!-- Time Office Entry Form -->
-    <div class="entry-box">
-        <strong style="font-size:13px; display:block; margin-bottom:8px;">📝 Day Time Office Logger</strong>
-        <div class="entry-grid">
-            <div class="form-group">
-                <label>Worker Name</label>
-                <input type="text" id="frmName" placeholder="e.g., Ram Singh" onkeyup="attemptWorkerAutofill()">
-            </div>
-            <div class="form-group">
-                <label>Daily Wages (₹)</label>
-                <input type="number" id="frmWages" value="1200" oninput="autoCalculateHourlyOtIncome()">
-            </div>
-            <div class="form-group">
-                <label>OT Pay / Hour (₹)</label>
-                <input type="number" id="frmOtRate" value="150">
-            </div>
-            <div class="form-group">
-                <label>Shift Type</label>
-                <select id="frmShift">
-                    <option value="normal">Normal Shift (8.5 Hrs Cutoff)</option>
-                    <option value="7hr">7-Hour System Shift</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" id="frmDate">
-            </div>
-            <div class="form-group">
-                <label>In Time</label>
-                <input type="time" id="frmIn" value="09:00">
-            </div>
-            <div class="form-group">
-                <label>Lunch Out</label>
-                <input type="time" id="frmLOut" value="13:00">
-            </div>
-            <div class="form-group">
-                <label>Lunch In</label>
-                <input type="time" id="frmLIn" value="14:00">
-            </div>
-            <div class="form-group">
-                <label>Out Time</label>
-                <input type="time" id="frmOut" value="17:30">
-            </div>
-            <div class="form-group">
-                <label>Advance Taken (₹)</label>
-                <input type="number" id="frmAdvance" value="0">
-            </div>
-            <div class="form-group" style="justify-content: flex-end;">
-                <button class="tab-btn" style="background:#28a745; width:100%;" onclick="submitAttendanceData()">💾 Save Log</button>
-            </div>
+    <!-- Entry UI Form Component -->
+    <div class="form-title">📝 Day Time Office Logger</div>
+    <div class="grid-inputs">
+        <div class="field-group">
+            <label>Worker Name</label>
+            <input type="text" id="wName" placeholder="e.g. Raju" onkeyup="autofillWorkerData()">
+        </div>
+        <div class="field-group">
+            <label>Daily Wages (₹)</label>
+            <input type="number" id="wWages" value="800" oninput="autoCalcOtRate()">
+        </div>
+        <div class="field-group">
+            <label>OT Pay / Hour (₹)</label>
+            <input type="number" id="wOtRate" value="150">
+        </div>
+        <div class="field-group">
+            <label>Shift Type</label>
+            <select id="wShift">
+                <option value="normal">Normal Shift (8.5 Hr)</option>
+                <option value="7hr">7 Hour Shift System</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label>Date</label>
+            <input type="date" id="wDate">
+        </div>
+        <div class="field-group">
+            <label>In Time</label>
+            <input type="time" id="wIn" value="09:00">
+        </div>
+        <div class="field-group">
+            <label>Lunch Out</label>
+            <input type="time" id="wLOut" value="13:00">
+        </div>
+        <div class="field-group">
+            <label>Lunch In</label>
+            <input type="time" id="wLIn" value="14:00">
+        </div>
+        <div class="field-group">
+            <label>Out Time</label>
+            <input type="time" id="wOut" value="17:30">
+        </div>
+        <div class="field-group">
+            <label>Advance Taken (₹)</label>
+            <input type="number" id="wAdv" value="0">
         </div>
     </div>
+    <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save Log</button>
 
-    <!-- 10-Day Segmented Block Tabs (Visible only on Site 2) -->
-    <div class="tab-bar" id="cycleTabsWrapper" style="display:none;">
-        <button class="tab-btn active" id="btnC1" onclick="switchCycleSegment(1)">📅 Day 01 To 10 Block</button>
-        <button class="tab-btn" id="btnC2" onclick="switchCycleSegment(2)">📅 Day 11 To 20 Block</button>
-        <button class="tab-btn" id="btnC3" onclick="switchCycleSegment(3)">📅 Day 21 To 30/31 End</button>
+    <!-- Cycle Controllers for Site 2 -->
+    <div class="cycle-tabs" id="cycleTabsArea" style="display:none; margin-top:20px;">
+        <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">Day 01-10</button>
+        <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">Day 11-20</button>
+        <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">Day 21-End</button>
     </div>
 
-    <!-- Main Output Attendance Sheets -->
-    <div style="font-weight:bold; margin-top:10px; font-size:13px;" id="tableDynamicLabel">Performance Matrix View:</div>
-    <div class="table-wrapper">
+    <!-- Output View Grid Component -->
+    <div class="form-title">📊 Performance Matrix View:</div>
+    <div class="table-container">
         <table>
             <thead>
-                <tr id="dynamicHeadRow"></tr>
+                <tr id="tableHeadRow"></tr>
             </thead>
-            <tbody id="dynamicBodyRow"></tbody>
+            <tbody id="tableBodyData"></tbody>
         </table>
     </div>
 
-    <!-- Erroneous Entry Removal Area -->
-    <div class="action-zone">
-        <div style="flex:1; min-width:200px;">
-            <strong style="color:#c53030; font-size:12px; display:block; margin-bottom:5px;">⚠️ Delete / Correction Option (Galti Thik Karein)</strong>
-            <p style="margin:0 0 8px 0; font-size:11px; color:#555;">Agar kisi date me entry galat ho jaye, toh worker ka naam aur date daal kar yahan se uda sakte hain.</p>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="delName" placeholder="Exact Worker Name" style="padding:6px; font-size:12px; border:1px solid #ccc; flex:1;">
-                <input type="date" id="delDate" style="padding:6px; font-size:12px; border:1px solid #ccc; flex:1;">
+    <!-- Delete Operation System Module -->
+    <div class="delete-section">
+        <div class="form-title" style="color:#dc3545; margin-top:0; border-left-color:#dc3545;">⚠️ Delete / Correction Option (Galti Thik Karein)</div>
+        <p style="font-size:12px; margin:0 0 10px 0; color:#666;">Agar kisi date me entry galat ho jaye, toh worker ka naam aur date daal kar yahan se uda sakte hain.</p>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+            <div class="field-group" style="flex:1; min-width:180px;">
+                <label>Exact Worker Name</label>
+                <input type="text" id="delName" placeholder="Raju">
             </div>
+            <div class="field-group" style="flex:1; min-width:140px;">
+                <label>Select Date</label>
+                <input type="date" id="delDate">
+            </div>
+            <button class="btn btn-danger" style="height:32px;" onclick="deleteTargetRecord()">🗑️ Delete This Date Entry</button>
         </div>
-        <button class="tab-btn" style="background:#dc3545;" onclick="executeDeleteRecord()">🗑️ Delete This Date Entry</button>
     </div>
 </div>
 
 <script>
-    // --- Application State Model ---
-    let mainDatabase = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
-    let locationNames = { site1:"Site 1", site2:"Site 2 (10-Day Auto Block Payment)", site3:"Site 3", site4:"Site 4", site5:"Site 5" };
-    let activeSiteId = 'site1';
-    let activeDaySegment = 1; // 1=1-10, 2=11-20, 3=21-31
-    let fbLiveReference = null;
+    // ==========================================
+    // CRITICAL CONNECTION: APNA FIREBASE URL NIPATAYEIN
+    // ==========================================
+    const FIREBASE_DB_URL = "YOUR_FIREBASE_DB_URL_HERE"; 
 
-    // --- Onload Life Cycle ---
+    let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
+    let siteNamesMap = { site1:"Site 1", site2:"Site 2 (10-Day Auto Block Payment)", site3:"Site 3", site4:"Site 4", site5:"Site 5" };
+    let currentSite = 'site1';
+    let currentCycleBlock = 1; 
+    let firebaseRef = null;
+
+    // --- On Load Lifecycle Init ---
     window.addEventListener('DOMContentLoaded', () => {
-        let isoToday = new Date().toISOString().split('T')[0];
-        document.getElementById('frmDate').value = isoToday;
+        // Strict Setup for Default Date Inputs
+        let today = new Date();
+        let yyyy = today.getFullYear();
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let dd = String(today.getDate()).padStart(2, '0');
+        let isoToday = `${yyyy}-${mm}-${dd}`;
+        
+        document.getElementById('wDate').value = isoToday;
         document.getElementById('delDate').value = isoToday;
 
-        if(localStorage.getItem('shramik_site_names')) {
-            locationNames = JSON.parse(localStorage.getItem('shramik_site_names'));
+        if(localStorage.getItem('shramik_names_custom')) {
+            try { siteNamesMap = JSON.parse(localStorage.getItem('shramik_names_custom')); } catch(e){}
         }
-        if(localStorage.getItem('shramik_active_site')) {
-            activeSiteId = localStorage.getItem('shramik_active_site');
+        if(localStorage.getItem('shramik_current_site_id')) {
+            currentSite = localStorage.getItem('shramik_current_site_id');
         }
 
-        let savedCloudUrl = localStorage.getItem('shramik_firebase_url');
-        if(savedCloudUrl) {
-            document.getElementById('fbUrlInput').value = savedCloudUrl;
-            connectToCloud();
-        } else {
-            if(localStorage.getItem('shramik_local_raw_data')) {
-                mainDatabase = JSON.parse(localStorage.getItem('shramik_local_raw_data'));
-            }
-            refreshUserInterface();
-        }
+        initializeDatabaseConnection();
     });
 
-    // --- Mobile & Laptop Cloud Sync Implementation ---
-    function connectToCloud() {
-        let targetUrl = document.getElementById('fbUrlInput').value.trim();
-        if(!targetUrl) return;
+    function initializeDatabaseConnection() {
+        if(!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("YOUR_FIREBASE_DB_URL_HERE")) {
+            document.getElementById('syncStatus').className = "status-box";
+            document.getElementById('syncStatus').innerHTML = "⚠️ Mode: Offline (Local Storage Only) - Mandatorily configure your Firebase URL inside the source code text.";
+            return;
+        }
 
         try {
-            localStorage.setItem('shramik_firebase_url', targetUrl);
-            if(firebase.apps.length === 0) {
-                firebase.initializeApp({ databaseURL: targetUrl });
+            if (firebase.apps.length === 0) {
+                firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
             }
-            fbLiveReference = firebase.database().ref('shramik_v11_storage');
+            firebaseRef = firebase.database().ref('shramik_master_db');
             
-            // Real-Time Event Sync Listener (Triggers when data changes on Mobile OR Laptop instantly)
-            fbLiveReference.on('value', (dataSnapshot) => {
-                let cloudValue = dataSnapshot.val();
-                if(cloudValue) {
-                    mainDatabase = cloudValue;
+            // Continuous Live Server Sync Engine (Keeps Laptop & Mobile connected 24/7)
+            firebaseRef.on('value', (snapshot) => {
+                let incomingData = snapshot.val();
+                if(incomingData) {
+                    memoryDB = incomingData;
                 } else {
-                    fbLiveReference.set(mainDatabase);
+                    firebaseRef.set(memoryDB);
                 }
-                refreshUserInterface();
-                let statusLabel = document.getElementById('syncStatus');
-                statusLabel.innerText = "🟢 Connected (Mobile 🔄 Laptop Sync Live)";
-                statusLabel.style.color = "#28a745";
+                document.getElementById('syncStatus').className = "sync-active";
+                document.getElementById('syncStatus').innerHTML = "🟢 Live Database Sync Connected Successfully";
+                renderAppUI();
+            }, (error) => {
+                console.error("Database connection failed:", error);
             });
-        } catch(err) {
-            alert("Sync Connection Configuration Error: " + err.message);
+        } catch (err) {
+            console.error("Critical Firebase System Error:", err);
         }
     }
 
-    function pushDataToSyncEngine() {
-        if(fbLiveReference) {
-            fbLiveReference.set(mainDatabase);
-        } else {
-            localStorage.setItem('shramik_local_raw_data', JSON.stringify(mainDatabase));
-            refreshUserInterface();
+    function pushUpdatedStateToCloud() {
+        if(firebaseRef) {
+            firebaseRef.set(memoryDB).catch(err => alert("Sync Failure: " + err.message));
         }
     }
 
-    // --- UI Control Framework ---
-    function refreshUserInterface() {
-        document.getElementById('siteDropdown').value = activeSiteId;
-        document.getElementById('displaySiteName').innerText = "Site: " + (locationNames[activeSiteId] || activeSiteId);
-        
-        let customTabs = document.getElementById('cycleTabsWrapper');
-        if(activeSiteId === 'site2') {
-            customTabs.style.display = 'flex';
-            document.getElementById('tableDynamicLabel').innerText = `Performance Matrix View - Site 2 (Segment ${activeDaySegment}):`;
-        } else {
-            customTabs.style.display = 'none';
-            document.getElementById('tableDynamicLabel').innerText = "Performance Matrix View (Full Month Continuous Mode):";
-        }
-        buildTableStructure();
+    function autoCalcOtRate() {
+        let dWages = parseFloat(document.getElementById('wWages').value) || 0;
+        document.getElementById('wOtRate').value = dWages > 0 ? Math.round(dWages / 8) : 0;
     }
 
-    function handleSiteSwitch() {
-        activeSiteId = document.getElementById('siteDropdown').value;
-        localStorage.setItem('shramik_active_site', activeSiteId);
-        activeDaySegment = 1;
-        
-        document.querySelectorAll('.tab-bar .tab-btn').forEach(btn => btn.classList.remove('active'));
-        let targetBtn = document.getElementById('btnC1');
-        if(targetBtn) targetBtn.classList.add('active');
-
-        refreshUserInterface();
-    }
-
-    function switchCycleSegment(segId) {
-        activeDaySegment = segId;
-        document.querySelectorAll('.tab-bar .tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('btnC' + segId).classList.add('active');
-        refreshUserInterface();
-    }
-
-    function triggerSiteRename() {
-        let currentTitle = locationNames[activeSiteId] || activeSiteId;
-        let requestedTitle = prompt("Enter a new custom name for this site:", currentTitle);
-        if(requestedTitle && requestedTitle.trim() !== "") {
-            locationNames[activeSiteId] = requestedTitle.trim();
-            localStorage.setItem('shramik_site_names', JSON.stringify(locationNames));
-            refreshUserInterface();
-        }
-    }
-
-    function autoCalculateHourlyOtIncome() {
-        let wagesAmt = parseFloat(document.getElementById('frmWages').value) || 0;
-        document.getElementById('frmOtRate').value = wagesAmt > 0 ? Math.round(wagesAmt / 8) : 0;
-    }
-
-    function attemptWorkerAutofill() {
-        let textName = document.getElementById('frmName').value.trim();
-        let siteDataset = mainDatabase[activeSiteId] || {};
-        if(siteDataset[textName]) {
-            document.getElementById('frmWages').value = siteDataset[textName].baseWages || 1200;
-            document.getElementById('frmOtRate').value = siteDataset[textName].hourlyOtRate || 150;
-            if(siteDataset[textName].preferredShift) {
-                document.getElementById('frmShift').value = siteDataset[textName].preferredShift;
+    function autofillWorkerData() {
+        let nameInp = document.getElementById('wName').value.trim();
+        let activeRecords = memoryDB[currentSite] || {};
+        if(activeRecords[nameInp]) {
+            document.getElementById('wWages').value = activeRecords[nameInp].baseWages || 800;
+            document.getElementById('wOtRate').value = activeRecords[nameInp].hourlyOtRate || 150;
+            if(activeRecords[nameInp].shiftMode) {
+                document.getElementById('wShift').value = activeRecords[nameInp].shiftMode;
             }
         }
     }
 
-    // --- Strict Custom Wages Logic Engine ---
-    function executeShiftCalculations(inT, lOut, lIn, outT, baseWages, hourlyOtRate, shiftType) {
-        if(!inT || !outT) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
+    // --- Strict Calculation Engine ---
+    function processAttendanceMath(inTime, lOut, lIn, outTime, baseWages, otRate, shiftType) {
+        if(!inTime || !outTime) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
 
-        let startMoment = new Date("2026-01-01 " + inT);
-        let endMoment = new Date("2026-01-01 " + outT);
-        let timeDifferenceMs = endMoment - startMoment;
+        let start = new Date("2026-01-01 " + inTime);
+        let end = new Date("2026-01-01 " + outTime);
+        let diffMs = end - start;
 
-        // Subtract Lunch Break hours if provided
         if(lOut && lIn) {
-            let lunchStart = new Date("2026-01-01 " + lOut);
-            let lunchEnd = new Date("2026-01-01 " + lIn);
-            if(lunchEnd > lunchStart) {
-                timeDifferenceMs -= (lunchEnd - lunchStart);
-            }
+            let lStart = new Date("2026-01-01 " + lOut);
+            let lEnd = new Date("2026-01-01 " + lIn);
+            if(lEnd > lStart) diffMs -= (lEnd - lStart);
         }
 
-        let totalWorkingHrs = timeDifferenceMs / 3600000;
-        if(totalWorkingHrs <= 0) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
+        let workingHours = diffMs / 3600000;
+        if(workingHours <= 0) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
 
         let status = 'A', otHrs = 0, earned = 0, otEarned = 0;
-        let shiftCutoffLimit = (shiftType === '7hr') ? 7.0 : 8.5;
+        let standardShiftCap = (shiftType === '7hr') ? 7.0 : 8.5;
 
-        // Exact strict conditions defined by user
-        if(totalWorkingHrs < 7.0) {
+        if(workingHours < 7.0) {
             status = 'HD';
-            earned = totalWorkingHrs * (baseWages / 8); // Calculated strictly on per hour wage breakdown
+            earned = workingHours * (baseWages / 8); 
         } 
-        else if(totalWorkingHrs >= 7.0 && totalWorkingHrs <= shiftCutoffLimit) {
-            status = 'P';
-            earned = baseWages; // Guaranteed Full Day Wages
-        } 
-        else if(totalWorkingHrs > shiftCutoffLimit) {
+        else if(workingHours >= 7.0 && workingHours <= standardShiftCap) {
             status = 'P';
             earned = baseWages;
-            otHrs = totalWorkingHrs - shiftCutoffLimit;
+        } 
+        else if(workingHours > standardShiftCap) {
+            status = 'P';
+            earned = baseWages;
+            otHrs = workingHours - standardShiftCap;
 
-            if(totalWorkingHrs >= 13.5) {
-                status = 'PP'; // P+P Double Dhyadi Rule triggered
-                earned = baseWages * 2;
-                otHrs = 0; // Integrated into double wages completely
+            if(workingHours >= 13.5) {
+                status = 'PP'; 
+                earned = baseWages * 2; 
+                otHrs = 0;
                 otEarned = 0;
-            } else if(totalWorkingHrs >= 11.0) {
-                otEarned = baseWages * 0.5; // Flat half day wages extra OT compensation
+            } else if(workingHours >= 11.0) {
+                otEarned = baseWages * 0.5; 
             } else {
-                otEarned = otHrs * hourlyOtRate; // Regular calculation per standard hour
+                otEarned = otHrs * otRate; 
             }
         }
 
-        return { hrs: totalWorkingHrs, otHrs: otHrs, status: status, earned: earned, otEarned: otEarned };
+        return { hrs: workingHours, otHrs: otHrs, status: status, earned: earned, otEarned: otEarned };
     }
 
-    // --- Table Structure Generation ---
-    function buildTableStructure() {
-        let headRow = document.getElementById('dynamicHeadRow');
-        let htmlHead = '<th style="min-width:160px; text-align:left;">Worker & Wage Structure</th>';
+    // --- Layout Renderer Modules ---
+    function renderAppUI() {
+        document.getElementById('selSite').value = currentSite;
+        document.getElementById('siteIndicator').innerText = "Site: " + (siteNamesMap[currentSite] || currentSite);
         
-        let startDay = 1, endDay = 31;
-        if(activeSiteId === 'site2') {
-            if(activeDaySegment === 1) { startDay = 1; endDay = 10; }
-            else if(activeDaySegment === 2) { startDay = 11; endDay = 20; }
-            else if(activeDaySegment === 3) { startDay = 21; endDay = 31; }
+        let tabContainer = document.getElementById('cycleTabsArea');
+        if(currentSite === 'site2') {
+            tabContainer.style.display = 'flex';
+        } else {
+            tabContainer.style.display = 'none';
         }
-
-        for(let d = startDay; d <= endDay; d++) {
-            htmlHead += `<th>Day<br>${String(d).padStart(2,'0')}</th>`;
-        }
-        htmlHead += '<th style="min-width:140px; background:#2c3e50; color:white;">Calculated Totals</th>';
-        headRow.innerHTML = htmlHead;
-
-        renderDataMatrixRows(startDay, endDay);
+        buildPerformanceGridStructure();
     }
 
-    function renderDataMatrixRows(startDay, endDay) {
-        let bodyRow = document.getElementById('dynamicBodyRow');
-        bodyRow.innerHTML = '';
+    function switchSiteEngine() {
+        currentSite = document.getElementById('selSite').value;
+        localStorage.setItem('shramik_current_site_id', currentSite);
+        currentCycleBlock = 1;
+        
+        document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
+        if(document.getElementById('tab1')) document.getElementById('tab1').classList.add('active');
 
-        let siteRecords = mainDatabase[activeSiteId] || {};
-        let recordsExist = false;
+        renderAppUI();
+    }
 
-        for(let workerKey in siteRecords) {
-            recordsExist = true;
-            let currentWorker = siteRecords[workerKey];
+    function changeDayCycleSegment(blockNum) {
+        currentCycleBlock = blockNum;
+        document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('tab' + blockNum).classList.add('active');
+        renderAppUI();
+    }
+
+    function renameSiteEngine() {
+        let currentLabel = siteNamesMap[currentSite] || currentSite;
+        let updatedLabel = prompt("Enter Custom Title For This Workspace Area:", currentLabel);
+        if(updatedLabel && updatedLabel.trim() !== "") {
+            siteNamesMap[currentSite] = updatedLabel.trim();
+            localStorage.setItem('shramik_names_custom', JSON.stringify(siteNamesMap));
+            renderAppUI();
+        }
+    }
+
+    function buildPerformanceGridStructure() {
+        let headRow = document.getElementById('tableHeadRow');
+        let headerHtml = '<th style="text-align:left; padding-left:10px;">Worker Name</th>';
+        
+        let dayStart = 1, dayEnd = 31;
+        if(currentSite === 'site2') {
+            if(currentCycleBlock === 1) { dayStart = 1; dayEnd = 10; }
+            else if(currentCycleBlock === 2) { dayStart = 11; dayEnd = 20; }
+            else if(currentCycleBlock === 3) { dayStart = 21; dayEnd = 31; }
+        }
+
+        for(let d = dayStart; d <= dayEnd; d++) {
+            headerHtml += `<th>Day ${String(d).padStart(2,'0')}</th>`;
+        }
+        headerHtml += '<th style="background:#0056b3; color:white; min-width:140px;">Total Calculations</th>';
+        headRow.innerHTML = headerHtml;
+
+        populateTableRowsData(dayStart, dayEnd);
+    }
+
+    function populateTableRowsData(start, end) {
+        let tableBody = document.getElementById('tableBodyData');
+        tableBody.innerHTML = '';
+
+        let siteDataMap = memoryDB[currentSite] || {};
+        let workerKeys = Object.keys(siteDataMap);
+
+        if(workerKeys.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#aaa; font-weight:bold;">No operational logs submitted for this site view workspace.</td></tr>`;
+            return;
+        }
+
+        workerKeys.forEach(wKey => {
+            let workerObject = siteDataMap[wKey];
             let rowElement = document.createElement('tr');
 
-            let rowHtml = `<td class="worker-meta-cell">
-                👤 ${workerKey}<br>
-                <span style="color:#4b5563; font-size:10px;">Base Rate: ₹${currentWorker.baseWages}/Day</span>
+            let rowHtmlStr = `<td class="worker-col" style="padding-left:8px;">
+                👤 ${wKey}<br>
+                <span style="color:#666; font-size:10px; font-weight:normal;">Wages: ₹${workerObject.baseWages}/d</span>
             </td>`;
 
-            let cycleGrossSum = 0;
-            let cycleAdvanceSum = 0;
-            let runningDayCumulative = 0;
+            let accumulatedGross = 0;
+            let accumulatedAdvances = 0;
 
-            // Loop to render each day cell mapping inside the active screen view
-            for(let d = startDay; d <= endDay; d++) {
-                let formattedDayStr = String(d).padStart(2, '0');
-                let dayAttendance = currentWorker.attendance ? currentWorker.attendance[formattedDayStr] : null;
-                let dayAdvance = currentWorker.advances ? (currentWorker.advances[formattedDayStr] || 0) : 0;
+            for(let d = start; d <= end; d++) {
+                let dayStringToken = String(d).padStart(2, '0');
                 
-                cycleAdvanceSum += dayAdvance;
+                let attRecord = (workerObject.attendance && workerObject.attendance[dayStringToken]) ? workerObject.attendance[dayStringToken] : null;
+                let advRecord = (workerObject.advances && workerObject.advances[dayStringToken]) ? parseFloat(workerObject.advances[dayStringToken]) : 0;
+                
+                accumulatedAdvances += advRecord;
 
-                if(dayAttendance) {
-                    let combiningDayWages = (dayAttendance.earned || 0) + (dayAttendance.otEarned || 0);
-                    runningDayCumulative += combiningDayWages;
-   
+                if(attRecord) {
+                    let completeDayEarnings = parseFloat(attRecord.earned || 0) + parseFloat(attRecord.otEarned || 0);
+                    accumulatedGross += completeDayEarnings;
+
+                    rowHtmlStr += `<td>
+                        <span class="badge badge-${attRecord.status}">${attRecord.status}</span>
+                        <div class="cell-box">
+                            <b>In:</b> ${attRecord.inTime}<br>
+                            <b>Out:</b> ${attRecord.outTime}<br>
+                            <b>Hrs:</b> ${parseFloat(attRecord.hrsWorked).toFixed(1)}<br>
+                            <span style="color:#28a745; font-weight:bold;">OT: ₹${parseFloat(attRecord.otEarned).toFixed(0)}</span>
+                        </div>
+                        ${advRecord > 0 ? `<div style="color:#dc3545; font-weight:bold; font-size:9px; margin-top:3px;">💸 Adv: ₹${advRecord}</div>` : ''}
+                    </td>`;
+                } else {
+                    rowHtmlStr += `<td>
+                        -
+                        ${advRecord > 0 ? `<div style="color:#dc3545; font-weight:bold; font-size:9px; margin-top:4px;">💸 Adv<br>₹${advRecord}</div>` : ''}
+                    </td>`;
+                }
+            }
+
+            let computedNetPayable = accumulatedGross - accumulatedAdvances;
+            rowHtmlStr += `<td style="background:#fafafa; text-align:left;">
+                <div style="font-weight:bold; color:#0056b3; font-size:11px;">Gross: ₹${accumulatedGross.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#dc3545; font-size:11px; margin-top:2px;">Advance: ₹${accumulatedAdvances.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#28a745; font-size:12px; margin-top:4px; border-top:1px solid #ccc; padding-top:2px;">Net: ₹${computedNetPayable.toFixed(0)}</div>
+            </td>`;
+
+            rowElement.innerHTML = rowHtmlStr;
+            tableBo
