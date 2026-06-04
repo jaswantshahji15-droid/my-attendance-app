@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.4</title>
+    <title>Shramik Sync Master v9.5</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -20,14 +20,14 @@
         input, select { padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; }
         .search-container { margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
         .search-input { width: 100%; padding: 8px; border: 1px solid #b2bec3; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
-        .cycle-tabs { display: none; gap: 5px; margin-bottom: 10px; }
-        .tab-btn { background: #bdc3c7; color: #2c3e50; padding: 6px 12px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .cycle-tabs { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { background: #bdc3c7; color: #2c3e50; padding: 6px 12px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; flex: 1; text-align: center; }
         .tab-btn.active { background: #e67e22; color: white; }
         button { background-color: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
         button:hover { background-color: #2980b9; }
         .btn-success { background-color: #2ecc71; }
         .btn-danger { background-color: #e74c3c; }
-        .table-responsive { overflow-x: auto; margin-top: 10px; border: 1px solid #dee2e6; border-radius: 6px; min-height: 80px; }
+        .table-responsive { overflow-x: auto; margin-top: 10px; border: 1px solid #dee2e6; border-radius: 6px; min-height: 120px; background: #fff; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
         th { background-color: #34495e; color: white; padding: 8px 4px; font-weight: 600; border: 1px solid #4f5d6c; }
         td { padding: 6px 4px; border: 1px solid #dee2e6; vertical-align: top; }
@@ -48,24 +48,24 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.4</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.5</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
-            <span class="sync-badge" id="syncStatus">🟢 System Active & Self-Repaired</span>
+            <span class="sync-badge" id="syncStatus">🟢 Core Engine Fixed</span>
         </div>
     </div>
     
     <div class="site-panel">
         <span class="site-label">📍 Select Working Site/Location:</span>
         <select id="siteSelector" class="site-select" onchange="switchSite()">
-            <option value="site1" id="opt_site1">Site 1</option>
-            <option value="site2" id="opt_site2">Site 2 (10-Day Cycle Mode)</option>
-            <option value="site3" id="opt_site3">Site 3</option>
-            <option value="site4" id="opt_site4">Site 4</option>
-            <option value="site5" id="opt_site5">Site 5</option>
+            <option value="site1">Site 1</option>
+            <option value="site2">Site 2 (10-Day Cycle Mode)</option>
+            <option value="site3">Site 3</option>
+            <option value="site4">Site 4</option>
+            <option value="site5">Site 5</option>
         </select>
-        <button class="rename-btn" onclick="renameCurrentSite()">✏️ Rename Selected Site</button>
-        <button style="background-color: #e67e22;" onclick="forceResetStorage()">💥 Emergency Factory Reset Data</button>
+        <button class="rename-btn" onclick="renameCurrentSite()">✏️ Rename Site</button>
+        <button style="background-color: #e74c3c; font-size: 11px;" onclick="forceResetStorage()">💥 Clear All Data</button>
     </div>
     
     <h3>1. Daily Time Office Entry</h3>
@@ -122,16 +122,16 @@
     
     <div class="search-container">
         <div class="cycle-tabs" id="cycleTabsContainer">
-            <button class="tab-btn active" id="tab1" onclick="switchCycleTab(1)">Cycle: Day 01-10</button>
-            <button class="tab-btn" id="tab2" onclick="switchCycleTab(2)">Cycle: Day 11-20</button>
-            <button class="tab-btn" id="tab3" onclick="switchCycleTab(3)">Cycle: Day 21-Month End</button>
+            <button class="tab-btn active" id="tab1" onclick="switchCycleTab(1)">Day 01-10</button>
+            <button class="tab-btn" id="tab2" onclick="switchCycleTab(2)">Day 11-20</button>
+            <button class="tab-btn" id="tab3" onclick="switchCycleTab(3)">Day 21-End</button>
         </div>
-        <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter sheet..." onkeyup="safeRenderInvoke()">
+        <input type="text" id="wSearch" class="search-input" placeholder="🔍 Type worker name to filter sheet..." onkeyup="safeRenderTable()">
     </div>
 
-    <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px; display: flex; gap: 10px;">
         <button class="btn-success" onclick="exportToCSV()">💾 Download Excel (CSV)</button>
-        <button class="btn-danger" onclick="clearAllData()">🗑️ Clear Current Site Data</button>
+        <button class="btn-danger" style="background:#95a5a6;" onclick="clearCurrentSiteDataOnly()">🗑️ Clear This Site Data</button>
     </div>
     
     <div class="table-responsive">
@@ -164,99 +164,85 @@
 
     function getFormattedTodayDate() {
         let today = new Date();
-        let yyyy = today.getFullYear();
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let dd = String(today.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    function forceResetStorage() {
-        if(confirm("🚨 WARNING: Isse saare sites ka data permanently clear ho jayega. Kya aap reset karna chahte hain?")) {
-            localStorage.clear();
-            allSitesRecords = JSON.parse(JSON.stringify(defaultStructure));
-            siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle Mode)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
-            currentSite = 'site1';
-            saveAllDataToCloudAndLocal();
-            alert("System bilkul naya ho gaya hai!");
-            window.location.reload();
-        }
-    }
-
-    // Try-Catch Protection Engine added to heal old broken data structure
-    document.addEventListener("DOMContentLoaded", function() {
+    // Protection on load
+    window.addEventListener("DOMContentLoaded", function() {
         try {
-            currentSite = localStorage.getItem('current_selected_site') || 'site1';
             let savedRecords = localStorage.getItem('shramik_records');
             let savedNames = localStorage.getItem('shramik_site_names');
+            let savedSite = localStorage.getItem('current_selected_site');
             
             if(savedRecords) {
                 let parsed = JSON.parse(savedRecords);
-                // Validation check
-                if(typeof parsed === 'object' && parsed.site1) {
-                    allSitesRecords = parsed;
-                } else {
-                    console.log("Broken structure found. Resetting...");
-                    localStorage.removeItem('shramik_records');
+                if(typeof parsed === 'object') {
+                    // Back-migration support for old v8 data structure
+                    if(!parsed.site1 && parsed.dates) {
+                        allSitesRecords.site1 = parsed; 
+                    } else {
+                        allSitesRecords = parsed;
+                    }
                 }
             }
             if(savedNames) siteNames = JSON.parse(savedNames);
+            if(savedSite) currentSite = savedSite;
         } catch(e) {
-            console.error("Storage structural issue auto-healed", e);
-            localStorage.clear();
+            console.error("Data load auto-repair triggered", e);
         }
         
-        let finalDateStr = getFormattedTodayDate();
-        let wd = document.getElementById('wDate');
-        let dd = document.getElementById('delDate');
-        if(wd) wd.value = finalDateStr;
-        if(dd) dd.value = finalDateStr;
+        let tStr = getFormattedTodayDate();
+        if(document.getElementById('wDate')) document.getElementById('wDate').value = tStr;
+        if(document.getElementById('delDate')) document.getElementById('delDate').value = tStr;
         
-        refreshSiteUiAndTables();
+        buildUiLogic();
     });
 
-    function saveAllDataToCloudAndLocal() {
+    function saveState() {
         localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
         localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
-        refreshSiteUiAndTables();
+        localStorage.setItem('current_selected_site', currentSite);
+        buildUiLogic();
     }
 
-    function refreshSiteUiAndTables() {
+    function buildUiLogic() {
         let sel = document.getElementById('siteSelector');
-        if(sel) sel.value = currentSite;
-
-        for(let i=1; i<=5; i++) {
-            let opt = document.getElementById(`opt_site${i}`);
-            if(opt) opt.innerText = siteNames[`site${i}`] || `Site ${i}`;
+        if(sel) {
+            sel.value = currentSite;
+            // Fallback match check if value mismatched
+            if(sel.selectedIndex === -1) { sel.value = "site1"; currentSite = "site1"; }
         }
-        
+
         let label = document.getElementById('currentSiteLabel');
-        if(label) label.innerText = "Active Site: " + (siteNames[currentSite] || currentSite);
+        if(label) label.innerText = "Active: " + (siteNames[currentSite] || currentSite);
         
         let tabsCont = document.getElementById('cycleTabsContainer');
         let bdg = document.getElementById('registerModeBadge');
         
-        if(currentSite === 'site2') {
-            if(tabsCont) tabsCont.style.display = 'flex';
-            if(bdg) bdg.innerText = "(⚠️ 10-Day Split Mode Active)";
+        // Anti-crash fix: Match safely regardless of text casing
+        if(currentSite.toLowerCase().includes('site2')) {
+            if(tabsCont) tabsCont.style.style.setProperty('display', 'flex', 'important');
+            if(bdg) bdg.innerText = "(⚠️ 10-Day Cycle Mode)";
         } else {
             if(tabsCont) tabsCont.style.display = 'none';
             if(bdg) bdg.innerText = "(Full Month View)";
         }
         
-        generateTableHeader();
-        safeRenderInvoke();
+        generateHeaderRow();
+        safeRenderTable();
     }
 
     function switchSite() {
         let sel = document.getElementById('siteSelector');
         if(!sel) return;
         currentSite = sel.value;
-        localStorage.setItem('current_selected_site', currentSite);
-        activeCycleTab = 1; 
+        activeCycleTab = 1;
+        
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         let t1 = document.getElementById('tab1');
         if(t1) t1.classList.add('active');
-        refreshSiteUiAndTables();
+        
+        saveState();
     }
 
     function switchCycleTab(tabNum) {
@@ -264,75 +250,71 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         let t = document.getElementById('tab' + tabNum);
         if(t) t.classList.add('active');
-        generateTableHeader();
-        safeRenderInvoke();
+        generateHeaderRow();
+        safeRenderTable();
     }
 
     function renameCurrentSite() {
         let oldName = siteNames[currentSite] || currentSite;
-        let newName = prompt(`Apni select ki hui [${oldName}] ka naya naam dalein:`, oldName);
+        let newName = prompt(`Enter new name for current selected site:`, oldName);
         if (newName && newName.trim() !== "") {
             siteNames[currentSite] = newName.trim();
-            saveAllDataToCloudAndLocal();
+            saveState();
         }
     }
 
     function autoCalculateOTRate() {
         let dayRate = parseFloat(document.getElementById('wDayRate').value) || 0;
         let hrInput = document.getElementById('wHourRate');
-        if(hrInput) hrInput.value = dayRate > 0 ? (Math.round((dayRate / 8) * 10) / 10) : 0;
+        if(hrInput) hrInput.value = dayRate > 0 ? Math.round(dayRate / 8) : 0;
     }
 
-    function generateTableHeader() {
-        const headerRow = document.getElementById('tableHeaderDays');
-        if(!headerRow) return;
+    function generateHeaderRow() {
+        const hRow = document.getElementById('tableHeaderDays');
+        if(!hRow) return;
         
-        let html = '<th style="text-align:left; min-width:130px;">Worker Details</th>';
+        let html = '<th style="text-align:left; min-width:140px;">Worker Details</th>';
+        let start = 1, end = 31;
         
-        let startDay = 1, endDay = 31;
-        if(currentSite === 'site2') {
-            if(activeCycleTab === 1) { startDay = 1; endDay = 10; }
-            else if(activeCycleTab === 2) { startDay = 11; endDay = 20; }
-            else if(activeCycleTab === 3) { startDay = 21; endDay = 31; }
+        if(currentSite.toLowerCase().includes('site2')) {
+            if(activeCycleTab === 1) { start = 1; end = 10; }
+            else if(activeCycleTab === 2) { start = 11; end = 20; }
+            else if(activeCycleTab === 3) { start = 21; end = 31; }
         }
 
-        for (let i = startDay; i <= endDay; i++) {
-            let dayStr = i < 10 ? '0' + i : i;
-            html += `<th style="min-width:115px;">Day ${dayStr}</th>`;
+        for (let i = start; i <= end; i++) {
+            html += `<th style="min-width:110px;">Day ${String(i).padStart(2, '0')}</th>`;
         }
-        
-        html += `<th style="min-width:150px; background:#2c3e50;">Summary & Net Payable</th>`;
-        headerRow.innerHTML = html;
+        html += `<th style="min-width:140px; background:#2c3e50;">Summary & Net</th>`;
+        hRow.innerHTML = html;
     }
 
     function checkAndAutofillWorker() {
-        const nameInput = document.getElementById('wName').value.trim();
-        let currentSiteData = allSitesRecords[currentSite] || {};
-        if(currentSiteData[nameInput]) {
-            document.getElementById('wDayRate').value = currentSiteData[nameInput].dayRate || 1200;
-            document.getElementById('wHourRate').value = currentSiteData[nameInput].hourRate || 150;
-            if(currentSiteData[nameInput].shiftType) {
-                document.getElementById('wShift').value = currentSiteData[nameInput].shiftType;
-            }
+        const name = document.getElementById('wName').value.trim();
+        let cData = allSitesRecords[currentSite] || {};
+        if(cData[name]) {
+            document.getElementById('wDayRate').value = cData[name].dayRate || 1200;
+            document.getElementById('wHourRate').value = cData[name].hourRate || 150;
+            if(cData[name].shiftType) document.getElementById('wShift').value = cData[name].shiftType;
         }
     }
 
     function calculateHours(inT, lOut, lIn, outT) {
         if(!inT || !outT) return 0;
         let start = new Date("2026-01-01 " + inT), end = new Date("2026-01-01 " + outT);
-        let diffMs = end - start;
+        let diff = end - start;
         if(lOut && lIn) {
             let lStart = new Date("2026-01-01 " + lOut), lEnd = new Date("2026-01-01 " + lIn);
-            if(lEnd > lStart) diffMs -= (lEnd - lStart);
+            if(lEnd > lStart) diff -= (lEnd - lStart);
         }
-        return diffMs / (1000 * 60 * 60) > 0 ? diffMs / (1000 * 60 * 60) : 0;
+        return diff / 3600000 > 0 ? diff / 3600000 : 0;
     }
 
-    function formatToHoursMinutes(decimalHours) {
-        if (decimalHours <= 0) return "00:00";
-        let hrs = Math.floor(decimalHours), mins = Math.round((decimalHours - hrs) * 60);
+    function formatHours(dec) {
+        if (dec <= 0) return "00:00";
+        let hrs = Math.floor(dec), mins = Math.round((dec - hrs) * 60);
         if (mins === 60) { hrs += 1; mins = 0; }
-        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     }
 
     function saveDailyAttendance() {
@@ -347,42 +329,68 @@
         const outTime = document.getElementById('wOutTime').value;
         const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
 
-        if(!name) { alert("Bhai, Worker ka Naam daalna zaroori hai!"); return; }
-        if(!dateVal || dateVal === "") dateVal = getFormattedTodayDate();
+        if(!name) { alert("Please enter Worker Name!"); return; }
+        if(!dateVal) dateVal = getFormattedTodayDate();
 
-        let dateParts = dateVal.split('-');
-        let dayInt = dateParts[2] ? parseInt(dateParts[2]) : new Date().getDate();
-        const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
-
+        let dayStr = String(dateVal.split('-')[2]).padStart(2, '0');
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
-        let status = "A"; let otHours = 0; let earnedWages = 0; let otWagesEarned = 0;
+        
+        let status = "A", otHours = 0, earnedWages = 0, otWagesEarned = 0;
 
-        if(shiftType === '7hr') {
-            if (totalHours >= 12) { status = "P+P"; earnedWages = dayRate * 2; otHours = 0; } 
-            else if (totalHours >= 9.5) { status = "P"; earnedWages = dayRate; otWagesEarned = dayRate * 0.5; otHours = totalHours - 7; } 
-            else if (totalHours >= 5.5) { status = "P"; earnedWages = dayRate; if (totalHours > 7) { otHours = totalHours - 7; otWagesEarned = otHours * hourRate; } } 
-            else { status = "HD"; earnedWages = totalHours * (dayRate / 7); }
-        } else {
-            if (totalHours >= 13.5) { status = "P+P"; earnedWages = dayRate * 2; otHours = 0; } 
-            else if (totalHours >= 11) { status = "P"; earnedWages = dayRate; otWagesEarned = dayRate * 0.5; otHours = totalHours - 8.5; } 
-            else if (totalHours >= 7) { status = "P"; earnedWages = dayRate; if (totalHours > 8.5) { otHours = totalHours - 8.5; otWagesEarned = otHours * hourRate; } } 
-            else { status = "HD"; earnedWages = totalHours * (dayRate / 8); }
+        if(totalHours > 0) {
+            let baseDuty = (shiftType === '7hr') ? 7 : 8.5;
+            if(shiftType === '7hr') {
+                if(totalHours >= 12) { status = "P+P"; earnedWages = dayRate * 2; }
+                else if(totalHours >= 9.5) { status = "P"; earnedWages = dayRate; otHours = totalHours - 7; otWagesEarned = dayRate * 0.5; }
+                else if(totalHours >= 5.5) { status = "P"; earnedWages = dayRate; if(totalHours > 7) { otHours = totalHours - 7; otWagesEarned = otHours * hourRate; } }
+                else { status = "HD"; earnedWages = dayRate / 2; }
+            } else {
+                if(totalHours >= 13.5) { status = "P+P"; earnedWages = dayRate * 2; }
+                else if(totalHours >= 11) { status = "P"; earnedWages = dayRate; otHours = totalHours - 8.5; otWagesEarned = dayRate * 0.5; }
+                else if(totalHours >= 7) { status = "P"; earnedWages = dayRate; if(totalHours > 8.5) { otHours = totalHours - 8.5; otWagesEarned = otHours * hourRate; } }
+                else { status = "HD"; earnedWages = dayRate / 2; }
+            }
         }
-
-        if (totalHours === 0) { status = "A"; earnedWages = 0; otWagesEarned = 0; }
 
         if(!allSitesRecords[currentSite]) allSitesRecords[currentSite] = {};
-        let currentSiteData = allSitesRecords[currentSite];
-
-        if(!currentSiteData[name]) {
-            currentSiteData[name] = { dayRate, hourRate, shiftType, dates: {}, advances: {} };
+        if(!allSitesRecords[currentSite][name]) {
+            allSitesRecords[currentSite][name] = { dayRate, hourRate, shiftType, dates: {}, advances: {} };
         }
-        
-        let wRecord = currentSiteData[name];
-        wRecord.dayRate = dayRate; wRecord.hourRate = hourRate; wRecord.shiftType = shiftType;
-        
-        if(!wRecord.advances) wRecord.advances = {};
-        if(advance > 0) { wRecord.advances[dayStr] = (wRecord.advances[dayStr] || 0) + advance; }
 
-        if(!wRecord.dates) wRecord.dates = {};
-        wRecord.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: t
+        let w = allSitesRecords[currentSite][name];
+        w.dayRate = dayRate; w.hourRate = hourRate; w.shiftType = shiftType;
+        if(!w.dates) w.dates = {}; if(!w.advances) w.advances = {};
+
+        if(advance > 0) w.advances[dayStr] = (w.advances[dayStr] || 0) + advance;
+        if(totalHours > 0) {
+            w.dates[dayStr] = { inTime, lunchOut, lunchIn, outTime, hoursWorked: totalHours, otHours, status, earnedWages, otWagesEarned };
+        }
+
+        saveState();
+        document.getElementById('wName').value = '';
+        document.getElementById('wAdvance').value = '0';
+        alert("Entry saved successfully!");
+    }
+
+    function safeRenderTable() {
+        try {
+            renderCoreEngine();
+        } catch(e) {
+            console.error("Critical block caught", e);
+            document.getElementById('monthlyTableBody').innerHTML = `<tr><td colspan="15" style="color:red;padding:15px;font-weight:bold;">⚠️ Error loading view. Please select another site or refresh.</td></tr>`;
+        }
+    }
+
+    function renderCoreEngine() {
+        const tbody = document.getElementById('monthlyTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        
+        let sInput = document.getElementById('wSearch');
+        let filter = sInput ? sInput.value.toLowerCase().trim() : '';
+        let cData = allSitesRecords[currentSite] || {};
+
+        let start = 1, end = 31;
+        if(currentSite.toLowerCase().includes('site2')) {
+            if(activeCycleTab === 1) { start = 1; end = 10; }
+            else if(activeCycleTab === 2) { start = 11; end = 20;
