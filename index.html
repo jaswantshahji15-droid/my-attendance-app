@@ -160,13 +160,16 @@
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle Mode)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let activeCycleTab = 1;
 
-    function setTodayDate() {
+    function getFormattedTodayDate() {
         let today = new Date();
         let yyyy = today.getFullYear();
         let mm = String(today.getMonth() + 1).padStart(2, '0');
         let dd = String(today.getDate()).padStart(2, '0');
-        let finalDateStr = `${yyyy}-${mm}-${dd}`;
-        
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function setTodayDate() {
+        let finalDateStr = getFormattedTodayDate();
         document.getElementById('wDate').value = finalDateStr;
         document.getElementById('delDate').value = finalDateStr;
     }
@@ -303,14 +306,19 @@
         const dayRate = parseFloat(document.getElementById('wDayRate').value) || 0;
         const hourRate = parseFloat(document.getElementById('wHourRate').value) || 0;
         const shiftType = document.getElementById('wShift').value;
-        const dateVal = document.getElementById('wDate').value;
+        let dateVal = document.getElementById('wDate').value;
         const inTime = document.getElementById('wInTime').value;
         const lunchOut = document.getElementById('wLunchOut').value;
         const lunchIn = document.getElementById('wLunchIn').value;
         const outTime = document.getElementById('wOutTime').value;
         const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
 
-        if(!name || !dateVal) { alert("Bhai, Naam aur Date dono daalna zaroori hai!"); return; }
+        if(!name) { alert("Bhai, Worker ka Naam daalna zaroori hai!"); return; }
+        
+        // Background check: If date input is completely blank on mobile, auto pick today's date
+        if(!dateVal || dateVal === "") {
+            dateVal = getFormattedTodayDate();
+        }
 
         const dayInt = parseInt(dateVal.split('-')[2]);
         const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
@@ -359,6 +367,7 @@
             wRecord.advances[dayStr] = (wRecord.advances[dayStr] || 0) + advance;
         }
 
+        if(!wRecord.dates) wRecord.dates = {};
         wRecord.dates[dayStr] = { 
             inTime, lunchOut, lunchIn, outTime, 
             hoursWorked: totalHours, otHours, status, 
@@ -374,9 +383,10 @@
 
     function deleteSpecificSingleEntry() {
         const name = document.getElementById('delName').value.trim();
-        const dateVal = document.getElementById('delDate').value;
+        let dateVal = document.getElementById('delDate').value;
 
-        if(!name || !dateVal) { alert("Please type Worker Name and Select Date!"); return; }
+        if(!name) { alert("Please type Worker Name!"); return; }
+        if(!dateVal || dateVal === "") dateVal = getFormattedTodayDate();
 
         let currentSiteData = allSitesRecords[currentSite] || {};
         if(!currentSiteData[name]) { alert(`Worker "${name}" nahi mila!`); return; }
@@ -389,15 +399,4 @@
                 if(currentSiteData[name].dates) delete currentSiteData[name].dates[dayStr];
                 if(currentSiteData[name].advances) delete currentSiteData[name].advances[dayStr];
                 saveAllDataToCloudAndLocal();
-                alert("Entry delete ho gayi!");
-                document.getElementById('delName').value = '';
-            }
-        } else {
-            alert("Is date par koi attendance ya advance record nahi mila.");
-        }
-    }
-
-    function renderMonthlyTable() {
-        const tbody = document.getElementById('monthlyTableBody');
-        if(!tbody) return;
-    
+                a
