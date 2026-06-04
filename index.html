@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v9.2</title>
+    <title>Shramik Sync Master v9.3</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 100%; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -48,7 +48,7 @@
 
 <div class="container">
     <div class="company-header">
-        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.2</h1>
+        <h1 id="mainTitle" class="editable-title">Shramik Sync Master v9.3</h1>
         <div style="margin-top: 8px;">
             <span class="current-site-badge"><span id="currentSiteLabel">Site 1</span></span>
             <span class="sync-badge" id="syncStatus">🟢 System Ready (Local Storage Active)</span>
@@ -156,7 +156,7 @@
 
 <script>
     let allSitesRecords = { site1: {}, site2: {}, site3: {}, site4: {}, site5: {} };
-    let currentSite = localStorage.getItem('current_selected_site') || 'site1';
+    let currentSite = 'site1';
     let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Cycle Mode)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let activeCycleTab = 1;
 
@@ -168,24 +168,20 @@
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    function setTodayDate() {
-        let finalDateStr = getFormattedTodayDate();
-        document.getElementById('wDate').value = finalDateStr;
-        document.getElementById('delDate').value = finalDateStr;
-    }
-
-    window.onload = function() {
-        loadFromLocalStorage();
-        setTodayDate();
-    };
-
-    function loadFromLocalStorage() {
+    // Explicit Initialization sequence to prevent script crashing on mobile view load
+    document.addEventListener("DOMContentLoaded", function() {
+        currentSite = localStorage.getItem('current_selected_site') || 'site1';
         let savedRecords = localStorage.getItem('shramik_records');
         let savedNames = localStorage.getItem('shramik_site_names');
         if(savedRecords) allSitesRecords = JSON.parse(savedRecords);
         if(savedNames) siteNames = JSON.parse(savedNames);
+        
+        let finalDateStr = getFormattedTodayDate();
+        document.getElementById('wDate').value = finalDateStr;
+        document.getElementById('delDate').value = finalDateStr;
+        
         refreshSiteUiAndTables();
-    }
+    });
 
     function saveAllDataToCloudAndLocal() {
         localStorage.setItem('shramik_records', JSON.stringify(allSitesRecords));
@@ -194,7 +190,9 @@
     }
 
     function refreshSiteUiAndTables() {
-        document.getElementById('siteSelector').value = currentSite;
+        let sel = document.getElementById('siteSelector');
+        if(!sel) return;
+        sel.value = currentSite;
 
         for(let i=1; i<=5; i++) {
             let opt = document.getElementById(`opt_site${i}`);
@@ -207,11 +205,11 @@
         let bdg = document.getElementById('registerModeBadge');
         
         if(currentSite === 'site2') {
-            tabsCont.style.display = 'flex';
-            bdg.innerText = "(⚠️ 10-Day Split Mode Active)";
+            if(tabsCont) tabsCont.style.display = 'flex';
+            if(bdg) bdg.innerText = "(⚠️ 10-Day Split Mode Active)";
         } else {
-            tabsCont.style.display = 'none';
-            bdg.innerText = "(Full Month View)";
+            if(tabsCont) tabsCont.style.display = 'none';
+            if(bdg) bdg.innerText = "(Full Month View)";
         }
         
         generateTableHeader();
@@ -223,14 +221,16 @@
         localStorage.setItem('current_selected_site', currentSite);
         activeCycleTab = 1; 
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab1').classList.add('active');
+        let t1 = document.getElementById('tab1');
+        if(t1) t1.classList.add('active');
         refreshSiteUiAndTables();
     }
 
     function switchCycleTab(tabNum) {
         activeCycleTab = tabNum;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab' + tabNum).classList.add('active');
+        let t = document.getElementById('tab' + tabNum);
+        if(t) t.classList.add('active');
         generateTableHeader();
         renderMonthlyTable();
     }
@@ -314,13 +314,10 @@
         const advance = parseFloat(document.getElementById('wAdvance').value) || 0;
 
         if(!name) { alert("Bhai, Worker ka Naam daalna zaroori hai!"); return; }
-        
-        // Background check: If date input is completely blank on mobile, auto pick today's date
-        if(!dateVal || dateVal === "") {
-            dateVal = getFormattedTodayDate();
-        }
+        if(!dateVal || dateVal === "") dateVal = getFormattedTodayDate();
 
-        const dayInt = parseInt(dateVal.split('-')[2]);
+        let dateParts = dateVal.split('-');
+        let dayInt = dateParts[2] ? parseInt(dateParts[2]) : new Date().getDate();
         const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
 
         let totalHours = calculateHours(inTime, lunchOut, lunchIn, outTime);
@@ -377,7 +374,6 @@
         saveAllDataToCloudAndLocal();
         document.getElementById('wName').value = '';
         document.getElementById('wAdvance').value = '0';
-        setTodayDate();
         alert("Entry Successfully Save Ho Gayi Hai!");
     }
 
@@ -388,15 +384,14 @@
         if(!name) { alert("Please type Worker Name!"); return; }
         if(!dateVal || dateVal === "") dateVal = getFormattedTodayDate();
 
+        let dateParts = dateVal.split('-');
+        let dayInt = dateParts[2] ? parseInt(dateParts[2]) : new Date().getDate();
+        const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
+
         let currentSiteData = allSitesRecords[currentSite] || {};
         if(!currentSiteData[name]) { alert(`Worker "${name}" nahi mila!`); return; }
-
-        const dayInt = parseInt(dateVal.split('-')[2]);
-        const dayStr = dayInt < 10 ? '0' + dayInt : '' + dayInt;
 
         if((currentSiteData[name].dates && currentSiteData[name].dates[dayStr]) || (currentSiteData[name].advances && currentSiteData[name].advances[dayStr])) {
             if(confirm(`Kya aap ${name} ka Date: ${dayStr} ka data permanently clear karna chahte hain?`)) {
                 if(currentSiteData[name].dates) delete currentSiteData[name].dates[dayStr];
-                if(currentSiteData[name].advances) delete currentSiteData[name].advances[dayStr];
-                saveAllDataToCloudAndLocal();
-                a
+ 
