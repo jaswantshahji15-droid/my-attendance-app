@@ -3,37 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance Register System v10.5</title>
+    <title>Performance Register System</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; }
         .container { max-width: 100%; margin: 0 auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .editable-header { width: 100%; border: none; background: transparent; text-align: center; font-size: 22px; font-weight: bold; color: #333; margin-bottom: 5px; padding: 5px; }
-        .editable-header:focus { background: #eef5fc; outline: 1px dashed #007bff; border-radius: 4px; }
+        
+        /* Editable Heading Style */
+        .editable-header {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+        .editable-header:focus {
+            background: #eef5fc;
+            outline: 1px dashed #007bff;
+            border-radius: 4px;
+        }
+
         .site-indicator { text-align: center; font-weight: bold; color: #0056b3; margin-bottom: 15px; font-size: 14px; }
         .status-box { padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; font-size: 13px; text-align: center; }
         .sync-active { color: #27ae60; background: #e8f4fd; border: 1px solid #d4edda; }
-        .sync-offline { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .sync-offline { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; }
+        
         .setup-box { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .form-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin: 15px 0 10px 0; border-left: 4px solid #007bff; padding-left: 8px; }
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #fff; border: 1px solid #e6e9ed; padding: 15px; border-radius: 6px; }
         .field-group { display: flex; flex-direction: column; }
         .field-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #333; }
         .field-group input, .field-group select { padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; height: 32px; box-sizing: border-box; }
+        
         .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .btn-save { background: #28a745; color: white; width: 100%; margin-top: 15px; height: 40px; font-size: 15px; }
         .btn-danger { background: #dc3545; color: white; }
+        
         .cycle-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
         .tab-item { background: #e2e3e5; color: #383d41; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
         .tab-item.active { background: #007bff; color: white; }
+        
         .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #ccc; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
         th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; vertical-align: top; }
         th { background: #f1f5f9; font-weight: bold; }
         .worker-col { text-align: left; background: #f8fafc; font-weight: bold; min-width: 120px; }
         .cell-box { background: #f9f9f9; border: 1px solid #ddd; padding: 4px; border-radius: 3px; font-size: 10px; text-align: left; margin-top: 4px; line-height: 1.3; }
+        
         .badge { font-weight: bold; padding: 2px 5px; border-radius: 3px; font-size: 9px; display: inline-block; }
         .badge-P { background: #d4edda; color: #155724; }
         .badge-HD { background: #fff3cd; color: #856404; }
@@ -45,13 +67,16 @@
 <body>
 
 <div class="container">
+    <!-- TOUCH TO EDIT HEADING -->
     <input type="text" id="mainHeading" class="editable-header" value="Performance Register System" oninput="saveHeadingTitle()">
     <div id="siteIndicator" class="site-indicator">Site: Site 1</div>
 
-    <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Live Firebase Master Database Console...</div>
+    <!-- Connection Status -->
+    <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Database System...</div>
 
+    <!-- Site Selector -->
     <div class="setup-box">
-        <strong>📍 Select Active Site:</strong>
+        <strong>📍 Select Site Area:</strong>
         <select id="selSite" onchange="switchSiteEngine()" style="padding:6px; font-weight:bold;">
             <option value="site1">Site 1</option>
             <option value="site2">Site 2 (10-Day Auto Block Payment)</option>
@@ -59,17 +84,14 @@
             <option value="site4">Site 4</option>
             <option value="site5">Site 5</option>
         </select>
-        
-        <strong style="margin-left: 15px;">✏️ Rename Current Site:</strong>
-        <input type="text" id="siteRenameInput" placeholder="Naya naam enter karein..." style="padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
-        <button class="btn" style="background:#007bff; color:white; padding: 5px 10px;" onclick="renameActiveSite()">Update Name</button>
     </div>
 
+    <!-- Attendance Form -->
     <div class="form-title">📝 Day Time Office Logger</div>
     <div class="grid-inputs">
         <div class="field-group">
             <label>Worker Name</label>
-            <input type="text" id="wName" placeholder="Type name..." oninput="autofillWorkerData()">
+            <input type="text" id="wName" placeholder="e.g. Raju" onkeyup="autofillWorkerData()">
         </div>
         <div class="field-group">
             <label>Daily Wages (₹)</label>
@@ -77,48 +99,50 @@
         </div>
         <div class="field-group">
             <label>OT Pay / Hour (₹)</label>
-            <input type="number" id="wOtRate" value="100" id="wOtRate">
+            <input type="number" id="wOtRate" value="150">
         </div>
         <div class="field-group">
             <label>Shift Type</label>
-            <select id="wShift" onchange="autoCalcOtRate()">
-                <option value="8hr">Normal Shift (8:00 Hr)</option>
-                <option value="7hr">Short Shift (7:00 Hr)</option>
+            <select id="wShift">
+                <option value="normal">Normal Shift (8.5 Hr)</option>
+                <option value="7hr">7 Hour Shift System</option>
             </select>
         </div>
         <div class="field-group">
-            <label>Select Date</label>
-            <input type="date" id="wDate" onchange="handleDateChange()">
+            <label>Date</label>
+            <input type="date" id="wDate">
         </div>
         <div class="field-group">
             <label>In Time</label>
-            <input type="time" id="wIn" value="09:00" onchange="triggerLiveMath()">
+            <input type="time" id="wIn" value="09:00">
         </div>
         <div class="field-group">
             <label>Lunch Out</label>
-            <input type="time" id="wLOut" value="13:00" onchange="triggerLiveMath()">
+            <input type="time" id="wLOut" value="13:00">
         </div>
         <div class="field-group">
             <label>Lunch In</label>
-            <input type="time" id="wLIn" value="14:00" onchange="triggerLiveMath()">
+            <input type="time" id="wLIn" value="14:00">
         </div>
         <div class="field-group">
             <label>Out Time</label>
-            <input type="time" id="wOut" value="17:30" onchange="triggerLiveMath()">
+            <input type="time" id="wOut" value="17:30">
         </div>
         <div class="field-group">
             <label>Advance Taken (₹)</label>
             <input type="number" id="wAdv" value="0">
         </div>
     </div>
-    <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save & Sync Log Entry</button>
+    <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Save Log</button>
 
+    <!-- Cycle Tabs for Site 2 -->
     <div class="cycle-tabs" id="cycleTabsArea" style="display:none; margin-top:20px;">
         <button class="tab-item active" id="tab1" onclick="changeDayCycleSegment(1)">Day 01-10</button>
         <button class="tab-item" id="tab2" onclick="changeDayCycleSegment(2)">Day 11-20</button>
         <button class="tab-item" id="tab3" onclick="changeDayCycleSegment(3)">Day 21-End</button>
     </div>
 
+    <!-- Data Table -->
     <div class="form-title">📊 Performance Matrix View:</div>
     <div class="table-container">
         <table>
@@ -129,6 +153,7 @@
         </table>
     </div>
 
+    <!-- Correction / Delete Section -->
     <div class="delete-section">
         <div class="form-title" style="color:#dc3545; margin-top:0; border-left-color:#dc3545;">⚠️ Delete Entry (Galti Thik Karein)</div>
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
@@ -146,46 +171,55 @@
 </div>
 
 <script>
-    // ========================================================
-    // ⚠️ REPLACE THIS WITH YOUR EXACT FIREBASE CONSOLE REALTIME DB URL
-    // ========================================================
-    const FIREBASE_DB_URL = "https://your-project-id-default-rtdb.firebaseio.com/"; 
+    // ==========================================
+    // APNA FIREBASE REALTIME DATABASE URL YAHA DAALEIN
+    // ==========================================
+    const FIREBASE_DB_URL = "YOUR_FIREBASE_DB_URL_HERE"; 
 
     let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
-    let siteNames = { site1: "Site 1", site2: "Site 2 (10-Day Auto Block Payment)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let currentSite = 'site1';
     let currentCycleBlock = 1; 
     let firebaseRef = null;
 
     window.addEventListener('DOMContentLoaded', () => {
+        // Set Default Dates
         let today = new Date();
-        let isoToday = today.toISOString().split('T')[0];
+        let yyyy = today.getFullYear();
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let dd = String(today.getDate()).padStart(2, '0');
+        let isoToday = `${yyyy}-${mm}-${dd}`;
         
         document.getElementById('wDate').value = isoToday;
         document.getElementById('delDate').value = isoToday;
 
+        // Load Saved Title Heading
         if(localStorage.getItem('main_heading_title')) {
             document.getElementById('mainHeading').value = localStorage.getItem('main_heading_title');
         }
+
+        // Load Offline Data First (Safety Net - Game Changer)
         if(localStorage.getItem('shramik_local_backup')) {
             try { memoryDB = JSON.parse(localStorage.getItem('shramik_local_backup')); } catch(e){}
         }
-        if(localStorage.getItem('shramik_site_names')) {
-            try { siteNames = JSON.parse(localStorage.getItem('shramik_site_names')); } catch(e){}
-        }
 
         initializeDatabaseConnection();
-        autoCalcOtRate();
-        handleDateChange(); 
+        renderAppUI();
     });
 
     function saveHeadingTitle() {
-        localStorage.setItem('main_heading_title', document.getElementById('mainHeading').value);
+        let val = document.getElementById('mainHeading').value;
+        localStorage.setItem('main_heading_title', val);
     }
 
-    // ⚡ Realtime Firebase Handshake
     function initializeDatabaseConnection() {
-        if(!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("your-project-id")) {
+        // Timeout Protection: Agar 4 second me Firebase connect nahi hua, toh offline mode chalu kardo hang kiye bina
+        setTimeout(() => {
+            if(!firebaseRef) {
+                setOfflineModeNotice();
+            }
+        }, 4000);
+
+        if(!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("YOUR_FIREBASE_DB_URL_HERE")) {
             setOfflineModeNotice();
             return;
         }
@@ -199,14 +233,11 @@
             firebaseRef.on('value', (snapshot) => {
                 let incomingData = snapshot.val();
                 if(incomingData) {
-                    if (incomingData.entries) memoryDB = incomingData.entries;
-                    if (incomingData.siteNames) siteNames = incomingData.siteNames;
-                    
+                    memoryDB = incomingData;
                     localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
-                    localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
                 }
                 document.getElementById('syncStatus').className = "status-box sync-active";
-                document.getElementById('syncStatus').innerHTML = "🟢 Live Cloud Sync Connected (Active Console Mode)";
+                document.getElementById('syncStatus').innerHTML = "🟢 Live Cloud Sync Connected (Active)";
                 renderAppUI();
             }, (error) => {
                 setOfflineModeNotice();
@@ -218,46 +249,20 @@
 
     function setOfflineModeNotice() {
         document.getElementById('syncStatus').className = "status-box sync-offline";
-        document.getElementById('syncStatus').innerHTML = "⚠️ Cloud Offline: Please Enter Valid Firebase RTDB URL in Code Code Node";
-        renderAppUI();
+        document.getElementById('syncStatus').innerHTML = "⚠️ Working Offline Mode (Data Saving Locally on Phone)";
     }
 
     function pushUpdatedStateToCloud() {
         localStorage.setItem('shramik_local_backup', JSON.stringify(memoryDB));
-        localStorage.setItem('shramik_site_names', JSON.stringify(siteNames));
         if(firebaseRef) {
-            firebaseRef.set({ entries: memoryDB, siteNames: siteNames })
-                .then(() => console.log("Cloud Saved!"))
-                .catch(err => console.log("Delay encountered..."));
+            firebaseRef.set(memoryDB).catch(err => console.log("Cloud sync delayed..."));
         }
         renderAppUI();
     }
 
-    // ⏱️ Auto Calculations Controls
     function autoCalcOtRate() {
         let dWages = parseFloat(document.getElementById('wWages').value) || 0;
-        let shiftType = document.getElementById('wShift').value;
-        let totalHours = (shiftType === '7hr') ? 7 : 8;
-        
-        // Auto-connect per hour overtime payment calculation instantly
-        document.getElementById('wOtRate').value = dWages > 0 ? (dWages / totalHours).toFixed(2) : 0;
-        triggerLiveMath();
-    }
-
-    function handleDateChange() {
-        let dateVal = document.getElementById('wDate').value;
-        if(!dateVal) return;
-        
-        let dayNum = parseInt(dateVal.split("-")[2], 10);
-        
-        // Automated Day Switch View for Block 2 View Mode
-        if(currentSite === 'site2') {
-            if(dayNum <= 10) changeDayCycleSegment(1);
-            else if(dayNum <= 20) changeDayCycleSegment(2);
-            else changeDayCycleSegment(3);
-        } else {
-            renderAppUI();
-        }
+        document.getElementById('wOtRate').value = dWages > 0 ? Math.round(dWages / 8) : 0;
     }
 
     function autofillWorkerData() {
@@ -265,126 +270,95 @@
         let activeRecords = memoryDB[currentSite] || {};
         if(activeRecords[nameInp]) {
             document.getElementById('wWages').value = activeRecords[nameInp].baseWages || 800;
-            document.getElementById('wShift').value = activeRecords[nameInp].shiftMode || '8hr';
-            autoCalcOtRate();
+            document.getElementById('wOtRate').value = activeRecords[nameInp].hourlyOtRate || 150;
+            if(activeRecords[nameInp].shiftMode) {
+                document.getElementById('wShift').value = activeRecords[nameInp].shiftMode;
+            }
         }
     }
 
-    function parseTimeToMinutes(tStr) {
-        if(!tStr) return 0;
-        let [h, m] = tStr.split(":").map(Number);
-        return h * 60 + m;
-    }
-
-    function convertMinutesToTimeModeString(totalMinutes) {
-        if (totalMinutes <= 0) return "00:00";
-        let hrs = Math.floor(totalMinutes / 60);
-        let mins = Math.round(totalMinutes % 60);
-        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-    }
-
-    function triggerLiveMath() {
-        console.log("Time parameter changed. Recalculating...");
-    }
-
-    // 🧮 Pure Time Mode Worker Calculation Logic Core
     function processAttendanceMath(inTime, lOut, lIn, outTime, baseWages, otRate, shiftType) {
-        if(!inTime || !outTime) return { hrsStr: "00:00", otHrsStr: "00:00", status:'A', earned:0, otEarned:0 };
+        if(!inTime || !outTime) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
 
-        let startMin = parseTimeToMinutes(inTime);
-        let endMin = parseTimeToMinutes(outTime);
-        let lunchOutMin = parseTimeToMinutes(lOut);
-        let lunchInMin = parseTimeToMinutes(lIn);
+        let start = new Date("2026-01-01 " + inTime);
+        let end = new Date("2026-01-01 " + outTime);
+        let diffMs = end - start;
 
-        let workingMins = (lunchOutMin - startMin) + (endMin - lunchInMin);
-        if(workingMins <= 0) return { hrsStr: "00:00", otHrsStr: "00:00", status:'A', earned:0, otEarned:0 };
+        if(lOut && lIn) {
+            let lStart = new Date("2026-01-01 " + lOut);
+            let lEnd = new Date("2026-01-01 " + lIn);
+            if(lEnd > lStart) diffMs -= (lEnd - lStart);
+        }
 
-        let shiftTargetMins = (shiftType === '7hr') ? (7 * 60) : (8 * 60);
-        let fullDayMaxLimitMins = 8 * 60 + 30; // 8:30 Hours Threshold
-        let halfDayOtTriggerMins = 11 * 60;   // 11:00 Hours Bonus Target
-        let doubleDhyadiMins = 13 * 60 + 30;  // 13:30 Hours Multiplier
+        let workingHours = diffMs / 3600000;
+        if(workingHours <= 0) return { hrs:0, otHrs:0, status:'A', earned:0, otEarned:0 };
 
-        let status = 'P', earned = 0, otEarned = 0, otMinutes = 0;
-        let minWageRate = baseWages / shiftTargetMins;
+        let status = 'A', otHrs = 0, earned = 0, otEarned = 0;
+        let standardShiftCap = (shiftType === '7hr') ? 7.0 : 8.5;
 
-        if(workingMins < shiftTargetMins) {
+        if(workingHours < 7.0) {
             status = 'HD';
-            earned = workingMins * minWageRate; 
+            earned = workingHours * (baseWages / 8); 
         } 
-        else if(workingMins >= shiftTargetMins && workingMins <= fullDayMaxLimitMins) {
-            status = 'P';
-            earned = baseWages; 
-        } 
-        else if(workingMins > fullDayMaxLimitMins) {
+        else if(workingHours >= 7.0 && workingHours <= standardShiftCap) {
             status = 'P';
             earned = baseWages;
-            otMinutes = workingMins - shiftTargetMins;
+        } 
+        else if(workingHours > standardShiftCap) {
+            status = 'P';
+            earned = baseWages;
+            otHrs = workingHours - standardShiftCap;
 
-            if(workingMins >= doubleDhyadiMins) {
+            if(workingHours >= 13.5) {
                 status = 'PP'; 
                 earned = baseWages * 2; 
-                otEarned = baseWages; 
-            } else if(workingMins >= halfDayOtTriggerMins) {
+                otHrs = 0;
+                otEarned = 0;
+            } else if(workingHours >= 11.0) {
                 otEarned = baseWages * 0.5; 
             } else {
-                otEarned = (otMinutes / 60) * otRate; 
+                otEarned = otHrs * otRate; 
             }
         }
 
-        return { 
-            hrsStr: convertMinutesToTimeModeString(workingMins), 
-            otHrsStr: convertMinutesToTimeModeString(otMinutes), 
-            status: status, earned: earned, otEarned: otEarned 
-        };
+        return { hrs: workingHours, otHrs: otHrs, status: status, earned: earned, otEarned: otEarned };
     }
 
     function renderAppUI() {
         document.getElementById('selSite').value = currentSite;
-        for(let i=0; i<5; i++) {
-            let key = 'site' + (i+1);
-            if(document.getElementById('selSite').options[i]) {
-                document.getElementById('selSite').options[i].text = siteNames[key] || key.toUpperCase();
-            }
-        }
-        document.getElementById('siteIndicator').innerText = "Site: " + (siteNames[currentSite] || currentSite).toUpperCase();
+        document.getElementById('siteIndicator').innerText = "Site: " + currentSite.toUpperCase();
         
         let tabContainer = document.getElementById('cycleTabsArea');
-        tabContainer.style.display = (currentSite === 'site2') ? 'flex' : 'none';
-        
+        if(currentSite === 'site2') {
+            tabContainer.style.display = 'flex';
+        } else {
+            tabContainer.style.display = 'none';
+        }
         buildPerformanceGridStructure();
     }
 
     function switchSiteEngine() {
         currentSite = document.getElementById('selSite').value;
         currentCycleBlock = 1;
+        
         document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
         if(document.getElementById('tab1')) document.getElementById('tab1').classList.add('active');
-        handleDateChange();
-    }
 
-    function renameActiveSite() {
-        let newName = document.getElementById('siteRenameInput').value.trim();
-        if(!newName) return;
-        siteNames[currentSite] = newName;
-        document.getElementById('siteRenameInput').value = "";
-        pushUpdatedStateToCloud();
+        renderAppUI();
     }
 
     function changeDayCycleSegment(blockNum) {
         currentCycleBlock = blockNum;
         document.querySelectorAll('.cycle-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
-        let targetTab = document.getElementById('tab' + blockNum);
-        if(targetTab) targetTab.classList.add('active');
-        buildPerformanceGridStructure();
+        document.getElementById('tab' + blockNum).classList.add('active');
+        renderAppUI();
     }
 
     function buildPerformanceGridStructure() {
         let headRow = document.getElementById('tableHeadRow');
-        if(!headRow) return;
-        
         let headerHtml = '<th style="text-align:left; padding-left:10px;">Worker Name</th>';
-        let dayStart = 1, dayEnd = 31;
         
+        let dayStart = 1, dayEnd = 31;
         if(currentSite === 'site2') {
             if(currentCycleBlock === 1) { dayStart = 1; dayEnd = 10; }
             else if(currentCycleBlock === 2) { dayStart = 11; dayEnd = 20; }
@@ -402,7 +376,6 @@
 
     function populateTableRowsData(start, end) {
         let tableBody = document.getElementById('tableBodyData');
-        if(!tableBody) return;
         tableBody.innerHTML = '';
 
         let siteDataMap = memoryDB[currentSite] || {};
@@ -417,4 +390,55 @@
             let workerObject = siteDataMap[wKey];
             let rowElement = document.createElement('tr');
 
-            let rowHtmlStr 
+            let rowHtmlStr = `<td class="worker-col" style="padding-left:8px;">
+                👤 ${wKey}<br>
+                <span style="color:#666; font-size:10px; font-weight:normal;">Wages: ₹${workerObject.baseWages}/d</span>
+            </td>`;
+
+            let accumulatedGross = 0;
+            let accumulatedAdvances = 0;
+
+            for(let d = start; d <= end; d++) {
+                let dayStringToken = String(d).padStart(2, '0');
+                
+                let attRecord = (workerObject.attendance && workerObject.attendance[dayStringToken]) ? workerObject.attendance[dayStringToken] : null;
+                let advRecord = (workerObject.advances && workerObject.advances[dayStringToken]) ? parseFloat(workerObject.advances[dayStringToken]) : 0;
+                
+                accumulatedAdvances += advRecord;
+
+                if(attRecord) {
+                    let completeDayEarnings = parseFloat(attRecord.earned || 0) + parseFloat(attRecord.otEarned || 0);
+                    accumulatedGross += completeDayEarnings;
+
+                    rowHtmlStr += `<td>
+                        <span class="badge badge-${attRecord.status}">${attRecord.status}</span>
+                        <div class="cell-box">
+                            <b>In:</b> ${attRecord.inTime}<br>
+                            <b>Out:</b> ${attRecord.outTime}<br>
+                            <b>Hrs:</b> ${parseFloat(attRecord.hrsWorked).toFixed(1)}<br>
+                            <span style="color:#28a745; font-weight:bold;">OT: ₹${parseFloat(attRecord.otEarned).toFixed(0)}</span>
+                        </div>
+                        ${advRecord > 0 ? `<div style="color:#dc3545; font-weight:bold; font-size:9px; margin-top:3px;">💸 Adv: ₹${advRecord}</div>` : ''}
+                    </td>`;
+                } else {
+                    rowHtmlStr += `<td>
+                        -
+                        ${advRecord > 0 ? `<div style="color:#dc3545; font-weight:bold; font-size:9px; margin-top:4px;">💸 Adv<br>₹${advRecord}</div>` : ''}
+                    </td>`;
+                }
+            }
+
+            let computedNetPayable = accumulatedGross - accumulatedAdvances;
+            rowHtmlStr += `<td style="background:#fafafa; text-align:left;">
+                <div style="font-weight:bold; color:#0056b3; font-size:11px;">Gross: ₹${accumulatedGross.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#dc3545; font-size:11px; margin-top:2px;">Advance: ₹${accumulatedAdvances.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#28a745; font-size:12px; margin-top:4px; border-top:1px solid #ccc; padding-top:2px;">Net: ₹${computedNetPayable.toFixed(0)}</div>
+            </td>`;
+
+            rowElement.innerHTML = rowHtmlStr;
+            tableBody.appendChild(rowElement);
+        });
+    }
+
+    function saveAttendanceRecord() {
+        let name = document.getElementById('
