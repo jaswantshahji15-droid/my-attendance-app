@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master Ultimate v12.6</title>
+    <title>Shramik Sync Master Ultimate v12.7</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
         .master-container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); box-sizing: border-box; }
@@ -60,7 +60,7 @@
 
 <div class="master-container">
     <div class="header-block">
-        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.6" oninput="persistAppTitle()">
+        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.7" oninput="persistAppTitle()">
     </div>
     <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site...</div>
     <div id="cloudSyncStatus" class="status-panel status-online">🟢 Connection Active • Shramik Live Sync Engine</div>
@@ -172,6 +172,16 @@
     let currentActiveSiteKey = 'site1';
     let currentSite2CycleSegment = 1;
 
+    // Time Formatter function to safely maintain hh:mm format
+    function safeTimeFormat(timeStr) {
+        if (!timeStr) return "00:00";
+        let parts = timeStr.split(':');
+        if (parts.length >= 2) {
+            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+        }
+        return timeStr;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         let clock = new Date();
         let formattedIsoToday = `${clock.getFullYear()}-${String(clock.getMonth() + 1).padStart(2, '0')}-${String(clock.getDate()).padStart(2, '0')}`;
@@ -245,7 +255,7 @@
     function calculateLiveHourlyOtRate() {
         let dailyWages = parseFloat(document.getElementById('formDailyWages').value) || 0;
         let shiftConfig = document.getElementById('formShiftMode').value;
-        let baseDenominator = (shiftConfig === '7hr') ? 7.0 : 8.0; // PERFECT 8 HOUR SHIFT ASSIGNMENT
+        let baseDenominator = (shiftConfig === '7hr') ? 7.0 : 8.0; 
         document.getElementById('formHourlyOtRate').value = dailyWages > 0 ? Math.round(dailyWages / baseDenominator) : 0;
     }
 
@@ -274,7 +284,7 @@
         if(calculatedNetWorkingHours <= 0) return { netHrs:0, otHrs:0, status:'A', earnedWages:0, earnedOt:0 };
         
         let status = 'A', otHours = 0, wageEarnings = 0, otEarnings = 0;
-        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.0; // LIVE CALCULATOR RUNNING ON 8.0 FIXED
+        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.0; 
 
         if (calculatedNetWorkingHours < evaluatedShiftThreshold) {
             status = 'HD'; 
@@ -291,10 +301,16 @@
     }
 
     function renderSystemInterfaceDynamicUI() {
-        document.getElementById('activeSiteSelector').value = currentActiveSiteKey;
-        document.getElementById('activeWorkspaceBadge').innerText = "Site: " + siteNamesMap[currentActiveSiteKey];
+        let siteSelector = document.getElementById('activeSiteSelector');
+        if(siteSelector) { siteSelector.value = currentActiveSiteKey; }
+        
+        let badge = document.getElementById('activeWorkspaceBadge');
+        if(badge) { badge.innerText = "Site: " + (siteNamesMap[currentActiveSiteKey] || currentActiveSiteKey); }
+        
         let cycleBar = document.getElementById('site2SegmentTabsBlock');
-        if(currentActiveSiteKey === 'site2') { cycleBar.style.display = 'flex'; } else { cycleBar.style.display = 'none'; }
+        if(cycleBar) {
+            if(currentActiveSiteKey === 'site2') { cycleBar.style.display = 'flex'; } else { cycleBar.style.display = 'none'; }
+        }
         generateLayoutSpreadsheetGridStructure();
     }
 
@@ -315,6 +331,8 @@
 
     function generateLayoutSpreadsheetGridStructure() {
         let headTrack = document.getElementById('gridHeaderRow');
+        if(!headTrack) return;
+        
         let rawHtmlHeaderString = '<th style="text-align:left; padding-left:10px; position: sticky; left: 0; z-index: 2; background: #f8fafc; border-right: 2px solid #cbd5e1;">Worker Name</th>';
         let startDay = 1, endDay = 31;
         if(currentActiveSiteKey === 'site2') {
@@ -330,16 +348,11 @@
 
     function bindTransactionalDataRowsToGrid(dayStartBound, dayEndBound) {
         let dataGridBody = document.getElementById('gridBodyDataPool');
+        if(!dataGridBody) return;
         dataGridBody.innerHTML = '';
+        
         let activeSiteNodeMap = masterDB[currentActiveSiteKey] || {};
         let workerProfileKeysList = Object.keys(activeSiteNodeMap);
 
         if(workerProfileKeysList.length === 0) {
-            dataGridBody.innerHTML = `<tr><td colspan="42" style="padding:20px; color:#64748b; font-size:12px; background:#f8fafc;">No data found in this area. Save details to create logs.</td></tr>`;
-            return;
-        }
-
-        workerProfileKeysList.forEach(profileNameKey => {
-            let dataObjectNode = activeSiteNodeMap[profileNameKey];
-            let rowWrapperElement = document.createElement('tr');
-            let cellHtmlString = `<td class="fixed-worker-cell" style="padding-left:10px;">👤 <span style="color:#0f172a; font-size:12px; font-weight:800;">${profileNameKey}</span><br><span style="color:#64748b; font-size:10px;">Wages: ₹${dataObjectNode.baseWages}/d</
+            dataGridBody.innerHTML = `<tr><td colspan="42" style="padding:20px; color:#64748b; font-size:12px; background:#f8fafc;">No data found in this area. Save
