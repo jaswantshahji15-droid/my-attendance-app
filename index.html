@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Live Register v15.0</title>
+    <title>Shramik Sync Ultimate v16.0 - Final Patch</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -52,9 +52,9 @@
 
 <div class="master-app-wrapper">
     <div class="header-section">
-        <input type="text" id="appTitleInput" class="editable-title" value="Shramik Sync Ultimate Master Register v15.0" oninput="saveTitleState()">
-        <div class="site-badge-text" id="currentActiveSiteDisplay">Active Site: Loading Architecture...</div>
-        <div class="sync-badge">🟢 Connected To Firebase Real-time Cloud Engine (Live Sync Enabled)</div>
+        <input type="text" id="appTitleInput" class="editable-title" value="Shramik Sync Live Register Master v16.0" oninput="saveTitleState()">
+        <div class="site-badge-text" id="currentActiveSiteDisplay">Active Site: Initializing Local View Engine...</div>
+        <div class="sync-badge" id="cloudStatusBadge" style="background:#fef9c3; color:#854d0e; border-color:#fef08a;">🔄 Sync Connection Pending...</div>
     </div>
 
     <div class="control-panel">
@@ -154,18 +154,21 @@
 </div>
 
 <script>
-    // Exact Firebase Real-time Database Endpoint Setup
     const firebaseConfig = { databaseURL: "https://shramiksync-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const cloudDatabaseNode = firebase.database().ref("shramik_v15_node");
+    let cloudDatabaseNode = null;
 
-    // Core Data Architecture
+    try {
+        firebase.initializeApp(firebaseConfig);
+        cloudDatabaseNode = firebase.database().ref("shramik_v15_node");
+    } catch(e) {
+        console.error("Firebase startup delay:", e);
+    }
+
     let memoryDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
     let siteNamingMap = { site1: "Site 1", site2: "Site 2 (10-Day Auto Salary Split)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let activeSiteKey = 'site1';
     let activeSite2BlockSegment = 1;
 
-    // Numerical Decimal Hours to hh:mm String Formatter
     function formatToHhMm(decimalHours) {
         if (isNaN(decimalHours) || decimalHours <= 0) return "00:00";
         let hoursInteger = Math.floor(decimalHours);
@@ -180,34 +183,45 @@
         return segments.length >= 2 ? `${segments[0].padStart(2,'0')}:${segments[1].padStart(2,'0')}` : timeString;
     }
 
-    // Application Lifecycle Initialization
+    // MANDATORY NON-BLOCKING BOOT PROCEDURE
     window.addEventListener('DOMContentLoaded', () => {
+        setupDefaultDates();
+        loadSavedLocalTitle();
+        updateSiteSelectorsUI();
+        rebuildUIMatrices();
+
+        if(cloudDatabaseNode) {
+            cloudDatabaseNode.on('value', (dataSnapshot) => {
+                let cloudPayload = dataSnapshot.val();
+                if(cloudPayload) {
+                    if(cloudPayload.memoryDB) memoryDB = cloudPayload.memoryDB;
+                    if(cloudPayload.siteNamingMap) siteNamingMap = cloudPayload.siteNamingMap;
+                    updateSiteSelectorsUI();
+                    rebuildUIMatrices();
+                }
+                const badge = document.getElementById('cloudStatusBadge');
+                badge.innerText = "🟢 Connected to Cloud (Live Sync Enabled)";
+                badge.style.background = "#dcfce7";
+                badge.style.color = "#166534";
+                badge.style.borderColor = "#bbf7d0";
+            }, (error) => {
+                console.warn("Real-time stream fallback active:", error);
+            });
+        }
+        triggerLiveOtRateCalc();
+    });
+
+    function setupDefaultDates() {
         let currentDateIso = new Date().toISOString().split('T')[0];
         document.getElementById('inputLogDate').value = currentDateIso;
         document.getElementById('purgeLogDate').value = currentDateIso;
+    }
 
+    function loadSavedLocalTitle() {
         if(localStorage.getItem('shramik_v15_app_title')) {
             document.getElementById('appTitleInput').value = localStorage.getItem('shramik_v15_app_title');
         }
-
-        // Real-time Cloud Data Synchronizer Engine (Laptop ⇄ Mobile Sync Without Refresh)
-        cloudDatabaseNode.on('value', (dataSnapshot) => {
-            let cloudPayload = dataSnapshot.val();
-            if(cloudPayload) {
-                memoryDB = cloudPayload.memoryDB || memoryDB;
-                siteNamingMap = cloudPayload.siteNamingMap || siteNamingMap;
-                updateSiteSelectorsUI();
-                rebuildUIMatrices();
-            } else {
-                // Pre-seed database if empty to avoid architecture errors
-                updateCloudNodeInstance();
-            }
-        }, (error) => {
-            console.error("Firebase Sync Interrupted: ", error);
-        });
-
-        triggerLiveOtRateCalc();
-    });
+    }
 
     function saveTitleState() {
         localStorage.setItem('shramik_v15_app_title', document.getElementById('appTitleInput').value);
@@ -227,6 +241,7 @@
         siteNamingMap[activeSiteKey] = textValue;
         document.getElementById('siteNewNameInput').value = '';
         updateCloudNodeInstance();
+        updateSiteSelectorsUI();
     }
 
     function triggerLiveOtRateCalc() {
@@ -246,7 +261,6 @@
         }
     }
 
-    // PERFECT COMPLEX WAGES & STATUS ATTENDANCE COMPUTATION ENGINE
     function calculateShiftAttendanceMetrics(timeIn, lunchOut, lunchIn, timeOut, dailyWages, otHourlyRate, shiftMode) {
         if(!timeIn || !timeOut) return { netHours:0, otHours:0, status:'A', finalWages:0, finalOtPay:0 };
         
@@ -266,7 +280,6 @@
         let status = 'A', otHours = 0, finalWages = 0, finalOtPay = 0;
         let standardShiftTarget = (shiftMode === '7hr') ? 7.0 : 8.0;
 
-        // Exact Condition Hierarchy Matching Business Logic
         if (netWorkingHours >= 4.0 && netWorkingHours <= 5.0) {
             status = 'HLF';
             finalWages = netWorkingHours * (dailyWages / standardShiftTarget);
@@ -289,11 +302,11 @@
             status = 'P';
             finalWages = dailyWages;
             otHours = netWorkingHours - standardShiftTarget;
-            finalOtPay = dailyWages / 2; // Half day wages bonus flat OT
+            finalOtPay = dailyWages / 2;
         }
         else if (netWorkingHours > 13.5) {
             status = 'PP';
-            finalWages = dailyWages * 2; // Double Dhyadi
+            finalWages = dailyWages * 2;
             otHours = netWorkingHours - standardShiftTarget;
             finalOtPay = 0;
         }
@@ -306,6 +319,7 @@
         activeSite2BlockSegment = 1;
         document.querySelectorAll('.tabs-container .tab-trigger').forEach(el => el.classList.remove('active'));
         if(document.getElementById('segmentTab1')) document.getElementById('segmentTab1').classList.add('active');
+        document.getElementById('currentActiveSiteDisplay').innerText = "Active Site: " + siteNamingMap[activeSiteKey];
         rebuildUIMatrices();
     }
 
@@ -320,9 +334,10 @@
         document.getElementById('site2AutoTabsContainer').style.display = (activeSiteKey === 'site2') ? 'flex' : 'none';
         
         let tableHeaderElement = document.getElementById('payrollGridHeader');
+        if(!tableHeaderElement) return;
+
         let initialDay = 1, finalDay = 31;
         
-        // Dynamic Segment Configuration for Site 2 Auto-Splitting Engine
         if(activeSiteKey === 'site2') {
             if(activeSite2BlockSegment === 1) { initialDay = 1; finalDay = 10; }
             else if(activeSite2BlockSegment === 2) { initialDay = 11; finalDay = 20; }
@@ -336,15 +351,4 @@
         compiledHeaderHtml += '<th class="summary-block-column" style="background:#2563eb; color:white;">Auto Summary Calculation Block</th>';
         tableHeaderElement.innerHTML = compiledHeaderHtml;
 
-        populateGridRows(initialDay, finalDay);
-    }
-
-    function populateGridRows(startDay, endDay) {
-        let tableBodyElement = document.getElementById('payrollGridBody');
-        tableBodyElement.innerHTML = '';
-        
-        let registeredWorkersMap = memoryDB[activeSiteKey] || {};
-        let workerKeysCollection = Object.keys(registeredWorkersMap);
-
-        if(workerKeysCollection.length === 0) {
-            
+        populateGridRows(initialDay, fi
