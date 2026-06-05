@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master Ultimate v12.7</title>
+    <title>Shramik Sync Master Ultimate v12.8</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
         .master-container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); box-sizing: border-box; }
@@ -60,9 +60,9 @@
 
 <div class="master-container">
     <div class="header-block">
-        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.7" oninput="persistAppTitle()">
+        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.8" oninput="persistAppTitle()">
     </div>
-    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site...</div>
+    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Live Tracking</div>
     <div id="cloudSyncStatus" class="status-panel status-online">🟢 Connection Active • Shramik Live Sync Engine</div>
 
     <div class="config-box">
@@ -172,9 +172,8 @@
     let currentActiveSiteKey = 'site1';
     let currentSite2CycleSegment = 1;
 
-    // Time Formatter function to safely maintain hh:mm format
     function safeTimeFormat(timeStr) {
-        if (!timeStr) return "00:00";
+        if (!timeStr || typeof timeStr !== 'string') return "00:00";
         let parts = timeStr.split(':');
         if (parts.length >= 2) {
             return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
@@ -227,19 +226,23 @@
         document.getElementById('renameSiteInputField').value = '';
         
         fetch(META_REST_ENDPOINT, { method: 'PUT', body: JSON.stringify(siteNamesMap) })
-            .then(() => renderSystemInterfaceDynamicUI());
+            .then(() => renderSystemInterfaceDynamicUI())
+            .catch(e => console.log(e));
     }
 
     function pullCloudDatabaseState() {
         fetch(BASE_REST_ENDPOINT)
             .then(res => res.json())
             .then(data => {
-                if(data) {
+                if(data && typeof data === 'object') {
                     masterDB = data;
                     localStorage.setItem('shramik_unbreakable_local_cache', JSON.stringify(masterDB));
                     renderSystemInterfaceDynamicUI();
                 }
-            }).catch(e => console.log("Offline backup running."));
+            }).catch(e => {
+                console.log("Offline or sync delay, pulling local storage.");
+                renderSystemInterfaceDynamicUI();
+            });
     }
 
     function pushCurrentStateToCloud() {
@@ -249,12 +252,12 @@
         fetch(BASE_REST_ENDPOINT, {
             method: 'PUT',
             body: JSON.stringify(masterDB)
-        }).catch(err => console.log("Local sync complete. Retry waiting."));
+        }).catch(err => console.log("Local save complete, cloud waiting sync."));
     }
 
     function calculateLiveHourlyOtRate() {
         let dailyWages = parseFloat(document.getElementById('formDailyWages').value) || 0;
-        let shiftConfig = document.getElementById('formShiftMode').value;
+        let shiftConfig = document.getElementById('formShiftMode').value || '8hr';
         let baseDenominator = (shiftConfig === '7hr') ? 7.0 : 8.0; 
         document.getElementById('formHourlyOtRate').value = dailyWages > 0 ? Math.round(dailyWages / baseDenominator) : 0;
     }
@@ -301,17 +304,21 @@
     }
 
     function renderSystemInterfaceDynamicUI() {
-        let siteSelector = document.getElementById('activeSiteSelector');
-        if(siteSelector) { siteSelector.value = currentActiveSiteKey; }
-        
-        let badge = document.getElementById('activeWorkspaceBadge');
-        if(badge) { badge.innerText = "Site: " + (siteNamesMap[currentActiveSiteKey] || currentActiveSiteKey); }
-        
-        let cycleBar = document.getElementById('site2SegmentTabsBlock');
-        if(cycleBar) {
-            if(currentActiveSiteKey === 'site2') { cycleBar.style.display = 'flex'; } else { cycleBar.style.display = 'none'; }
+        try {
+            let siteSelector = document.getElementById('activeSiteSelector');
+            if(siteSelector) { siteSelector.value = currentActiveSiteKey; }
+            
+            let badge = document.getElementById('activeWorkspaceBadge');
+            if(badge) { badge.innerText = "Site: " + (siteNamesMap[currentActiveSiteKey] || currentActiveSiteKey); }
+            
+            let cycleBar = document.getElementById('site2SegmentTabsBlock');
+            if(cycleBar) {
+                if(currentActiveSiteKey === 'site2') { cycleBar.style.display = 'flex'; } else { cycleBar.style.display = 'none'; }
+            }
+            generateLayoutSpreadsheetGridStructure();
+        } catch (err) {
+            console.log("Safe Render Catch block engaged: ", err);
         }
-        generateLayoutSpreadsheetGridStructure();
     }
 
     function engageSiteWorkspaceSwitch() {
@@ -351,8 +358,4 @@
         if(!dataGridBody) return;
         dataGridBody.innerHTML = '';
         
-        let activeSiteNodeMap = masterDB[currentActiveSiteKey] || {};
-        let workerProfileKeysList = Object.keys(activeSiteNodeMap);
-
-        if(workerProfileKeysList.length === 0) {
-            dataGridBody.innerHTML = `<tr><td colspan="42" style="padding:20px; color:#64748b; font-size:12px; background:#f8fafc;">No data found in this area. Save
+        let activeSiteNodeMap = masterDB
