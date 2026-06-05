@@ -1,52 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-    <title>Shramik Sync Wages</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <title>Shramik Sync Pro Engine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body class="container mt-4">
-    <h3>Worker Daily Attendance & Wages</h3>
+<body class="bg-light p-3">
+
+<div class="container bg-white p-4 shadow-sm rounded">
+    <h3>Shramik Sync Pro</h3>
     
-    <div class="row g-3">
-        <input type="text" id="workerName" placeholder="Worker Name" class="form-control col">
-        <input type="number" id="dailyWage" placeholder="Full Day Wage" class="form-control col">
-        <input type="number" id="advance" placeholder="Advance Amount" class="form-control col">
-        <button onclick="addEntry()" class="btn btn-primary">Add Entry</button>
+    <div class="row g-2 mb-3">
+        <input type="text" id="name" class="form-control" placeholder="Worker Name">
+        <input type="number" id="wage" class="form-control" placeholder="Daily Wage">
+        <input type="date" id="date" class="form-control">
+        <input type="time" id="in" class="form-control" placeholder="In Time">
+        <input type="time" id="out" class="form-control" placeholder="Out Time">
+        <input type="number" id="adv" class="form-control" placeholder="Advance">
+        <button onclick="saveEntry()" class="btn btn-success">Save Entry</button>
     </div>
 
-    <table class="table mt-4" id="wageTable">
-        <thead>
-            <tr>
-                <th>Date</th><th>In</th><th>Lunch Out</th><th>Lunch In</th><th>Out</th>
-                <th>Work Hrs</th><th>OT Hrs</th><th>Status</th><th>Total</th><th>Action</th>
-            </tr>
+    <div class="card p-3 mb-3 bg-light">
+        <h5>Salary Slip Report (10 Days Filter)</h5>
+        <div class="row g-2">
+            <input type="date" id="sDate" class="form-control col" placeholder="Start Date">
+            <input type="date" id="eDate" class="form-control col" placeholder="End Date">
+            <button onclick="generateReport()" class="btn btn-info">Generate 10-Day Summary</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-sm">
+        <thead class="table-dark">
+            <tr><th>Date</th><th>Name</th><th>Hrs</th><th>OT</th><th>Total</th><th>Adv</th><th>Net</th><th>Action</th></tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="list"></tbody>
     </table>
+</div>
 
-    <script>
-        const firebaseConfig = {
-            databaseURL: "https://shramiksync-default-rtdb.firebaseio.com/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref('workers');
+<script>
+    const dbRef = firebase.database().ref('shramik_data');
+    if (!firebase.apps.length) firebase.initializeApp({ databaseURL: "https://shramiksync-default-rtdb.firebaseio.com/" });
 
-        // Yahan Calculation Logic
-        function calculateWages(hours, dailyWage) {
-            let pay = 0;
-            // 7 ghante se kam -> per hr base
-            // 7-8.5 ghante -> full day
-            // 8.5-11 ghante -> OT
-            // 13.3+ -> Double
-            // 4-5 ghante -> HLF
-            return pay; // Logic implementation
-        }
+    function saveEntry() {
+        const name = document.getElementById('name').value;
+        const wage = parseFloat(document.getElementById('wage').value);
+        const date = document.getElementById('date').value;
+        const inT = document.getElementById('in').value;
+        const outT = document.getElementById('out').value;
+        const adv = parseFloat(document.getElementById('adv').value) || 0;
 
-        function addEntry() {
-            // Firebase push code
-        }
-    </script>
+        const hrs = (new Date("2026-01-01 " + outT) - new Date("2026-01-01 " + inT)) / 3600000;
+        let ot = 0, pay = 0;
+
+        // Rules: 7-8.5hr = Full, <7hr = Per hr, >8.5hr = OT, 13.5hr+ = Double
+        if (hrs >= 13.5) pay = wage * 2;
+        else if (hrs > 8.5) { ot = hrs - 8.5; pay = wage + (ot * (wage/8)); }
+        else if (hrs >= 7) pay = wage;
+        else pay = (hrs / 8) * wage;
+
+        dbRef.push({ name, date, hrs: hrs.toFixed(2), ot: ot.toFixed(2), pay: Math.round(pay), adv, net: Math.round(pay - adv) });
+        alert("Entry Saved!");
+    }
+
+    function generateReport() {
+        const s = document.getElementById('sDate').value;
+        const e = document.getElementById('eDate').value;
+        let totalPay = 0, totalAdv = 0;
+
+        dbRef.once('value', snap => {
+            snap.forEach(sNode => {
+                let v = sNode.val();
+                if (v.date >= s && v.date <= e) {
+                    totalPay += parseInt(v.pay);
+                    totalAdv += parseInt(v.adv);
+                }
+            });
+            alert(`Summary (${s} to ${e}):\nTotal Earned: ₹${totalPay}\nTotal Advance: ₹${totalAdv}\nNet Payable: ₹${totalPay - totalAdv}`);
+        });
+    }
+
+    dbRef.on('value', snap => {
+        let html = '';
+        snap.forEach(s => {
+            let v = s.val();
+            html += `<tr><td>${v.date}</td><td>${v.name}</td><td>${v.hrs}</td><td>${v.ot}</td><td>${v.pay}</td><td>${v.adv}</td><td>${v.net}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="dbRef.child('${s.key}').remove()">X</button></td></tr>`;
+        });
+        document.getElementById('list').innerHTML = html;
+    });
+</script>
 </body>
 </html>
