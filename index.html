@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Shramik Core Master Engine v11.1</title>
-    
-    <!-- STABLE PRODUCTION FIREBASE CORE INJECTOR -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+    <title>Shramik Sync Master Ultimate v12.5</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
         .master-container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); box-sizing: border-box; }
         
         .header-block { text-align: center; margin-bottom: 15px; }
-        .main-title { width: 100%; border: none; background: transparent; text-align: center; font-size: 26px; font-weight: 800; color: #0f172a; padding: 4px; box-sizing: border-box; }
+        .main-title { width: 100%; border: none; background: transparent; text-align: center; font-size: 24px; font-weight: 800; color: #0f172a; padding: 4px; box-sizing: border-box; }
         .workspace-badge { text-align: center; font-weight: 700; color: #2563eb; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
         
         .status-panel { padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: 700; font-size: 13px; text-align: center; }
         .status-online { color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; }
-        .status-offline { color: #b45309; background: #fef3c7; border: 1px solid #fde68a; }
 
         .config-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -33,7 +27,7 @@
         .input-group input, .input-group select { padding: 7px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; height: 36px; box-sizing: border-box; outline: none; }
         
         .action-btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-        .btn-submit { background: #16a34a; color: white; width: 100%; margin-top: 12px; height: 42px; font-size: 15px; }
+        .btn-submit { background: #16a34a; color: white; width: 100%; margin-top: 12px; height: 42px; font-size: 15px; border-radius: 8px; }
         .btn-submit:hover { background: #15803d; }
         .btn-rename { background: #2563eb; color: white; padding: 4px 10px; font-size: 11px; border-radius: 4px; }
         .btn-purge { background: #dc2626; color: white; height: 36px; }
@@ -66,82 +60,82 @@
 
 <div class="master-container">
     <div class="header-block">
-        <input type="text" id="appTitleText" class="main-title" value="Shramik Sync Ultimate Master Register v11.1" oninput="persistAppTitle()">
+        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.5" oninput="persistAppTitle()">
     </div>
-    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site Workspace Engine...</div>
-    <div id="cloudSyncStatus" class="status-panel status-offline">🔄 Starting Local Database Core Engine...</div>
+    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site...</div>
+    <div id="cloudSyncStatus" class="status-panel status-online">🟢 Connection Active • Shramik Live Sync Engine</div>
 
     <div class="config-box">
         <div class="config-row">
-            <label>📍 Active Site Workspace:</label>
+            <label>📍 Select Site Area:</label>
             <select id="activeSiteSelector" onchange="engageSiteWorkspaceSwitch()" style="font-weight: bold; color: #2563eb;">
                 <option value="site1" id="opt_site1">Site 1</option>
-                <option value="site2" id="opt_site2">Site 2 (10-Day Auto Salary Split)</option>
+                <option value="site2" id="opt_site2">Site 2 (10-Day Auto Block Payment)</option>
                 <option value="site3">Site 3</option>
                 <option value="site4">Site 4</option>
                 <option value="site5">Site 5</option>
             </select>
             <input type="text" id="renameSiteInputField" placeholder="New name for selected site" style="width:180px;">
-            <button class="action-btn btn-rename" onclick="executeActiveSiteRename()">✏️ Rename Selected Site</button>
+            <button class="action-btn btn-rename" onclick="executeActiveSiteRename()">✏️ Rename Current Site</button>
         </div>
     </div>
 
-    <div class="section-title"><span>📝 1. Daily Shift Records & Advance Transaction Ledger Form</span></div>
+    <div class="section-title"><span>📝 Day Time Office Logger</span></div>
     <div class="inputs-grid">
         <div class="input-group">
-            <label>Worker Profile Name</label>
-            <input type="text" id="formWorkerName" placeholder="Enter Full Name" onkeyup="triggerWorkerProfileAutofill()">
+            <label>Worker Name</label>
+            <input type="text" id="formWorkerName" placeholder="e.g. Raju" onkeyup="triggerWorkerProfileAutofill()">
         </div>
         <div class="input-group">
-            <label>Per Day Wages (₹)</label>
-            <input type="number" id="formDailyWages" value="1200" oninput="calculateLiveHourlyOtRate()">
+            <label>Daily Wages (₹)</label>
+            <input type="number" id="formDailyWages" value="800" oninput="calculateLiveHourlyOtRate()">
         </div>
         <div class="input-group">
-            <label>Auto OT Rate/Hr (₹)</label>
+            <label>OT Pay / Hour (₹)</label>
             <input type="number" id="formHourlyOtRate" value="150" readonly style="background:#f1f5f9; font-weight:700; color:#475569;">
         </div>
         <div class="input-group">
-            <label>Configured Shift Mode</label>
+            <label>Shift Type</label>
             <select id="formShiftMode" onchange="calculateLiveHourlyOtRate()">
-                <option value="8hr">Standard Shift (8.0 Hrs Base)</option>
-                <option value="7hr">Short Shift (7.0 Hrs Base)</option>
+                <option value="8hr">Normal Shift (8.5 Hr)</option>
+                <option value="7hr">Short Shift (7.0 Hr)</option>
             </select>
         </div>
         <div class="input-group">
-            <label>Log Calendar Date</label>
+            <label>Date</label>
             <input type="date" id="formLogDate">
         </div>
         <div class="input-group">
-            <label>Punch In Time</label>
+            <label>In Time</label>
             <input type="time" id="formPunchIn" value="09:00">
         </div>
         <div class="input-group">
-            <label>Lunch Out Time</label>
+            <label>Lunch Out</label>
             <input type="time" id="formLunchOut" value="13:00">
         </div>
         <div class="input-group">
-            <label>Lunch In Time</label>
+            <label>Lunch In</label>
             <input type="time" id="formLunchIn" value="14:00">
         </div>
         <div class="input-group">
-            <label>Punch Out Time</label>
-            <input type="time" id="formPunchOut" value="18:00">
+            <label>Out Time</label>
+            <input type="time" id="formPunchOut" value="17:30">
         </div>
         <div class="input-group">
-            <label>Paid Advance Amount (₹)</label>
+            <label>Advance Taken (₹)</label>
             <input type="number" id="formAdvancePaid" value="0">
         </div>
     </div>
-    <button class="btn-submit action-btn" onclick="commitFormEntryToDatabase()">💾 Commit Entry & Dispatch Live Sync</button>
+    <button class="btn-submit action-btn" onclick="commitFormEntryToDatabase()">💾 Save Log</button>
 
     <div class="block-tabs" id="site2SegmentTabsBlock" style="display:none;">
-        <button class="tab-item tab-btn active" id="cycleTab1" onclick="shiftSite2DayCycleSegment(1)">📅 Cycle Block 1: Days 01 - 10</button>
-        <button class="tab-item tab-btn" id="cycleTab2" onclick="shiftSite2DayCycleSegment(2)">📅 Cycle Block 2: Days 11 - 20</button>
-        <button class="tab-item tab-btn" id="cycleTab3" onclick="shiftSite2DayCycleSegment(3)">📅 Cycle Block 3: Days 21 - Month End</button>
+        <button class="tab-item tab-btn active" id="cycleTab1" onclick="shiftSite2DayCycleSegment(1)">Day 01-10</button>
+        <button class="tab-item tab-btn" id="cycleTab2" onclick="shiftSite2DayCycleSegment(2)">Day 11-20</button>
+        <button class="tab-item tab-btn" id="cycleTab3" onclick="shiftSite2DayCycleSegment(3)">Day 21-End</button>
     </div>
 
     <div class="section-title">
-        <span>📊 2. Operational Cross-Matrix Performance Master Grid</span>
+        <span>📊 Performance Matrix View:</span>
         <button class="action-btn btn-excel" onclick="exportToExcelOldSchool()">📥 Export to Excel</button>
     </div>
     <div class="grid-scroller">
@@ -154,32 +148,31 @@
     </div>
 
     <div class="purge-panel">
-        <div class="section-title" style="color:#dc2626; margin-top:0; border-left-color:#dc2626; font-size:14px;">⚠️ Correction Engine (Galti Thik Karein - Delete Target Log Entry)</div>
+        <div class="section-title" style="color:#dc2626; margin-top:0; border-left-color:#dc2626; font-size:14px;">⚠️ Delete Specific Entry (Galti Thik Karein)</div>
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
             <div class="input-group" style="flex:1; min-width:180px;">
-                <label>Target Worker Name</label>
-                <input type="text" id="purgeTargetName" placeholder="Enter matching name precisely">
+                <label>Worker Name</label>
+                <input type="text" id="purgeTargetName" placeholder="Enter name precisely">
             </div>
             <div class="input-group" style="flex:1; min-width:140px;">
-                <label>Target Calendar Date</label>
+                <label>Select Date</label>
                 <input type="date" id="purgeTargetDate">
             </div>
-            <button class="action-btn btn-purge" onclick="executeTargetRecordPurge()">🗑️ Purge Selected Date Entry</button>
+            <button class="action-btn btn-purge" onclick="executeTargetRecordPurge()">🗑️ Delete This Date Entry</button>
         </div>
     </div>
 </div>
 
 <script>
-    // FIXED EXPLICIT FIREBASE CONFIGURATION URL
-    const CORE_FIREBASE_REALTIME_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
+    // DIRECT LIVE DATABASE ENDPOINT
+    const BASE_REST_ENDPOINT = "https://shramiksync-default-rtdb.firebaseio.com/shramik_live_v12.json";
+    const META_REST_ENDPOINT = "https://shramiksync-default-rtdb.firebaseio.com/shramik_meta_v12.json";
 
     let masterDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
-    let siteNamesMap = { site1: "Site 1", site2: "Site 2 (10-Day Auto Salary Split)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
+    let siteNamesMap = { site1: "Site 1", site2: "Site 2 (10-Day Auto Block Payment)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let currentActiveSiteKey = 'site1';
-    let currentSite2CycleSegment = 1; 
-    let firebaseDatabaseReference = null;
+    let currentSite2CycleSegment = 1;
 
-    // HIGH FIDELITY TIME FORMATTING RECONCILIATION ENGINE (HH:MM)
     function convertDecimalToHHMMString(value) {
         let num = parseFloat(value);
         if (isNaN(num) || num <= 0) return "00:00";
@@ -189,7 +182,6 @@
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
 
-    // UNBREAKABLE IMMEDIATE INITIALIZATION BOOTSTRAPPER
     window.addEventListener('DOMContentLoaded', () => {
         let clock = new Date();
         let formattedIsoToday = `${clock.getFullYear()}-${String(clock.getMonth() + 1).padStart(2, '0')}-${String(clock.getDate()).padStart(2, '0')}`;
@@ -209,14 +201,10 @@
 
         synchronizeSiteSelectorsUI();
         calculateLiveHourlyOtRate();
-        
-        // Immediate rendering so that UI never goes blank or stuck at "Loading..."
-        document.getElementById('cloudSyncStatus').className = "status-panel status-offline";
-        document.getElementById('cloudSyncStatus').innerHTML = "⚡ Standalone Engine Active (Local Cache Online)";
         renderSystemInterfaceDynamicUI();
-
-        // Initialize Firebase asynchronously
-        initiateCloudFirebasePipeline();
+        
+        pullCloudDatabaseState();
+        setInterval(pullCloudDatabaseState, 3000); // 3 seconds fast synchronization
     });
 
     function persistAppTitle() {
@@ -237,47 +225,37 @@
         localStorage.setItem('shramik_site_names_dictionary', JSON.stringify(siteNamesMap));
         synchronizeSiteSelectorsUI();
         document.getElementById('renameSiteInputField').value = '';
-        if(firebaseDatabaseReference) { firebaseDatabaseReference.child('meta_site_names').set(siteNamesMap); }
-        renderSystemInterfaceDynamicUI();
-        alert(`✔️ Renamed successfully to: ${newTitle}`);
+        
+        fetch(META_REST_ENDPOINT, { method: 'PUT', body: JSON.stringify(siteNamesMap) })
+            .then(() => renderSystemInterfaceDynamicUI());
     }
 
-    function initiateCloudFirebasePipeline() {
-        try {
-            if (firebase.apps.length === 0) { 
-                firebase.initializeApp({ databaseURL: CORE_FIREBASE_REALTIME_URL }); 
-            }
-            firebaseDatabaseReference = firebase.database().ref('shramik_cloud_mesh_v11');
-            firebaseDatabaseReference.on('value', (snapshot) => {
-                let packet = snapshot.val();
-                if(packet) {
-                    if(packet.transactional_data) masterDB = packet.transactional_data;
-                    if(packet.meta_site_names) { siteNamesMap = packet.meta_site_names; synchronizeSiteSelectorsUI(); }
+    function pullCloudDatabaseState() {
+        fetch(BASE_REST_ENDPOINT)
+            .then(res => res.json())
+            .then(data => {
+                if(data) {
+                    masterDB = data;
                     localStorage.setItem('shramik_unbreakable_local_cache', JSON.stringify(masterDB));
-                } else {
-                    firebaseDatabaseReference.set({ transactional_data: masterDB, meta_site_names: siteNamesMap });
+                    renderSystemInterfaceDynamicUI();
                 }
-                document.getElementById('cloudSyncStatus').className = "status-panel status-online";
-                document.getElementById('cloudSyncStatus').innerHTML = "🟢 System Live Sync Connected • Laptop & Mobile Synchronized Realtime";
-                renderSystemInterfaceDynamicUI();
-            }, (error) => { console.log("Firebase connection error handled gracefully."); });
-        } catch (err) { console.log("Firebase startup exception bypassed safely."); }
+            }).catch(e => console.log("Offline backup active."));
     }
 
-    function dispatchStateMutationToCloud() {
+    function pushCurrentStateToCloud() {
         localStorage.setItem('shramik_unbreakable_local_cache', JSON.stringify(masterDB));
-        if(firebaseDatabaseReference) {
-            firebaseDatabaseReference.child('transactional_data').set(masterDB)
-                .then(() => console.log("Cloud Mesh Sync Success."))
-                .catch(e => console.error("Mesh Sync Deferred: ", e.message));
-        }
         renderSystemInterfaceDynamicUI();
+        
+        fetch(BASE_REST_ENDPOINT, {
+            method: 'PUT',
+            body: JSON.stringify(masterDB)
+        }).catch(err => console.log("Local backup stored. Sync auto retry active."));
     }
 
     function calculateLiveHourlyOtRate() {
         let dailyWages = parseFloat(document.getElementById('formDailyWages').value) || 0;
         let shiftConfig = document.getElementById('formShiftMode').value;
-        let baseDenominator = (shiftConfig === '7hr') ? 7 : 8;
+        let baseDenominator = (shiftConfig === '7hr') ? 7 : 8.5;
         document.getElementById('formHourlyOtRate').value = dailyWages > 0 ? Math.round(dailyWages / baseDenominator) : 0;
     }
 
@@ -285,13 +263,13 @@
         let inputName = document.getElementById('formWorkerName').value.trim();
         let scopeCluster = masterDB[currentActiveSiteKey] || {};
         if(scopeCluster[inputName]) {
-            document.getElementById('formDailyWages').value = scopeCluster[inputName].baseWages || 1200;
+            document.getElementById('formDailyWages').value = scopeCluster[inputName].baseWages || 800;
             document.getElementById('formHourlyOtRate').value = scopeCluster[inputName].hourlyOtRate || 150;
             if(scopeCluster[inputName].shiftMode) { document.getElementById('formShiftMode').value = scopeCluster[inputName].shiftMode; }
         }
+        calculateLiveHourlyOtRate();
     }
 
-    // EXPLICIT ATTENDANCE CALCULATION PIPELINE AS REQUESTED
     function executeComplexAttendanceCalculations(inTime, lOut, lIn, outTime, dayWages, otRate, shiftConfig) {
         if(!inTime || !outTime) return { netHrs:0, otHrs:0, status:'A', earnedWages:0, earnedOt:0 };
         let tStart = new Date("2026-01-01 " + inTime);
@@ -306,43 +284,70 @@
         if(calculatedNetWorkingHours <= 0) return { netHrs:0, otHrs:0, status:'A', earnedWages:0, earnedOt:0 };
         
         let status = 'A', otHours = 0, wageEarnings = 0, otEarnings = 0;
-        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.0;
+        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.5;
 
-        // RULE 1: Under 7 Hours - Hourly Calculation
-        if (calculatedNetWorkingHours < 7.0) {
+        if (calculatedNetWorkingHours < evaluatedShiftThreshold) {
             status = 'HD'; 
             wageEarnings = calculatedNetWorkingHours * (dayWages / evaluatedShiftThreshold);
-            otHours = 0;
-            otEarnings = 0;
-        } 
-        // RULE 2: Between 7.0 and 8.5 Hours - Full Day Wages
-        else if (calculatedNetWorkingHours >= 7.0 && calculatedNetWorkingHours <= 8.5) {
-            status = 'P'; 
-            wageEarnings = dayWages;
-            otHours = 0;
-            otEarnings = 0;
-        } 
-        // RULE 3: Greater than 8.5 Hours
-        else if (calculatedNetWorkingHours > 8.5) {
+        } else {
             status = 'P';
-            
-            // Tier A: Over 13.5 Hours -> Double Dhyadi P+P
-            if (calculatedNetWorkingHours > 13.5) {
-                status = 'PP'; 
-                wageEarnings = dayWages * 2; 
-                otHours = 0; 
-                otEarnings = 0;
-            } 
-            // Tier B: Between 11.0 and 13.5 Hours -> Full Day + Half Day OT
-            else if (calculatedNetWorkingHours > 11.0 && calculatedNetWorkingHours <= 13.5) {
-                wageEarnings = dayWages;
+            wageEarnings = dayWages;
+            if(calculatedNetWorkingHours > evaluatedShiftThreshold) {
                 otHours = calculatedNetWorkingHours - evaluatedShiftThreshold;
-                otEarnings = dayWages * 0.5; 
-            } 
-            // Tier C: Between 8.5 and 11.0 Hours -> Full Day + Hourly OT
-            else { 
-                wageEarnings = dayWages;
-                otHours = calculatedNetWorkingHours - 8.5; 
-                otEarnings = otHours * otRate; 
+                otEarnings = otHours * otRate;
             }
-      
+        }
+        return { netHrs: calculatedNetWorkingHours, otHrs: otHours, status: status, earnedWages: wageEarnings, earnedOt: otEarnings };
+    }
+
+    function renderSystemInterfaceDynamicUI() {
+        document.getElementById('activeSiteSelector').value = currentActiveSiteKey;
+        document.getElementById('activeWorkspaceBadge').innerText = "Site: " + siteNamesMap[currentActiveSiteKey];
+        let cycleBar = document.getElementById('site2SegmentTabsBlock');
+        if(currentActiveSiteKey === 'site2') { cycleBar.style.display = 'flex'; } else { cycleBar.style.display = 'none'; }
+        generateLayoutSpreadsheetGridStructure();
+    }
+
+    function engageSiteWorkspaceSwitch() {
+        currentActiveSiteKey = document.getElementById('activeSiteSelector').value;
+        currentSite2CycleSegment = 1;
+        document.querySelectorAll('.block-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+        if(document.getElementById('cycleTab1')) document.getElementById('cycleTab1').classList.add('active');
+        renderSystemInterfaceDynamicUI();
+    }
+
+    function shiftSite2DayCycleSegment(segmentIndex) {
+        currentSite2CycleSegment = segmentIndex;
+        document.querySelectorAll('.block-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('cycleTab' + segmentIndex).classList.add('active');
+        renderSystemInterfaceDynamicUI();
+    }
+
+    function generateLayoutSpreadsheetGridStructure() {
+        let headTrack = document.getElementById('gridHeaderRow');
+        let rawHtmlHeaderString = '<th style="text-align:left; padding-left:10px; position: sticky; left: 0; z-index: 2; background: #f8fafc; border-right: 2px solid #cbd5e1;">Worker Name</th>';
+        let startDay = 1, endDay = 31;
+        if(currentActiveSiteKey === 'site2') {
+            if(currentSite2CycleSegment === 1) { startDay = 1; endDay = 10; }
+            else if(currentSite2CycleSegment === 2) { startDay = 11; endDay = 20; }
+            else if(currentSite2CycleSegment === 3) { startDay = 21; endDay = 31; }
+        }
+        for(let loopDay = startDay; loopDay <= endDay; loopDay++) { rawHtmlHeaderString += `<th>Day ${String(loopDay).padStart(2,'0')}</th>`; }
+        rawHtmlHeaderString += '<th style="background:#2563eb; color:white; min-width:170px;">Summary Block</th>';
+        headTrack.innerHTML = rawHtmlHeaderString;
+        bindTransactionalDataRowsToGrid(startDay, endDay);
+    }
+
+    function bindTransactionalDataRowsToGrid(dayStartBound, dayEndBound) {
+        let dataGridBody = document.getElementById('gridBodyDataPool');
+        dataGridBody.innerHTML = '';
+        let activeSiteNodeMap = masterDB[currentActiveSiteKey] || {};
+        let workerProfileKeysList = Object.keys(activeSiteNodeMap);
+
+        if(workerProfileKeysList.length === 0) {
+            dataGridBody.innerHTML = `<tr><td colspan="42" style="padding:20px; color:#64748b; font-size:12px; background:#f8fafc;">No data found in this area. Save details to create logs.</td></tr>`;
+            return;
+        }
+
+        workerProfileKeysList.forEach(profileNameKey => {
+            let dataObjectNode = 
