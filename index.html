@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Shramik Core Master Engine v11.0</title>
+    <title>Ultimate Shramik Core Master Engine v11.1</title>
     
     <!-- STABLE PRODUCTION FIREBASE CORE INJECTOR -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -66,10 +66,10 @@
 
 <div class="master-container">
     <div class="header-block">
-        <input type="text" id="appTitleText" class="main-title" value="Shramik Sync Ultimate Master Register v11.0" oninput="persistAppTitle()">
+        <input type="text" id="appTitleText" class="main-title" value="Shramik Sync Ultimate Master Register v11.1" oninput="persistAppTitle()">
     </div>
-    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site...</div>
-    <div id="cloudSyncStatus" class="status-panel status-offline">🔄 Initializing Core Database Architecture System...</div>
+    <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site Workspace Engine...</div>
+    <div id="cloudSyncStatus" class="status-panel status-offline">🔄 Starting Local Database Core Engine...</div>
 
     <div class="config-box">
         <div class="config-row">
@@ -170,8 +170,8 @@
 </div>
 
 <script>
-    // CORE TARGET INTEGRATION DATABASE NODE URL
-    const CORE_FIREBASE_REALTIME_URL = "https://shramiksync-default-rtdb.firebaseio.com/"; 
+    // FIXED EXPLICIT FIREBASE CONFIGURATION URL
+    const CORE_FIREBASE_REALTIME_URL = "https://shramiksync-default-rtdb.firebaseio.com/";
 
     let masterDB = { site1:{}, site2:{}, site3:{}, site4:{}, site5:{} };
     let siteNamesMap = { site1: "Site 1", site2: "Site 2 (10-Day Auto Salary Split)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
@@ -189,6 +189,7 @@
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
 
+    // UNBREAKABLE IMMEDIATE INITIALIZATION BOOTSTRAPPER
     window.addEventListener('DOMContentLoaded', () => {
         let clock = new Date();
         let formattedIsoToday = `${clock.getFullYear()}-${String(clock.getMonth() + 1).padStart(2, '0')}-${String(clock.getDate()).padStart(2, '0')}`;
@@ -207,8 +208,15 @@
         }
 
         synchronizeSiteSelectorsUI();
-        initiateCloudFirebasePipeline();
+        calculateLiveHourlyOtRate();
+        
+        // Immediate rendering so that UI never goes blank or stuck at "Loading..."
+        document.getElementById('cloudSyncStatus').className = "status-panel status-offline";
+        document.getElementById('cloudSyncStatus').innerHTML = "⚡ Standalone Engine Active (Local Cache Online)";
         renderSystemInterfaceDynamicUI();
+
+        // Initialize Firebase asynchronously
+        initiateCloudFirebasePipeline();
     });
 
     function persistAppTitle() {
@@ -235,9 +243,10 @@
     }
 
     function initiateCloudFirebasePipeline() {
-        setTimeout(() => { if(!firebaseDatabaseReference) { fallbackToIsolatedOfflineMode(); } }, 3500);
         try {
-            if (firebase.apps.length === 0) { firebase.initializeApp({ databaseURL: CORE_FIREBASE_REALTIME_URL }); }
+            if (firebase.apps.length === 0) { 
+                firebase.initializeApp({ databaseURL: CORE_FIREBASE_REALTIME_URL }); 
+            }
             firebaseDatabaseReference = firebase.database().ref('shramik_cloud_mesh_v11');
             firebaseDatabaseReference.on('value', (snapshot) => {
                 let packet = snapshot.val();
@@ -251,13 +260,8 @@
                 document.getElementById('cloudSyncStatus').className = "status-panel status-online";
                 document.getElementById('cloudSyncStatus').innerHTML = "🟢 System Live Sync Connected • Laptop & Mobile Synchronized Realtime";
                 renderSystemInterfaceDynamicUI();
-            }, (error) => { fallbackToIsolatedOfflineMode(); });
-        } catch (err) { fallbackToIsolatedOfflineMode(); }
-    }
-
-    function fallbackToIsolatedOfflineMode() {
-        document.getElementById('cloudSyncStatus').className = "status-panel status-offline";
-        document.getElementById('cloudSyncStatus').innerHTML = "⚡ Standalone Engine Active (Local Cache Online)";
+            }, (error) => { console.log("Firebase connection error handled gracefully."); });
+        } catch (err) { console.log("Firebase startup exception bypassed safely."); }
     }
 
     function dispatchStateMutationToCloud() {
@@ -287,7 +291,7 @@
         }
     }
 
-    // MANDATED STRICT MATHEMATICAL WAGE MATRIX RULES EXECUTION PIPELINE
+    // EXPLICIT ATTENDANCE CALCULATION PIPELINE AS REQUESTED
     function executeComplexAttendanceCalculations(inTime, lOut, lIn, outTime, dayWages, otRate, shiftConfig) {
         if(!inTime || !outTime) return { netHrs:0, otHrs:0, status:'A', earnedWages:0, earnedOt:0 };
         let tStart = new Date("2026-01-01 " + inTime);
@@ -304,38 +308,41 @@
         let status = 'A', otHours = 0, wageEarnings = 0, otEarnings = 0;
         let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.0;
 
-        // RULE 1: Under 7 Hours - Hourly Pro-Rata Distribution Split
+        // RULE 1: Under 7 Hours - Hourly Calculation
         if (calculatedNetWorkingHours < 7.0) {
             status = 'HD'; 
             wageEarnings = calculatedNetWorkingHours * (dayWages / evaluatedShiftThreshold);
             otHours = 0;
             otEarnings = 0;
         } 
-        // RULE 2: Between 7.0 and 8.5 Hours - Unconditional Full Day Wages Guaranteed
+        // RULE 2: Between 7.0 and 8.5 Hours - Full Day Wages
         else if (calculatedNetWorkingHours >= 7.0 && calculatedNetWorkingHours <= 8.5) {
             status = 'P'; 
             wageEarnings = dayWages;
             otHours = 0;
             otEarnings = 0;
         } 
-        // RULE 3 & 4 & 5: Greater than 8.5 Hours Tier System Validation Matrix
+        // RULE 3: Greater than 8.5 Hours
         else if (calculatedNetWorkingHours > 8.5) {
             status = 'P';
             
-            // Tier A: Over 13.5 Hours -> Absolute P+P Double Day Salary Allocation (No hourly OT addendum)
+            // Tier A: Over 13.5 Hours -> Double Dhyadi P+P
             if (calculatedNetWorkingHours > 13.5) {
                 status = 'PP'; 
                 wageEarnings = dayWages * 2; 
                 otHours = 0; 
                 otEarnings = 0;
             } 
-            // Tier B: Between 11.0 and 13.5 Hours -> Full Day + Hardcoded Static Half-Day OT Compensation Block
+            // Tier B: Between 11.0 and 13.5 Hours -> Full Day + Half Day OT
             else if (calculatedNetWorkingHours > 11.0 && calculatedNetWorkingHours <= 13.5) {
                 wageEarnings = dayWages;
                 otHours = calculatedNetWorkingHours - evaluatedShiftThreshold;
                 otEarnings = dayWages * 0.5; 
             } 
-            // Tier C: Between 8.5 and 11.0 Hours -> Full Day + Linear Micro-Calculated Hourly OT Addendum
+            // Tier C: Between 8.5 and 11.0 Hours -> Full Day + Hourly OT
             else { 
                 wageEarnings = dayWages;
-                otHours = calculatedNetWorkingHours - 8.5; // OT counts strictly beyon
+                otHours = calculatedNetWorkingHours - 8.5; 
+                otEarnings = otHours * otRate; 
+            }
+      
