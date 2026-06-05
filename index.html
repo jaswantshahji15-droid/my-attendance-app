@@ -25,6 +25,11 @@
         .field-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #475569; }
         .field-group input, .field-group select { padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; color: #334155; font-weight: 500; height: 38px; box-sizing: border-box; }
 
+        /* Preview Card Style */
+        .preview-card { background: #eff6ff; border: 1px dashed #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; text-align: center; }
+        .preview-stat { font-size: 11px; color: #1e40af; font-weight: bold; }
+        .preview-stat span { display: block; font-size: 14px; color: #1d4ed8; margin-top: 2px; }
+
         .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; height: 40px; }
         .btn-save { background: #16a34a; color: white; width: 100%; margin-top: 15px; height: 44px; font-size: 14px; }
         .btn-save:hover { background: #15803d; }
@@ -63,7 +68,7 @@
 
     <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Master Database System...</div>
 
-    <div class="class="setup-box" style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:20px;">
+    <div class="setup-box">
         <strong>📍 Active Area:</strong>
         <select id="selSite" onchange="switchSiteEngine()" style="padding:6px; font-weight:bold; height:35px; border-radius:6px;">
             <option value="site1">Site 1 (Standard View)</option>
@@ -83,20 +88,20 @@
     <div class="form-title">📝 1. Daily Shift Records & Advance Transaction Ledger Form</div>
     <div class="grid-inputs">
         <div class="field-group">
-            <label>WORKER PROFILE NAME</label>
-            <input type="text" id="wName" placeholder="Enter Full Name">
+            <label>WORKER PROFILE NAME (Auto-Fill Engine)</label>
+            <input type="text" id="wName" placeholder="Enter Full Name" onblur="checkAndAutofillWorkerData()">
         </div>
         <div class="field-group">
             <label>PER DAY WAGES (₹)</label>
-            <input type="number" id="wWages" value="500">
+            <input type="number" id="wWages" value="500" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
             <label>AUTO OT RATE/HR (₹)</label>
-            <input type="number" id="wOtRate" value="150">
+            <input type="number" id="wOtRate" value="150" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
             <label>CONFIGURED SHIFT MODE</label>
-            <select id="wShift">
+            <select id="wShift" onchange="triggerLiveCalculationPreview()">
                 <option value="8hr">Normal Shift (8.0 Hr System)</option>
                 <option value="7hr">Short Shift (7.0 Hr System)</option>
             </select>
@@ -110,7 +115,7 @@
     <div class="grid-inputs">
         <div class="field-group">
             <label>PUNCH IN TIME</label>
-            <select id="wIn">
+            <select id="wIn" onchange="triggerLiveCalculationPreview()">
                 <script>
                     for(let h=0; h<24; h++) {
                         for(let m=0; m<60; m+=30) {
@@ -124,7 +129,7 @@
         </div>
         <div class="field-group">
             <label>LUNCH OUT TIME</label>
-            <select id="wLOut">
+            <select id="wLOut" onchange="triggerLiveCalculationPreview()">
                 <script>
                     for(let h=0; h<24; h++) {
                         for(let m=0; m<60; m+=30) {
@@ -138,7 +143,7 @@
         </div>
         <div class="field-group">
             <label>LUNCH IN TIME</label>
-            <select id="wLIn">
+            <select id="wLIn" onchange="triggerLiveCalculationPreview()">
                 <script>
                     for(let h=0; h<24; h++) {
                         for(let m=0; m<60; m+=30) {
@@ -152,7 +157,7 @@
         </div>
         <div class="field-group">
             <label>PUNCH OUT TIME</label>
-            <select id="wOut">
+            <select id="wOut" onchange="triggerLiveCalculationPreview()">
                 <script>
                     for(let h=0; h<24; h++) {
                         for(let m=0; m<60; m+=30) {
@@ -170,6 +175,14 @@
         </div>
     </div>
 
+    <div class="preview-card">
+        <div class="preview-stat">Total Work Mins<span id="pvMins">480 mins</span></div>
+        <div class="preview-stat">Shift Work Hours<span id="pvHrs">08:00h</span></div>
+        <div class="preview-stat">OT Hours Calculated<span id="pvOtHrs">00:00h</span></div>
+        <div class="preview-stat">Status Status<span id="pvStatus" style="color:#16a34a; font-weight:bold;">P</span></div>
+        <div class="preview-stat">Calculated OT Earned<span id="pvOtEarned" style="color:#16a34a; font-weight:bold;">₹0</span></div>
+    </div>
+
     <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Commit Entry & Dispatch Live Sync</button>
 
     <div class="form-title">📊 2. Operational Cross-Matrix Performance Master Grid</div>
@@ -181,17 +194,15 @@
     </div>
 
     <div style="margin-bottom:10px;">
-        <button class="btn btn-excel" onclick="exportDataToExcel()">📥 Export to Excel</button>
+        <button class="btn btn-excel" onclick="exportDataToExcel()">📥 Export to Professional Matrix Excel</button>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
-                <tr id="tableHeadRow">
-                    </tr>
+                <tr id="tableHeadRow"></tr>
             </thead>
-            <tbody id="tableBodyData">
-                </tbody>
+            <tbody id="tableBodyData"></tbody>
         </table>
     </div>
 
@@ -221,13 +232,12 @@
     let currentSite = "site1";
     let currentCycleBlock = 1;
 
-    // Set default date to today automatically
     document.getElementById('wDate').valueAsDate = new Date();
     document.getElementById('delDate').valueAsDate = new Date();
 
     function initializeSystemNetwork() {
         if (typeof firebase === 'undefined') {
-            console.error("Firebase sdk check error");
+            console.error("Firebase SDK Check Error");
             return;
         }
         firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
@@ -244,6 +254,7 @@
             statusBox.innerText = "🟢 Live Cloud Sync Dashboard Connected Successfully";
             statusBox.className = "status-box sync-active";
             renderAppUI();
+            triggerLiveCalculationPreview();
         }, (error) => {
             console.error(error);
         });
@@ -256,6 +267,21 @@
             siteNames: siteNames,
             mainHeading: hText
         });
+    }
+
+    // Auto-fill logic when worker name is entered
+    function checkAndAutofillWorkerData() {
+        let inputName = document.getElementById('wName').value.trim();
+        if(!inputName) return;
+
+        let siteDataMap = memoryDB[currentSite] || {};
+        if(siteDataMap[inputName]) {
+            let worker = siteDataMap[inputName];
+            document.getElementById('wWages').value = worker.baseWages || 500;
+            document.getElementById('wOtRate').value = worker.hourlyOtRate || 150;
+            document.getElementById('wShift').value = worker.shiftMode || "8hr";
+            triggerLiveCalculationPreview();
+        }
     }
 
     function calculateAttendanceMetrics(inT, lOut, lIn, outT, wage, otRate, mode) {
@@ -297,10 +323,30 @@
         };
 
         return {
+            netMinutes: netMinutes,
             hrsStr: convertMinutesToTimeStr(netMinutes),
             otHrsStr: convertMinutesToTimeStr(otMinutes),
             status: status, earned: earned, otEarned: otEarned
         };
+    }
+
+    // Live Refresh Preview Engine
+    function triggerLiveCalculationPreview() {
+        let baseWages = parseFloat(document.getElementById('wWages').value) || 0;
+        let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
+        let shiftMode = document.getElementById('wShift').value;
+        let inTime = document.getElementById('wIn').value;
+        let lOut = document.getElementById('wLOut').value;
+        let lIn = document.getElementById('wLIn').value;
+        let outTime = document.getElementById('wOut').value;
+
+        let metrics = calculateAttendanceMetrics(inTime, lOut, lIn, outTime, baseWages, otRate, shiftMode);
+
+        document.getElementById('pvMins').innerText = metrics.netMinutes + " mins";
+        document.getElementById('pvHrs').innerText = metrics.hrsStr;
+        document.getElementById('pvOtHrs').innerText = metrics.otHrsStr;
+        document.getElementById('pvStatus').innerText = metrics.status;
+        document.getElementById('pvOtEarned').innerText = "₹" + metrics.otEarned.toFixed(0);
     }
 
     function renderAppUI() {
@@ -530,46 +576,76 @@
             else if(currentCycleBlock === 3) { dayStart = 21; dayEnd = 31; }
         }
 
-        let headerRow = "Worker Name,Base Wages,Shift Mode";
-        for(let d=dayStart; d<=dayEnd; d++) { headerRow += `,Day ${String(d).padStart(2,'0')}`; }
-        headerRow += ",Total Gross,Total Advance,Net Payable\n";
-        csvContent += headerRow;
+        let topHeader = "PayCode_Name,Metrics / Parameter";
+        for(let d=dayStart; d<=dayEnd; d++) { topHeader += `,Day ${String(d).padStart(2,'0')}`; }
+        topHeader += ",Summary Total Ledger\n";
+        csvContent += topHeader;
 
         workerKeys.forEach(wKey => {
             let wObj = siteDataMap[wKey];
-            let rowStr = `${wKey},${wObj.baseWages},${wObj.shiftMode}`;
-            let gross = 0, adv = 0;
+            
+            let metricsRows = [
+                { label: "In", field: "inTime", isTime: true },
+                { label: "Lunch Out", field: "lOutTime", isTime: true },
+                { label: "Lunch In", field: "lInTime", isTime: true },
+                { label: "Out", field: "outTime", isTime: true },
+                { label: "Hours Worked", field: "hrsWorked", isTime: false },
+                { label: "OT", field: "otHours", isTime: false },
+                { label: "Advance Taken", field: "advance", isAdv: true },
+                { label: "Status", field: "status", isTime: false }
+            ];
+
+            let totalGross = 0;
+            let totalAdvance = 0;
 
             for(let d=dayStart; d<=dayEnd; d++) {
                 let dayToken = String(d).padStart(2, '0');
                 let att = (wObj.attendance && wObj.attendance[dayToken]) ? wObj.attendance[dayToken] : null;
-                let aRecord = (wObj.advances && wObj.advances[dayToken]) ? parseFloat(wObj.advances[dayToken]) : 0;
-                adv += aRecord;
-
+                let advAmt = (wObj.advances && wObj.advances[dayToken]) ? parseFloat(wObj.advances[dayToken]) : 0;
+                totalAdvance += advAmt;
                 if(att) {
-                    let dayTotal = parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0);
-                    gross += dayTotal;
-                    rowStr += `,${att.status} (Work: ${att.hrsWorked} | OT: ${att.otHours})`;
-                } else {
-                    rowStr += `,${aRecord > 0 ? 'Adv Only' : '-'}`;
+                    totalGross += (parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0));
                 }
             }
+            let netPayable = totalGross - totalAdvance;
 
-            let net = gross - adv;
-            rowStr += `,${gross.toFixed(0)},${adv.toFixed(0)},${net.toFixed(0)}\n`;
-            csvContent += rowStr;
+            metricsRows.forEach((rowInfo, idx) => {
+                let rowStr = idx === 0 ? `"${wKey} (Rate: ₹${wObj.baseWages})",` : ",";
+                rowStr += `"${rowInfo.label}"`;
+
+                for(let d=dayStart; d<=dayEnd; d++) {
+                    let dayToken = String(d).padStart(2, '0');
+                    let att = (wObj.attendance && wObj.attendance[dayToken]) ? wObj.attendance[dayToken] : null;
+                    let advAmt = (wObj.advances && wObj.advances[dayToken]) ? parseFloat(wObj.advances[dayToken]) : 0;
+
+                    if(rowInfo.isAdv) {
+                        rowStr += advAmt > 0 ? `,₹${advAmt}` : ",-";
+                    } else if(att) {
+                        rowStr += `,${att[rowInfo.field] || '-'}`;
+                    } else {
+                        rowStr += ",-";
+                    }
+                }
+
+                if(rowInfo.label === "Hours Worked") rowStr += `,Gross: ₹${totalGross.toFixed(0)}`;
+                else if(rowInfo.label === "Advance Taken") rowStr += `,Adv: ₹${totalAdvance.toFixed(0)}`;
+                else if(rowInfo.label === "Status") rowStr += `,Net Payable: ₹${netPayable.toFixed(0)}`;
+                else rowStr += ",";
+
+                csvContent += rowStr + "\n";
+            });
+            csvContent += "\n";
         });
 
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Ledger.csv`);
+        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Matrix_Performance_Register.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
-    // Start everything on load
     window.onload = initializeSystemNetwork;
 </script>
 </body>
