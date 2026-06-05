@@ -41,8 +41,6 @@
         .btn-submit:hover { background: #15803d; }
         .btn-rename { background: #2563eb; color: white; padding: 4px 10px; font-size: 11px; border-radius: 4px; }
         .btn-purge { background: #dc2626; color: white; height: 36px; }
-        .btn-excel { background: #0f766e; color: white; margin-left: auto; }
-        .btn-excel:hover { background: #115e59; }
 
         /* Navigation block cycle tabs */
         .block-tabs { display: flex; gap: 6px; margin: 12px 0; overflow-x: auto; }
@@ -159,12 +157,9 @@
     </div>
 
     <!-- Primary Ledger Spreadsheet Grid Visualization Layer -->
-    <div class="section-title">
-        <span>📊 2. Operational Cross-Matrix Performance Master Grid</span>
-        <button class="action-btn btn-excel" onclick="exportTableToExcelFormat()">📥 Export to Excel</button>
-    </div>
+    <div class="section-title"><span>📊 2. Operational Cross-Matrix Performance Master Grid</span></div>
     <div class="grid-scroller">
-        <table id="masterGridTable">
+        <table>
             <thead>
                 <tr id="gridHeaderRow"></tr>
             </thead>
@@ -190,7 +185,7 @@
 </div>
 
 <script>
-    // 🔗 AUTOMATIC REALTIME DATABASE LINK CONNECTED
+    // 🔗 APKA ASLI FIREBASE LINK MERGE HO GAYA HAI:
     const CORE_FIREBASE_REALTIME_URL = "https://shramiksync-default-rtdb.firebaseio.com/"; 
 
     // Internal Core Memory Allocation Engine
@@ -199,18 +194,6 @@
     let currentActiveSiteKey = 'site1';
     let currentSite2CycleSegment = 1; 
     let firebaseDatabaseReference = null;
-
-    // Helper to convert decimal hours into strict HH:MM string format
-    function convertDecimalToHHMM(decimalHours) {
-        if (!decimalHours || decimalHours <= 0) return "00:00";
-        let absoluteHours = Math.floor(decimalHours);
-        let absoluteMinutes = Math.round((decimalHours - absoluteHours) * 60);
-        if (absoluteMinutes === 60) {
-            absoluteHours += 1;
-            absoluteMinutes = 0;
-        }
-        return `${String(absoluteHours).padStart(2, '0')}:${String(absoluteMinutes).padStart(2, '0')}`;
-    }
 
     // --- Lifecycle Bootloader Routine ---
     window.addEventListener('DOMContentLoaded', () => {
@@ -364,4 +347,31 @@
             status = 'P';
             wageEarnings = dayWages;
         }
-        else if (calculatedNetWorkingHours
+        else if (calculatedNetWorkingHours > 8.5) {
+            status = 'P';
+            wageEarnings = dayWages;
+            otHours = calculatedNetWorkingHours - evaluatedShiftThreshold;
+
+            if (calculatedNetWorkingHours >= 13.5) {
+                status = 'PP';
+                wageEarnings = dayWages * 2;
+                otHours = 0;
+                otEarnings = 0;
+            } else if (calculatedNetWorkingHours >= 11.0) {
+                otEarnings = dayWages * 0.5;
+            } else {
+                otEarnings = otHours * otRate;
+            }
+        }
+
+        return { 
+            netHrs: calculatedNetWorkingHours, 
+            otHrs: otHours, 
+            status: status, 
+            earnedWages: wageEarnings, 
+            earnedOt: otEarnings 
+        };
+    }
+
+    function renderSystemInterfaceDynamicUI() {
+        docum
