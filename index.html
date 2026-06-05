@@ -41,6 +41,8 @@
         .btn-submit:hover { background: #15803d; }
         .btn-rename { background: #2563eb; color: white; padding: 4px 10px; font-size: 11px; border-radius: 4px; }
         .btn-purge { background: #dc2626; color: white; height: 36px; }
+        .btn-excel { background: #0f766e; color: white; margin-left: auto; }
+        .btn-excel:hover { background: #115e59; }
 
         /* Navigation block cycle tabs */
         .block-tabs { display: flex; gap: 6px; margin: 12px 0; overflow-x: auto; }
@@ -157,9 +159,12 @@
     </div>
 
     <!-- Primary Ledger Spreadsheet Grid Visualization Layer -->
-    <div class="section-title"><span>📊 2. Operational Cross-Matrix Performance Master Grid</span></div>
+    <div class="section-title">
+        <span>📊 2. Operational Cross-Matrix Performance Master Grid</span>
+        <button class="action-btn btn-excel" onclick="exportTableToExcelFormat()">📥 Export to Excel</button>
+    </div>
     <div class="grid-scroller">
-        <table>
+        <table id="masterGridTable">
             <thead>
                 <tr id="gridHeaderRow"></tr>
             </thead>
@@ -185,7 +190,7 @@
 </div>
 
 <script>
-    // 🔗 APKA ASLI FIREBASE LINK MERGE HO GAYA HAI:
+    // 🔗 AUTOMATIC REALTIME DATABASE LINK CONNECTED
     const CORE_FIREBASE_REALTIME_URL = "https://shramiksync-default-rtdb.firebaseio.com/"; 
 
     // Internal Core Memory Allocation Engine
@@ -194,6 +199,18 @@
     let currentActiveSiteKey = 'site1';
     let currentSite2CycleSegment = 1; 
     let firebaseDatabaseReference = null;
+
+    // Helper to convert decimal hours into strict HH:MM string format
+    function convertDecimalToHHMM(decimalHours) {
+        if (!decimalHours || decimalHours <= 0) return "00:00";
+        let absoluteHours = Math.floor(decimalHours);
+        let absoluteMinutes = Math.round((decimalHours - absoluteHours) * 60);
+        if (absoluteMinutes === 60) {
+            absoluteHours += 1;
+            absoluteMinutes = 0;
+        }
+        return `${String(absoluteHours).padStart(2, '0')}:${String(absoluteMinutes).padStart(2, '0')}`;
+    }
 
     // --- Lifecycle Bootloader Routine ---
     window.addEventListener('DOMContentLoaded', () => {
@@ -347,234 +364,4 @@
             status = 'P';
             wageEarnings = dayWages;
         }
-        else if (calculatedNetWorkingHours > 8.5) {
-            status = 'P';
-            wageEarnings = dayWages;
-            otHours = calculatedNetWorkingHours - evaluatedShiftThreshold;
-
-            if (calculatedNetWorkingHours >= 13.5) {
-                status = 'PP';
-                wageEarnings = dayWages * 2;
-                otHours = 0;
-                otEarnings = 0;
-            } else if (calculatedNetWorkingHours >= 11.0) {
-                otEarnings = dayWages * 0.5;
-            } else {
-                otEarnings = otHours * otRate;
-            }
-        }
-
-        return { 
-            netHrs: calculatedNetWorkingHours, 
-            otHrs: otHours, 
-            status: status, 
-            earnedWages: wageEarnings, 
-            earnedOt: otEarnings 
-        };
-    }
-
-    function renderSystemInterfaceDynamicUI() {
-        document.getElementById('activeSiteSelector').value = currentActiveSiteKey;
-        document.getElementById('activeWorkspaceBadge').innerText = "Active Workspace Area: " + siteNamesMap[currentActiveSiteKey].toUpperCase();
-        
-        let cycleBar = document.getElementById('site2SegmentTabsBlock');
-        if(currentActiveSiteKey === 'site2') {
-            cycleBar.style.display = 'flex';
-        } else {
-            cycleBar.style.display = 'none';
-        }
-        generateLayoutSpreadsheetGridStructure();
-    }
-
-    function engageSiteWorkspaceSwitch() {
-        currentActiveSiteKey = document.getElementById('activeSiteSelector').value;
-        currentSite2CycleSegment = 1;
-        
-        document.querySelectorAll('.block-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-        if(document.getElementById('cycleTab1')) document.getElementById('cycleTab1').classList.add('active');
-
-        renderSystemInterfaceDynamicUI();
-    }
-
-    function shiftSite2DayCycleSegment(segmentIndex) {
-        currentSite2CycleSegment = segmentIndex;
-        document.querySelectorAll('.block-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('cycleTab' + segmentIndex).classList.add('active');
-        renderSystemInterfaceDynamicUI();
-    }
-
-    function generateLayoutSpreadsheetGridStructure() {
-        let headTrack = document.getElementById('gridHeaderRow');
-        let rawHtmlHeaderString = '<th style="text-align:left; padding-left:10px; position: sticky; left: 0; z-index: 2; background: #f8fafc; border-right: 2px solid #cbd5e1;">Worker Matrix Profile</th>';
-        
-        let startDay = 1, endDay = 31;
-        if(currentActiveSiteKey === 'site2') {
-            if(currentSite2CycleSegment === 1) { startDay = 1; endDay = 10; }
-            else if(currentSite2CycleSegment === 2) { startDay = 11; endDay = 20; }
-            else if(currentSite2CycleSegment === 3) { startDay = 21; endDay = 31; }
-        }
-
-        for(let loopDay = startDay; loopDay <= endDay; loopDay++) {
-            rawHtmlHeaderString += `<th>Day ${String(loopDay).padStart(2,'0')}</th>`;
-        }
-        rawHtmlHeaderString += '<th style="background:#2563eb; color:white; min-width:160px;">Automated Summary Block</th>';
-        headTrack.innerHTML = rawHtmlHeaderString;
-
-        bindTransactionalDataRowsToGrid(startDay, endDay);
-    }
-
-    function bindTransactionalDataRowsToGrid(dayStartBound, dayEndBound) {
-        let dataGridBody = document.getElementById('gridBodyDataPool');
-        dataGridBody.innerHTML = '';
-
-        let activeSiteNodeMap = masterDB[currentActiveSiteKey] || {};
-        let workerProfileKeysList = Object.keys(activeSiteNodeMap);
-
-        if(workerProfileKeysList.length === 0) {
-            dataGridBody.innerHTML = `<tr><td colspan="42" style="padding:30px; color:#64748b; font-size:13px; font-weight:700; background:#f8fafc;">Workspace database records are bare empty inside this site block area view. Form bharke data commit karein.</td></tr>`;
-            return;
-        }
-
-        workerProfileKeysList.forEach(profileNameKey => {
-            let dataObjectNode = activeSiteNodeMap[profileNameKey];
-            let rowWrapperElement = document.createElement('tr');
-
-            let cellHtmlString = `<td class="fixed-worker-cell" style="padding-left:10px;">
-                👤 <span style="color:#0f172a; font-size:12px; font-weight:800;">${profileNameKey}</span><br>
-                <span style="color:#64748b; font-size:10px; font-weight:600;">Wages: ₹${dataObjectNode.baseWages}/d</span>
-            </td>`;
-
-            let segmentAccumulatedGross = 0;
-            let segmentAccumulatedAdvances = 0;
-
-            for(let scanDay = dayStartBound; scanDay <= dayEndBound; scanDay++) {
-                let computedDayStringToken = String(scanDay).padStart(2, '0');
-                
-                let attendanceLogEntry = (dataObjectNode.attendance && dataObjectNode.attendance[computedDayStringToken]) ? dataObjectNode.attendance[computedDayStringToken] : null;
-                let advanceLogEntry = (dataObjectNode.advances && dataObjectNode.advances[computedDayStringToken]) ? parseFloat(dataObjectNode.advances[computedDayStringToken]) : 0;
-                
-                segmentAccumulatedAdvances += advanceLogEntry;
-
-                if(attendanceLogEntry) {
-                    let directTotalCombinedEarnings = parseFloat(attendanceLogEntry.earnedWages || 0) + parseFloat(attendanceLogEntry.earnedOt || 0);
-                    segmentAccumulatedGross += directTotalCombinedEarnings;
-
-                    cellHtmlString += `<td>
-                        <span class="status-badge badge-${attendanceLogEntry.status}">${attendanceLogEntry.status}</span>
-                        <div class="cell-card">
-                            <b>In:</b> ${attendanceLogEntry.inTime}<br>
-                            <b>L.Out:</b> ${attendanceLogEntry.lunchOut}<br>
-                            <b>L.In:</b> ${attendanceLogEntry.lunchIn}<br>
-                            <b>Out:</b> ${attendanceLogEntry.outTime}<br>
-                            <b>Hrs:</b> ${parseFloat(attendanceLogEntry.netHrs).toFixed(1)}<br>
-                            <b>OT Hrs:</b> ${parseFloat(attendanceLogEntry.otHrs).toFixed(1)}<br>
-                            <span style="color:#16a34a; font-weight:800;">OT: ₹${parseFloat(attendanceLogEntry.earnedOt).toFixed(0)}</span>
-                        </div>
-                        ${advanceLogEntry > 0 ? `<div class="advance-tag">💸 Less Adv: ₹${advanceLogEntry}</div>` : ''}
-                    </td>`;
-                } else {
-                    cellHtmlString += `<td>
-                        <span style="color: #cbd5e1; font-weight:bold; font-size:14px;">-</span>
-                        ${advanceLogEntry > 0 ? `<div class="advance-tag">💸 Less Adv<br>₹${advanceLogEntry}</div>` : ''}
-                    </td>`;
-                }
-            }
-
-            let computedNetFinalPayablePay = segmentAccumulatedGross - segmentAccumulatedAdvances;
-            
-            cellHtmlString += `<td class="summary-column">
-                <div style="font-weight:700; color:#475569; font-size:11px;">Gross Total: <span style="float:right; color:#0f172a;">₹${segmentAccumulatedGross.toFixed(0)}</span></div>
-                <div style="font-weight:700; color:#dc2626; font-size:11px; margin-top:5px;">Total Adv Cut: <span style="float:right;">₹${segmentAccumulatedAdvances.toFixed(0)}</span></div>
-                <div style="font-weight:800; color:#16a34a; font-size:13px; margin-top:10px; border-top:1px dashed #cbd5e1; padding-top:6px;">Net Payable: <span style="float:right; font-size:14px; font-weight:900; background:#dcfce7; padding:1px 4px; border-radius:3px;">₹${computedNetFinalPayablePay.toFixed(0)}</span></div>
-            </td>`;
-
-            rowWrapperElement.innerHTML = cellHtmlString;
-            dataGridBody.appendChild(rowWrapperElement);
-        });
-    }
-
-    // --- Safe Database Write & Mapping Engine Module ---
-    function commitFormEntryToDatabase() {
-        let nameToken = document.getElementById('formWorkerName').value.trim();
-        let flatWages = parseFloat(document.getElementById('formDailyWages').value) || 0;
-        let calculatedOtRate = parseFloat(document.getElementById('formHourlyOtRate').value) || 0;
-        let configurationShift = document.getElementById('formShiftMode').value;
-        let calendarRawDate = document.getElementById('formLogDate').value;
-        
-        let inPunch = document.getElementById('formPunchIn').value;
-        let outLunch = document.getElementById('formLunchOut').value;
-        let inLunch = document.getElementById('formLunchIn').value;
-        let outPunch = document.getElementById('formPunchOut').value;
-        let advanceCashAmount = parseFloat(document.getElementById('formAdvancePaid').value) || 0;
-
-        if(!nameToken || !calendarRawDate) {
-            alert("❌ Worker Name aur Entry Date select karna compulsory hai!");
-            return;
-        }
-
-        let extractedDayStringToken = String(calendarRawDate.split('-')[2]).padStart(2, '0');
-
-        if(!masterDB[currentActiveSiteKey]) masterDB[currentActiveSiteKey] = {};
-        if(!masterDB[currentActiveSiteKey][nameToken]) {
-            masterDB[currentActiveSiteKey][nameToken] = { baseWages: flatWages, hourlyOtRate: calculatedOtRate, shiftMode: configurationShift, attendance: {}, advances: {} };
-        }
-
-        let coreWorkerNodeRef = masterDB[currentActiveSiteKey][nameToken];
-        coreWorkerNodeRef.baseWages = flatWages;
-        coreWorkerNodeRef.hourlyOtRate = calculatedOtRate;
-        coreWorkerNodeRef.shiftMode = configurationShift;
-
-        if(!coreWorkerNodeRef.attendance) coreWorkerNodeRef.attendance = {};
-        if(!coreWorkerNodeRef.advances) coreWorkerNodeRef.advances = {};
-
-        if(advanceCashAmount > 0) {
-            coreWorkerNodeRef.advances[extractedDayStringToken] = (parseFloat(coreWorkerNodeRef.advances[extractedDayStringToken]) || 0) + advanceCashAmount;
-        }
-
-        let formulaOutputs = executeComplexAttendanceCalculations(inPunch, outLunch, inLunch, outPunch, flatWages, calculatedOtRate, configurationShift);
-        if(formulaOutputs.netHrs > 0) {
-            coreWorkerNodeRef.attendance[extractedDayStringToken] = {
-                inTime: inPunch, lunchOut: outLunch, lunchIn: inLunch, outTime: outPunch,
-                netHrs: formulaOutputs.netHrs, otHrs: formulaOutputs.otHrs,
-                status: formulaOutputs.status, earnedWages: formulaOutputs.earnedWages, earnedOt: formulaOutputs.earnedOt
-            };
-        } else {
-            coreWorkerNodeRef.attendance[extractedDayStringToken] = {
-                inTime: "-", lunchOut: "-", lunchIn: "-", outTime: "-",
-                netHrs: 0, otHrs: 0, status: 'A', earnedWages: 0, earnedOt: 0
-            };
-        }
-
-        dispatchStateMutationToCloud();
-        document.getElementById('formWorkerName').value = '';
-        document.getElementById('formAdvancePaid').value = '0';
-        alert(`✔️ Entry Committed! Day ${extractedDayStringToken} data locked safely for worker ${nameToken}.`);
-    }
-
-    // --- Administrative Pure Log Wipe Data Removal Command Engine ---
-    function executeTargetRecordPurge() {
-        let nameTarget = document.getElementById('purgeTargetName').value.trim();
-        let dateTargetString = document.getElementById('purgeTargetDate').value;
-
-        if(!nameTarget || !dateTargetString) {
-            alert("⚠️ Kripya worker profile ka precise naam aur date chuniye!");
-            return;
-        }
-
-        let computedDayToken = String(dateTargetString.split('-')[2]).padStart(2, '0');
-        
-        if(masterDB[currentActiveSiteKey] && masterDB[currentActiveSiteKey][nameTarget]) {
-            let selectedWorkerNodeInstance = masterDB[currentActiveSiteKey][nameTarget];
-            if(selectedWorkerNodeInstance.attendance) delete selectedWorkerNodeInstance.attendance[computedDayToken];
-            if(selectedWorkerNodeInstance.advances) delete selectedWorkerNodeInstance.advances[computedDayToken];
-            
-            alert(`🗑️ Purged! Day ${computedDayToken} logs wiped out from node database cluster.`);
-            dispatchStateMutationToCloud();
-            document.getElementById('purgeTargetName').value = '';
-        } else {
-            alert("❌ Chuna hua naam active site database matrix me nahi mila.");
-        }
-    }
-</script>
-</body>
-</html>
+        else if (calculatedNetWorkingHours
