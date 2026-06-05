@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master Ultimate v12.5</title>
+    <title>Shramik Sync Master Ultimate v12.6</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
         .master-container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); box-sizing: border-box; }
@@ -60,7 +60,7 @@
 
 <div class="master-container">
     <div class="header-block">
-        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.5" oninput="persistAppTitle()">
+        <input type="text" id="appTitleText" class="main-title" value="Performance Register System v12.6" oninput="persistAppTitle()">
     </div>
     <div id="activeWorkspaceBadge" class="workspace-badge">Active Block: Loading Site...</div>
     <div id="cloudSyncStatus" class="status-panel status-online">🟢 Connection Active • Shramik Live Sync Engine</div>
@@ -92,13 +92,13 @@
         </div>
         <div class="input-group">
             <label>OT Pay / Hour (₹)</label>
-            <input type="number" id="formHourlyOtRate" value="150" readonly style="background:#f1f5f9; font-weight:700; color:#475569;">
+            <input type="number" id="formHourlyOtRate" value="100" readonly style="background:#f1f5f9; font-weight:700; color:#475569;">
         </div>
         <div class="input-group">
             <label>Shift Type</label>
             <select id="formShiftMode" onchange="calculateLiveHourlyOtRate()">
-                <option value="8hr">Normal Shift (8.5 Hr)</option>
-                <option value="7hr">Short Shift (7.0 Hr)</option>
+                <option value="8hr">Normal Shift (8.0 Hr Target)</option>
+                <option value="7hr">Short Shift (7.0 Hr Target)</option>
             </select>
         </div>
         <div class="input-group">
@@ -119,7 +119,7 @@
         </div>
         <div class="input-group">
             <label>Out Time</label>
-            <input type="time" id="formPunchOut" value="17:30">
+            <input type="time" id="formPunchOut" value="17:00">
         </div>
         <div class="input-group">
             <label>Advance Taken (₹)</label>
@@ -164,7 +164,6 @@
 </div>
 
 <script>
-    // DIRECT LIVE DATABASE ENDPOINT
     const BASE_REST_ENDPOINT = "https://shramiksync-default-rtdb.firebaseio.com/shramik_live_v12.json";
     const META_REST_ENDPOINT = "https://shramiksync-default-rtdb.firebaseio.com/shramik_meta_v12.json";
 
@@ -172,15 +171,6 @@
     let siteNamesMap = { site1: "Site 1", site2: "Site 2 (10-Day Auto Block Payment)", site3: "Site 3", site4: "Site 4", site5: "Site 5" };
     let currentActiveSiteKey = 'site1';
     let currentSite2CycleSegment = 1;
-
-    function convertDecimalToHHMMString(value) {
-        let num = parseFloat(value);
-        if (isNaN(num) || num <= 0) return "00:00";
-        let hours = Math.floor(num);
-        let minutes = Math.round((num - hours) * 60);
-        if (minutes === 60) { hours += 1; minutes = 0; }
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    }
 
     window.addEventListener('DOMContentLoaded', () => {
         let clock = new Date();
@@ -204,7 +194,7 @@
         renderSystemInterfaceDynamicUI();
         
         pullCloudDatabaseState();
-        setInterval(pullCloudDatabaseState, 3000); // 3 seconds fast synchronization
+        setInterval(pullCloudDatabaseState, 3000);
     });
 
     function persistAppTitle() {
@@ -239,7 +229,7 @@
                     localStorage.setItem('shramik_unbreakable_local_cache', JSON.stringify(masterDB));
                     renderSystemInterfaceDynamicUI();
                 }
-            }).catch(e => console.log("Offline backup active."));
+            }).catch(e => console.log("Offline backup running."));
     }
 
     function pushCurrentStateToCloud() {
@@ -249,13 +239,13 @@
         fetch(BASE_REST_ENDPOINT, {
             method: 'PUT',
             body: JSON.stringify(masterDB)
-        }).catch(err => console.log("Local backup stored. Sync auto retry active."));
+        }).catch(err => console.log("Local sync complete. Retry waiting."));
     }
 
     function calculateLiveHourlyOtRate() {
         let dailyWages = parseFloat(document.getElementById('formDailyWages').value) || 0;
         let shiftConfig = document.getElementById('formShiftMode').value;
-        let baseDenominator = (shiftConfig === '7hr') ? 7 : 8.5;
+        let baseDenominator = (shiftConfig === '7hr') ? 7.0 : 8.0; // PERFECT 8 HOUR SHIFT ASSIGNMENT
         document.getElementById('formHourlyOtRate').value = dailyWages > 0 ? Math.round(dailyWages / baseDenominator) : 0;
     }
 
@@ -264,7 +254,7 @@
         let scopeCluster = masterDB[currentActiveSiteKey] || {};
         if(scopeCluster[inputName]) {
             document.getElementById('formDailyWages').value = scopeCluster[inputName].baseWages || 800;
-            document.getElementById('formHourlyOtRate').value = scopeCluster[inputName].hourlyOtRate || 150;
+            document.getElementById('formHourlyOtRate').value = scopeCluster[inputName].hourlyOtRate || 100;
             if(scopeCluster[inputName].shiftMode) { document.getElementById('formShiftMode').value = scopeCluster[inputName].shiftMode; }
         }
         calculateLiveHourlyOtRate();
@@ -284,7 +274,7 @@
         if(calculatedNetWorkingHours <= 0) return { netHrs:0, otHrs:0, status:'A', earnedWages:0, earnedOt:0 };
         
         let status = 'A', otHours = 0, wageEarnings = 0, otEarnings = 0;
-        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.5;
+        let evaluatedShiftThreshold = (shiftConfig === '7hr') ? 7.0 : 8.0; // LIVE CALCULATOR RUNNING ON 8.0 FIXED
 
         if (calculatedNetWorkingHours < evaluatedShiftThreshold) {
             status = 'HD'; 
@@ -350,4 +340,6 @@
         }
 
         workerProfileKeysList.forEach(profileNameKey => {
-            let dataObjectNode = 
+            let dataObjectNode = activeSiteNodeMap[profileNameKey];
+            let rowWrapperElement = document.createElement('tr');
+            let cellHtmlString = `<td class="fixed-worker-cell" style="padding-left:10px;">👤 <span style="color:#0f172a; font-size:12px; font-weight:800;">${profileNameKey}</span><br><span style="color:#64748b; font-size:10px;">Wages: ₹${dataObjectNode.baseWages}/d</
