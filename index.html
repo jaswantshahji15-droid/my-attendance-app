@@ -422,13 +422,15 @@
         tabContainer.style.display = (currentSite === 'site2') ? 'flex' : 'none';
 
         if(currentSite === 'site2') {
-            document.querySelectorAll('.cycle-tabs .tab-item').forEach((btn, idx) => {
-                btn.classList.toggle('active', (idx + 1) === currentCycleBlock);
-            });
-        }
-        buildPerformanceGridStructure();
-    }
-
+                        let netPayable = grossEarnings - advancesPaid;
+            rowHtmlStr += `<td style="background:#f8fafc; text-align:left; padding-left:8px;">
+                <div style="font-weight:bold; color:#475569; font-size:10px; margin-bottom:5px; background:#e2e8f0; padding:4px; border-radius:4px;">
+                    📅 Days: <span style="color:#16a34a;">P:${totalPresentDays}</span> | <span style="color:#dc2626;">A:${totalAbsentDays}</span>
+                </div>
+                <div style="font-weight:bold; color:#1e3a8a; font-size:11px;">Gross Wages: ₹${grossEarnings.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#dc2626; font-size:11px; margin-top:3px;">(-) Advance: ₹${advancesPaid.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#16a34a; font-size:13px; margin-top:5px; border-top:1.5px solid #cbd5e1; padding-top:4px;">Net Payable: ₹${netPayable.toFixed(0)}</div>
+            </td>`;
     function switchSiteEngine() {
         currentSite = document.getElementById('selSite').value;
         currentCycleBlock = 1;
