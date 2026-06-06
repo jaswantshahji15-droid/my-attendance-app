@@ -6,21 +6,21 @@
     <title>Shramik Sync Master v11.0</title>
 
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; color: #334155; }
-        .container { max-width: 100%; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 12px; color: #334155; }
+        .container { max-width: 100%; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         
         .editable-header { width: 100%; border: none; background: transparent; text-align: center; font-size: 22px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; }
         .editable-header:focus { background: #f0f6ff; outline: 1px dashed #2563eb; border-radius: 6px; }
         .site-indicator { text-align: center; font-weight: bold; color: #2563eb; margin-bottom: 15px; font-size: 14px; }
 
-        .status-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; font-size: 13px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .status-box { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .sync-active { color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; }
         .sync-offline { color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; }
 
-        .setup-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .form-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin: 20px 0 12px 0; border-left: 4px solid #2563eb; padding-left: 8px; }
+        .setup-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .form-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin: 15px 0 10px 0; border-left: 4px solid #2563eb; padding-left: 8px; }
 
-        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
         .field-group { display: flex; flex-direction: column; }
         .field-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #475569; }
         .field-group input, .field-group select { padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; color: #334155; font-weight: 500; height: 38px; box-sizing: border-box; }
@@ -30,27 +30,25 @@
         .preview-stat span { display: block; font-size: 14px; color: #1d4ed8; margin-top: 2px; }
 
         .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; height: 40px; }
-        .btn-save { background: #16a34a; color: white; width: 100%; margin-top: 15px; height: 44px; font-size: 14px; }
+        .btn-save { background: #16a34a; color: white; width: 100%; margin-top: 10px; height: 44px; font-size: 14px; }
         .btn-save:hover { background: #15803d; }
         .btn-excel { background: #0284c7; color: white; }
-        .btn-excel:hover { background: #0369a1; }
         .btn-danger { background: #dc2626; color: white; }
-        .btn-danger:hover { background: #b91c1c; }
         .btn-absent { background: #ea580c; color: white; margin-top: auto; }
-        .btn-absent:hover { background: #c2410c; }
 
         .cycle-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-item { background: #e2e8f0; color: #475569; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; border: 1px solid #cbd5e1; }
         .tab-item.active { background: #2563eb; color: white; border-color: #1d4ed8; }
 
         .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; text-align: center; }
-        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; }
+        th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
         th { background: #f1f5f9; font-weight: bold; color: #334155; font-size: 11px; height: 35px; }
-        .worker-col { text-align: left; background: #f8fafc; font-weight: bold; min-width: 140px; position: sticky; left: 0; z-index: 2; border-right: 2px solid #cbd5e1; }
-        .cell-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px; border-radius: 4px; margin-top: 4px; font-size: 10px; line-height: 1.4; text-align: left; color: #475569; }
-
-        .badge { font-weight: bold; padding: 3px 6px; border-radius: 4px; font-size: 10px; display: inline-block; text-align: center; }
+        
+        .worker-section-header { background: #e2e8f0 !important; font-weight: bold; text-align: left; padding-left: 10px; color: #1e3a8a; font-size: 12px; }
+        .metric-label-col { text-align: left; padding-left: 8px; background: #f8fafc; font-weight: 600; min-width: 140px; position: sticky; left: 0; z-index: 2; border-right: 2px solid #cbd5e1; }
+        
+        .badge { font-weight: bold; padding: 2px 5px; border-radius: 4px; font-size: 10px; display: inline-block; }
         .badge-P { background: #dcfce7; color: #16a34a; }
         .badge-HD { background: #fef9c3; color: #ca8a04; }
         .badge-PP { background: #f3e8ff; color: #9333ea; }
@@ -89,7 +87,7 @@
     <div class="form-title">📝 1. Daily Shift Records & Advance Transaction Ledger Form</div>
     <div class="grid-inputs">
         <div class="field-group">
-            <label>WORKER PROFILE NAME (Auto-Fill Engine)</label>
+            <label>WORKER PROFILE NAME</label>
             <input type="text" id="wName" placeholder="Enter Full Name" oninput="checkAndAutofillWorkerData()">
         </div>
         <div class="field-group">
@@ -167,8 +165,7 @@
         </div>
         <button class="btn btn-absent" onclick="markFieldsAsAbsent()">✖ Mark Absent (A)</button>
     </div>
-
-    <div class="preview-card">
+        <div class="preview-card">
         <div class="preview-stat">Total Work Mins<span id="pvMins">480 mins</span></div>
         <div class="preview-stat">Shift Work Hours<span id="pvHrs">08:00h</span></div>
         <div class="preview-stat">OT Hours Calculated<span id="pvOtHrs">00:00h</span></div>
@@ -199,7 +196,7 @@
         </table>
     </div>
 
-    <div class="form-title" style="color:#dc2626;">⚠️ Correction Engine (Galti Thik Karein - Delete Target Log Entry)</div>
+    <div class="form-title" style="color:#dc2626;">⚠️ Correction Engine (Galti Thik Karein)</div>
     <div class="delete-section">
         <div class="grid-inputs" style="margin-bottom:0;">
             <div class="field-group">
@@ -225,7 +222,6 @@
     let currentSite = "site1";
     let currentCycleBlock = 1;
 
-    // Fallback locally and load immediately so screen stays dynamic
     function setSystemDefaultDates() {
         let today = new Date();
         document.getElementById('wDate').valueAsDate = today;
@@ -235,7 +231,6 @@
     function initializeSystemNetwork() {
         setSystemDefaultDates();
         
-        // Load local cash copy first to ensure system never freezes
         let localData = localStorage.getItem("shramikLocalCache");
         if(localData) {
             let parsed = JSON.parse(localData);
@@ -246,10 +241,7 @@
         renderAppUI();
         triggerLiveCalculationPreview();
 
-        if (typeof firebase === 'undefined') {
-            console.error("Firebase SDK Check Error");
-            return;
-        }
+        if (typeof firebase === 'undefined') return;
         
         try {
             firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
@@ -268,12 +260,8 @@
                 statusBox.className = "status-box sync-active";
                 renderAppUI();
                 triggerLiveCalculationPreview();
-            }, (error) => {
-                console.log("Firebase sync fallback initialized.");
             });
-        } catch(e) {
-            console.log("Network dynamic bypass triggered.");
-        }
+        } catch(e) { console.log("Network bypass active."); }
     }
 
     function pushUpdatedStateToCloud() {
@@ -286,7 +274,7 @@
                 memoryDB: memoryDB,
                 siteNames: siteNames,
                 mainHeading: hText
-            }).catch(e => console.log("Cloud saving pending network..."));
+            });
         }
     }
 
@@ -302,98 +290,57 @@
         let inputName = document.getElementById('wName').value.trim();
         if(!inputName) return;
 
-        let foundWorker = null;
         let siteKeys = Object.keys(memoryDB);
-        
         for(let i = 0; i < siteKeys.length; i++) {
             let sData = memoryDB[siteKeys[i]] || {};
             if(sData[inputName]) {
-                foundWorker = sData[inputName];
+                document.getElementById('wWages').value = sData[inputName].baseWages || 500;
+                document.getElementById('wOtRate').value = sData[inputName].hourlyOtRate || 150;
+                document.getElementById('wShift').value = sData[inputName].shiftMode || "8hr";
+                triggerLiveCalculationPreview();
                 break;
             }
-        }
-
-        if(foundWorker) {
-            document.getElementById('wWages').value = foundWorker.baseWages || 500;
-            document.getElementById('wOtRate').value = foundWorker.hourlyOtRate || 150;
-            document.getElementById('wShift').value = foundWorker.shiftMode || "8hr";
-            triggerLiveCalculationPreview();
         }
     }
 
     function calculateAttendanceMetrics(inT, lOut, lIn, outT, wage, otRate, mode) {
         if(inT === "00:00" || outT === "00:00") {
-            return { netMinutes: 0, hrsStr: "00:00h", otHrsStr: "00:00h", status: 'A', earned: 0, otEarned: 0 };
+            return { netMinutes: 0, hrsStr: "00:00", otHrsStr: "00:00", status: 'A', earned: 0, otEarned: 0 };
         }
 
-        let parseMin = (s) => {
-            let p = s.split(":");
-            return parseInt(p[0])*60 + parseInt(p[1]);
-        };
-
+        let parseMin = (s) => { let p = s.split(":"); return parseInt(p[0])*60 + parseInt(p[1]); };
         let tIn = parseMin(inT), tLOut = parseMin(lOut), tLIn = parseMin(lIn), tOut = parseMin(outT);
-        let firstHalf = Math.max(0, tLOut - tIn);
-        let secondHalf = Math.max(0, tOut - tLIn);
-        let netMinutes = firstHalf + secondHalf;
+        let netMinutes = Math.max(0, tLOut - tIn) + Math.max(0, tOut - tLIn);
         let totalHours = netMinutes / 60;
 
         let status = 'A', earned = 0, otMinutes = 0, otEarned = 0;
 
-        if (totalHours < 1.0) {
-            status = 'A'; earned = 0; otMinutes = 0;
-        }
+        if (totalHours < 1.0) { status = 'A'; earned = 0; }
         else if (totalHours >= 1.0 && totalHours < 7.5) {
-            status = 'P';
-            if (totalHours >= 4.0 && totalHours <= 5.0) status = 'HD';
-            earned = (netMinutes / 480) * wage; 
-            otMinutes = 0;
+            status = (totalHours >= 4.0 && totalHours <= 5.0) ? 'HD' : 'P';
+            earned = (netMinutes / 480) * wage;
         }
-        else if (totalHours >= 7.5 && totalHours <= 8.5) {
-            status = 'P'; earned = wage; otMinutes = 0;
-        }
+        else if (totalHours >= 7.5 && totalHours <= 8.5) { status = 'P'; earned = wage; }
         else if (totalHours > 8.5 && totalHours <= 11.0) {
             status = 'P'; earned = wage; otMinutes = netMinutes - 480; 
             otEarned = (otMinutes / 60) * otRate;
         }
-        else if (totalHours > 11.0 && totalHours <= 12.0) {
-            status = 'P'; earned = wage; otMinutes = 240; 
-            otEarned = 4 * otRate;
-        }
-        else if (totalHours > 12.0 && totalHours <= 13.5) {
-            status = 'P'; earned = wage; otMinutes = netMinutes - 480;
-            otEarned = (otMinutes / 60) * otRate;
-        }
-        else if (totalHours > 13.5) {
-            status = 'PP'; earned = wage * 2; otMinutes = netMinutes - 480;
-            otEarned = wage; 
-        }
+        else if (totalHours > 11.0 && totalHours <= 12.0) { status = 'P'; earned = wage; otMinutes = 240; otEarned = 4 * otRate; }
+        else if (totalHours > 12.0 && totalHours <= 13.5) { status = 'P'; earned = wage; otMinutes = netMinutes - 480; otEarned = (otMinutes / 60) * otRate; }
+        else if (totalHours > 13.5) { status = 'PP'; earned = wage * 2; otMinutes = netMinutes - 480; otEarned = wage; }
 
-        let convertMinutesToTimeStr = (m) => {
-            let hrs = Math.floor(m/60);
-            let mins = m % 60;
-            return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}h`;
-        };
-
-        return {
-            netMinutes: netMinutes, hrsStr: convertMinutesToTimeStr(netMinutes),
-            otHrsStr: convertMinutesToTimeStr(otMinutes), status: status, earned: earned, otEarned: otEarned
-        };
+        let toTimeStr = (m) => { return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; };
+        return { netMinutes, hrsStr: toTimeStr(netMinutes), otHrsStr: toTimeStr(otMinutes), status, earned, otEarned };
     }
-
-    function triggerLiveCalculationPreview() {
+        function triggerLiveCalculationPreview() {
         let baseWages = parseFloat(document.getElementById('wWages').value) || 0;
         let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
         let shiftMode = document.getElementById('wShift').value;
-        let inTime = document.getElementById('wIn').value;
-        let lOut = document.getElementById('wLOut').value;
-        let lIn = document.getElementById('wLIn').value;
-        let outTime = document.getElementById('wOut').value;
-
-        let metrics = calculateAttendanceMetrics(inTime, lOut, lIn, outTime, baseWages, otRate, shiftMode);
+        let metrics = calculateAttendanceMetrics(document.getElementById('wIn').value, document.getElementById('wLOut').value, document.getElementById('wLIn').value, document.getElementById('wOut').value, baseWages, otRate, shiftMode);
 
         document.getElementById('pvMins').innerText = metrics.netMinutes + " mins";
-        document.getElementById('pvHrs').innerText = metrics.hrsStr;
-        document.getElementById('pvOtHrs').innerText = metrics.otHrsStr;
+        document.getElementById('pvHrs').innerText = metrics.hrsStr + "h";
+        document.getElementById('pvOtHrs').innerText = metrics.otHrsStr + "h";
         document.getElementById('pvStatus').innerText = metrics.status;
         document.getElementById('pvOtEarned').innerText = "₹" + metrics.otEarned.toFixed(0);
     }
@@ -402,64 +349,34 @@
         document.getElementById('selSite').value = currentSite;
         for(let i=0; i<5; i++) {
             let key = 'site' + (i+1);
-            if(document.getElementById('selSite').options[i]) {
-                document.getElementById('selSite').options[i].text = siteNames[key] || key;
-            }
+            if(document.getElementById('selSite').options[i]) document.getElementById('selSite').options[i].text = siteNames[key] || key;
         }
-        document.getElementById('siteIndicator').innerText = "Site Area Matrix: " + (siteNames[currentSite] || currentSite);
+        document.getElementById('siteIndicator').innerText = "Site Matrix: " + (siteNames[currentSite] || currentSite);
+        document.getElementById('cycleTabsArea').style.display = (currentSite === 'site2') ? 'flex' : 'none';
 
-        let tabContainer = document.getElementById('cycleTabsArea');
-        tabContainer.style.display = (currentSite === 'site2') ? 'flex' : 'none';
-
-        if(currentSite === 'site2') {
-            document.querySelectorAll('.cycle-tabs .tab-item').forEach((btn, idx) => {
-                btn.classList.toggle('active', (idx + 1) === currentCycleBlock);
-            });
-        }
         buildPerformanceGridStructure();
     }
 
-    function switchSiteEngine() {
-        currentSite = document.getElementById('selSite').value;
-        currentCycleBlock = 1;
-        renderAppUI();
-    }
-
-    function renameActiveSite() {
-        let newName = document.getElementById('siteRenameInput').value.trim();
-        if(!newName) return;
-        siteNames[currentSite] = newName;
-        document.getElementById('siteRenameInput').value = "";
-        pushUpdatedStateToCloud();
-    }
-
-    function changeDayCycleSegment(blockNum) {
-        currentCycleBlock = blockNum;
-        renderAppUI();
-    }
+    function switchSiteEngine() { currentSite = document.getElementById('selSite').value; currentCycleBlock = 1; renderAppUI(); }
+    function renameActiveSite() { let n=document.getElementById('siteRenameInput').value.trim(); if(!n)return; siteNames[currentSite]=n; document.getElementById('siteRenameInput').value=""; pushUpdatedStateToCloud(); }
+    function changeDayCycleSegment(b) { currentCycleBlock = b; renderAppUI(); }
 
     function buildPerformanceGridStructure() {
         let headRow = document.getElementById('tableHeadRow');
-        let headerHtml = '<th style="text-align:left; padding-left:10px;">Worker Profile Master</th>';
+        let headerHtml = '<th style="text-align:left; padding-left:10px;">PayCode, Name & Parameter Metrics</th>';
         
         let dayStart = 1, dayEnd = 31;
+        let dateVal = document.getElementById('wDate').value || "2026-01-01";
+        let maxDays = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
+
         if(currentSite === 'site2') {
             if(currentCycleBlock === 1) { dayStart = 1; dayEnd = 10; }
             else if(currentCycleBlock === 2) { dayStart = 11; dayEnd = 20; }
-            else if(currentCycleBlock === 3) { 
-                dayStart = 21; 
-                let dateVal = document.getElementById('wDate').value || "2026-01-01";
-                dayEnd = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
-            }
-        } else {
-            let dateVal = document.getElementById('wDate').value || "2026-01-01";
-            dayEnd = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
-        }
+            else if(currentCycleBlock === 3) { dayStart = 21; dayEnd = maxDays; }
+        } else { dayEnd = maxDays; }
 
-        for(let d = dayStart; d <= dayEnd; d++) {
-            headerHtml += `<th>Day ${String(d).padStart(2,'0')}</th>`;
-        }
-        headerHtml += '<th style="background:#1e3a8a; color:white; min-width:170px;">Automated Ledger Summary</th>';
+        for(let d = dayStart; d <= dayEnd; d++) { headerHtml += `<th>${String(d).padStart(2,'0')}</th>`; }
+        headerHtml += '<th style="background:#1e3a8a; color:white; min-width:160px;">Summary Ledger</th>';
         headRow.innerHTML = headerHtml;
 
         populateTableRowsData(dayStart, dayEnd);
@@ -468,73 +385,72 @@
     function populateTableRowsData(start, end) {
         let tableBody = document.getElementById('tableBodyData');
         tableBody.innerHTML = '';
-
         let siteDataMap = memoryDB[currentSite] || {};
         let workerKeys = Object.keys(siteDataMap);
 
         if(workerKeys.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="45" style="padding:25px; color:#94a3b8; font-weight:bold;">No logs recorded in this workspace matrix yet.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#94a3b8; font-weight:bold;">No records logs found.</td></tr>`;
             return;
         }
 
         workerKeys.forEach(wKey => {
-            let workerObject = siteDataMap[wKey];
-            let rowElement = document.createElement('tr');
+            let wObj = siteDataMap[wKey];
+            let metricsDef = [
+                { name: "In", key: "inTime" }, { name: "Lunch Out", key: "lOutTime" }, { name: "Lunch In", key: "lInTime" },
+                { name: "Out", key: "outTime" }, { name: "Hours Worked", key: "hrsWorked" }, { name: "OT", key: "otHours" },
+                { name: "Advance", key: "advance" }, { name: "Status", key: "status" }
+            ];
 
-            let rowHtmlStr = `<td class="worker-col" style="padding-left:10px;">
-                👤 ${wKey}<br>
-                <span style="color:#64748b; font-size:10px; font-weight:normal;">Rate: ₹${workerObject.baseWages}/d</span><br>
-                <span style="color:#2563eb; font-size:9px; font-weight:bold;">(${workerObject.shiftMode === '7hr' ? '7:00' : '8:00'}h Shift)</span>
-            </td>`;
+            let grossWages = 0, totalAdv = 0, pDays = 0, aDays = 0;
 
-            let grossEarnings = 0;
-            let advancesPaid = 0;
-            let totalPresentDays = 0;
-            let totalAbsentDays = 0;
-
-            for(let d = start; d <= end; d++) {
-                let dayToken = String(d).padStart(2, '0');
-                let attRecord = (workerObject.attendance && workerObject.attendance[dayToken]) ? workerObject.attendance[dayToken] : null;
-                let advRecord = (workerObject.advances && workerObject.advances[dayToken]) ? parseFloat(workerObject.advances[dayToken]) : 0;
-                
-                advancesPaid += advRecord;
-
-                if(attRecord) {
-                    let dayTotal = parseFloat(attRecord.earned || 0) + parseFloat(attRecord.otEarned || 0);
-                    grossEarnings += dayTotal;
-
-                    if(attRecord.status === 'A') totalAbsentDays++; else totalPresentDays++;
-
-                    rowHtmlStr += `<td>
-                        <span class="badge badge-${attRecord.status}">${attRecord.status}</span>
-                        <div class="cell-box">
-                            <b>In:</b> ${attRecord.inTime}<br>
-                            <b>L/Out:</b> ${attRecord.lOutTime || '13:00'}<br>
-                            <b>L/In:</b> ${attRecord.lInTime || '14:00'}<br>
-                            <b>Out:</b> ${attRecord.outTime}<br>
-                            <b>Work:</b> ${attRecord.hrsWorked}<br>
-                            <b>OT:</b> ${attRecord.otHours}<br>
-                            <span style="color:#16a34a; font-weight:bold;">OT ₹: ${parseFloat(attRecord.otEarned).toFixed(0)}</span>
-                        </div>
-                        ${advRecord > 0 ? `<div style="color:#dc2626; font-weight:bold; font-size:9px; margin-top:3px;">💸 Adv: ₹${advRecord}</div>` : ''}
-                    </td>`;
-                } else {
-                    rowHtmlStr += `<td>- ${advRecord > 0 ? `<div style="color:#dc2626; font-weight:bold; font-size:9px; margin-top:4px;">💸 Adv<br>₹${advRecord}</div>` : ''}</td>`;
+            for(let d=start; d<=end; d++) {
+                let tk = String(d).padStart(2,'0');
+                let att = (wObj.attendance && wObj.attendance[tk]) ? wObj.attendance[tk] : null;
+                let adv = (wObj.advances && wObj.advances[tk]) ? parseFloat(wObj.advances[tk]) : 0;
+                totalAdv += adv;
+                if(att) {
+                    grossWages += (parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0));
+                    if(att.status === 'A') aDays++; else pDays++;
                 }
             }
 
-            let netPayable = grossEarnings - advancesPaid;
-            rowHtmlStr += `<td style="background:#f8fafc; text-align:left; padding-left:8px;">
-                <div style="font-weight:bold; color:#475569; font-size:10px; margin-bottom:5px; background:#e2e8f0; padding:4px; border-radius:4px;">
-                    📅 Days: <span style="color:#16a34a;">P:${totalPresentDays}</span> | <span style="color:#dc2626;">A:${totalAbsentDays}</span>
-                </div>
-                <div style="font-weight:bold; color:#1e3a8a; font-size:11px;">Gross Wages: ₹${grossEarnings.toFixed(0)}</div>
-                <div style="font-weight:bold; color:#dc2626; font-size:11px; margin-top:3px;">(-) Advance: ₹${advancesPaid.toFixed(0)}</div>
-                <div style="font-weight:bold; color:#16a34a; font-size:13px; margin-top:5px; border-top:1.5px solid #cbd5e1; padding-top:4px;">Net Payable: ₹${netPayable.toFixed(0)}</div>
-            </td>`;
+            let titleRow = document.createElement('tr');
+            titleRow.innerHTML = `<td colspan="${(end-start)+3}" class="worker-section-header">👤 Name: ${wKey} (Rate: ₹${wObj.baseWages}/d, ${wObj.shiftMode === '7hr'?'7h':'8h'} Shift)</td>`;
+            tableBody.appendChild(titleRow);
 
-            rowElement.innerHTML = rowHtmlStr;
-            tableBody.appendChild(rowElement);
+            metricsDef.forEach((m, idx) => {
+                let tr = document.createElement('tr');
+                let rowHtml = `<td class="metric-label-col">${m.name}</td>`;
+
+                for(let d=start; d<=end; d++) {
+                    let tk = String(d).padStart(2,'0');
+                    let att = (wObj.attendance && wObj.attendance[tk]) ? wObj.attendance[tk] : null;
+                    let adv = (wObj.advances && wObj.advances[tk]) ? parseFloat(wObj.advances[tk]) : 0;
+
+                    if(m.key === "advance") {
+                        rowHtml += `<td style="color:#dc2626; font-weight:bold;">${adv > 0 ? '₹'+adv : '-'}</td>`;
+                    } else if(att) {
+                        if(m.key === "status") {
+                            rowHtml += `<td><span class="badge badge-${att.status}">${att.status}</span></td>`;
+                        } else {
+                            rowHtml += `<td>${att[m.key] || '-'}</td>`;
+                        }
+                    } else { rowHtml += `<td>-</td>`; }
+                }
+
+                if(idx === 0) {
+                    tr.className = "master-sync-row";
+                    rowHtml += `<td rowspan="8" style="background:#f8fafc; text-align:left; vertical-align:middle; padding-left:8px;">
+                        <div style="font-size:10px; font-weight:bold; margin-bottom:4px; background:#e2e8f0; padding:3px; border-radius:4px;">Days: <span style="color:#16a34a">P:${pDays}</span> | <span style="color:#dc2626">A:${aDays}</span></div>
+                        <div style="font-weight:bold; color:#1e3a8a;">Gross: ₹${grossWages.toFixed(0)}</div>
+                        <div style="font-weight:bold; color:#dc2626; margin-top:2px;">Adv: ₹${totalAdv.toFixed(0)}</div>
+                        <div style="font-weight:bold; color:#16a34a; font-size:12px; margin-top:4px; border-top:1px solid #cbd5e1; padding-top:4px;">Net Pay: ₹${(grossWages - totalAdv).toFixed(0)}</div>
+                    </td>`;
+                }
+
+                tr.innerHTML = rowHtml;
+                tableBody.appendChild(tr);
+            });
         });
     }
 
@@ -544,143 +460,97 @@
         let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
         let shiftMode = document.getElementById('wShift').value;
         let dateVal = document.getElementById('wDate').value;
-        
-        let inTime = document.getElementById('wIn').value;
-        let lOut = document.getElementById('wLOut').value;
-        let lIn = document.getElementById('wLIn').value;
-        let outTime = document.getElementById('wOut').value;
         let advance = parseFloat(document.getElementById('wAdv').value) || 0;
 
-        if(!name || !dateVal) {
-            alert("Kripya Worker Name aur Date enter karein!");
-            return;
-        }
-
-        let dayToken = dateVal.split("-")[2]; 
+        if(!name || !dateVal) { alert("Worker Name aur Date enter karein!"); return; }
+        let dayToken = dateVal.split("-")[2];
 
         if(!memoryDB[currentSite]) memoryDB[currentSite] = {};
-        if(!memoryDB[currentSite][name]) {
-            memoryDB[currentSite][name] = { baseWages: baseWages, hourlyOtRate: otRate, shiftMode: shiftMode, attendance: {}, advances: {} };
-        }
+        if(!memoryDB[currentSite][name]) memoryDB[currentSite][name] = { baseWages, hourlyOtRate: otRate, shiftMode, attendance: {}, advances: {} };
 
-        memoryDB[currentSite][name].baseWages = baseWages;
-        memoryDB[currentSite][name].hourlyOtRate = otRate;
-        memoryDB[currentSite][name].shiftMode = shiftMode;
-
-        let metrics = calculateAttendanceMetrics(inTime, lOut, lIn, outTime, baseWages, otRate, shiftMode);
-
-        if(!memoryDB[currentSite][name].attendance) memoryDB[currentSite][name].attendance = {};
-        if(!memoryDB[currentSite][name].advances) memoryDB[currentSite][name].advances = {};
+        let metrics = calculateAttendanceMetrics(document.getElementById('wIn').value, document.getElementById('wLOut').value, document.getElementById('wLIn').value, document.getElementById('wOut').value, baseWages, otRate, shiftMode);
 
         memoryDB[currentSite][name].attendance[dayToken] = {
-            inTime: inTime, lOutTime: lOut, lInTime: lIn, outTime: outTime,
-            hrsWorked: metrics.hrsStr, otHours: metrics.otHrsStr, status: metrics.status,
-            earned: metrics.earned, otEarned: metrics.otEarned
+            inTime: document.getElementById('wIn').value, lOutTime: document.getElementById('wLOut').value, lInTime: document.getElementById('wLIn').value, outTime: document.getElementById('wOut').value,
+            hrsWorked: metrics.hrsStr, otHours: metrics.otHrsStr, status: metrics.status, earned: metrics.earned, otEarned: metrics.otEarned
         };
 
-        if(advance > 0) {
-            memoryDB[currentSite][name].advances[dayToken] = advance;
-        }
+        if(advance > 0) memoryDB[currentSite][name].advances[dayToken] = advance;
 
         document.getElementById('wName').value = "";
         document.getElementById('wAdv').value = "0";
-        
-        document.getElementById('wIn').value = "09:00";
-        document.getElementById('wLOut').value = "13:00";
-        document.getElementById('wLIn').value = "14:00";
-        document.getElementById('wOut').value = "18:00";
-
         pushUpdatedStateToCloud();
-        alert("Entry Committed Locally & Synced Successfully!");
+        alert("Record Saved Successfully!");
     }
 
     function deleteTargetRecord() {
         let name = document.getElementById('delName').value.trim();
         let dateVal = document.getElementById('delDate').value;
-
-        if(!name || !dateVal) {
-            alert("Galti thik karne ke liye Name aur Date enter karein!");
-            return;
-        }
-
+        if(!name || !dateVal) return;
         let dayToken = dateVal.split("-")[2];
 
         if(memoryDB[currentSite] && memoryDB[currentSite][name]) {
-            if(confirm(`Kya aap nishchit hain ki aap ${name} ka Day ${dayToken} ka data delete karna chahte hain?`)) {
+            if(confirm(`Day ${dayToken} ka data delete karein?`)) {
                 if(memoryDB[currentSite][name].attendance) delete memoryDB[currentSite][name].attendance[dayToken];
                 if(memoryDB[currentSite][name].advances) delete memoryDB[currentSite][name].advances[dayToken];
-
-                if(Object.keys(memoryDB[currentSite][name].attendance || {}).length === 0 && Object.keys(memoryDB[currentSite][name].advances || {}).length === 0) {
-                    delete memoryDB[currentSite][name];
-                }
-                document.getElementById('delName').value = "";
                 pushUpdatedStateToCloud();
-                alert("Entry cleared successfully.");
             }
-        } else {
-            alert("Is Worker ka record database grid me nahi mila.");
         }
     }
 
     function exportDataToExcel() {
         let siteDataMap = memoryDB[currentSite] || {};
         let workerKeys = Object.keys(siteDataMap);
-        if(workerKeys.length === 0) { alert("Export karne ke liye koi data available nahi hai!"); return; }
+        if(workerKeys.length === 0) return;
 
         let csvContent = "data:text/csv;charset=utf-8,";
-        let dayStart = 1, dayEnd = 31;
-        
         let dateVal = document.getElementById('wDate').value || "2026-01-01";
-        dayEnd = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
+        let maxDays = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
 
-        let topHeader = "PayCode_Name,Metrics / Parameter";
-        for(let d=dayStart; d<=dayEnd; d++) { topHeader += `,Day ${String(d).padStart(2,'0')}`; }
-        topHeader += ",Summary Total Ledger\n";
+        let topHeader = "Worker Name,Parameter Metrics";
+        for(let d=1; d<=maxDays; d++) { topHeader += `,Day ${String(d).padStart(2,'0')}`; }
+        topHeader += ",Total Summary Ledger\n";
         csvContent += topHeader;
 
         workerKeys.forEach(wKey => {
             let wObj = siteDataMap[wKey];
-            let metricsRows = [
-                { label: "In", field: "inTime" },
-                { label: "Lunch Out", field: "lOutTime" },
-                { label: "Lunch In", field: "lInTime" },
-                { label: "Out", field: "outTime" },
-                { label: "Hours Worked", field: "hrsWorked" },
-                { label: "OT", field: "otHours" },
-                { label: "Advance Taken", field: "advance", isAdv: true },
-                { label: "Status", field: "status" }
+            let mDef = [
+                { label: "In", field: "inTime" }, { label: "Lunch Out", field: "lOutTime" }, { label: "Lunch In", field: "lInTime" },
+                { label: "Out", field: "outTime" }, { label: "Hours Worked", field: "hrsWorked" }, { label: "OT Hours", field: "otHours" },
+                { label: "Advance", isAdv: true }, { label: "Status", field: "status" }
             ];
 
-            let totalGross = 0, totalAdvance = 0, pDays = 0, aDays = 0;
+            let gross = 0, advTotal = 0;
+            for(let d=1; d<=maxDays; d++) {
+                let tk = String(d).padStart(2,'0');
+                let att = wObj.attendance?.[tk];
+                advTotal += parseFloat(wObj.advances?.[tk] || 0);
+                if(att) gross += (parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0));
+            }
 
-            for(let d=dayStart; d<=dayEnd; d++) {
-                let dayToken = String(d).padStart(2, '0');
-                let att = (wObj.attendance && wObj.attendance[dayToken]) ? wObj.attendance[dayToken] : null;
-                let advAmt = (wObj.advances && wObj.advances[dayToken]) ? parseFloat(wObj.advances[dayToken]) : 0;
+            mDef.forEach((row, idx) => {
+                let rStr = idx === 0 ? `"${wKey}",` : ",";
+                rStr += `"${row.label}"`;
 
-                    if(rowInfo.isAdv) {
-                        rowStr += advAmt > 0 ? `,₹${advAmt}` : ",-";
-                    } else if(att) {
-                        rowStr += `,${att[rowInfo.field] || '-'}`;
-                    } else {
-                        rowStr += ",-";
-                    }
+                for(let d=1; d<=maxDays; d++) {
+                    let tk = String(d).padStart(2,'0');
+                    let att = wObj.attendance?.[tk];
+                    if(row.isAdv) { rStr += `,${wObj.advances?.[tk] ? '₹'+wObj.advances[tk] : '-'}`; }
+                    else { rStr += `,${att?.[row.field] || '-'}`; }
                 }
 
-                if(rowInfo.label === "Hours Worked") rowStr += `,Gross: ₹${totalGross.toFixed(0)}`;
-                else if(rowInfo.label === "Advance Taken") rowStr += `,Adv: ₹${totalAdvance.toFixed(0)}`;
-                else if(rowInfo.label === "Status") rowStr += `,"Net: ₹${netPayable.toFixed(0)} (P:${pDays} A:${aDays})"`;
-                else rowStr += ",";
+                if(idx === 4) rStr += `,Gross Wages: ₹${gross.toFixed(0)}`;
+                else if(idx === 6) rStr += `,Total Advance: ₹${advTotal.toFixed(0)}`;
+                else if(idx === 7) rStr += `,Net Payable: ₹${(gross - advTotal).toFixed(0)}`;
+                else rStr += ",";
 
-                csvContent += rowStr + "\n";
+                csvContent += rStr + "\n";
             });
-            csvContent += "\n";
         });
 
-        let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Matrix_Performance_Register.csv`);
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Matrix_Register.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -690,4 +560,3 @@
 </script>
 </body>
 </html>
-    
