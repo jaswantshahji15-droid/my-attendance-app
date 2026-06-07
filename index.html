@@ -111,51 +111,20 @@
     </div>
         <div class="grid-inputs">
         <div class="field-group">
-            <label>PUNCH IN TIME</label>
-            <select id="wIn" onchange="triggerLiveCalculationPreview()">
-                <option value="00:00">00:00 (Absent Mark)</option>
-                <option value="08:00">08:00</option>
-                <option value="08:30">08:30</option>
-                <option value="09:00" selected>09:00</option>
-                <option value="09:30">09:30</option>
-                <option value="10:00">10:00</option>
-            </select>
+            <label>EXACT PUNCH IN TIME</label>
+            <input type="time" id="wIn" value="09:00" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
-            <label>LUNCH OUT TIME</label>
-            <select id="wLOut" onchange="triggerLiveCalculationPreview()">
-                <option value="00:00">00:00 (Absent Mark)</option>
-                <option value="12:00">12:00</option>
-                <option value="12:30">12:30</option>
-                <option value="13:00" selected>13:00</option>
-                <option value="13:30">13:30</option>
-            </select>
+            <label>EXACT LUNCH OUT TIME</label>
+            <input type="time" id="wLOut" value="13:00" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
-            <label>LUNCH IN TIME</label>
-            <select id="wLIn" onchange="triggerLiveCalculationPreview()">
-                <option value="00:00">00:00 (Absent Mark)</option>
-                <option value="13:30">13:30</option>
-                <option value="14:00" selected>14:00</option>
-                <option value="14:30">14:30</option>
-                <option value="15:00">15:00</option>
-            </select>
+            <label>EXACT LUNCH IN TIME</label>
+            <input type="time" id="wLIn" value="14:00" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
-            <label>PUNCH OUT TIME</label>
-            <select id="wOut" onchange="triggerLiveCalculationPreview()">
-                <option value="00:00">00:00 (Absent Mark)</option>
-                <option value="17:00">17:00</option>
-                <option value="17:30">17:30</option>
-                <option value="18:00" selected>18:00</option>
-                <option value="18:30">18:30</option>
-                <option value="19:00">19:00</option>
-                <option value="19:30">19:30</option>
-                <option value="20:00">20:00</option>
-                <option value="21:00">21:00</option>
-                <option value="22:00">22:00</option>
-                <option value="23:00">23:00</option>
-            </select>
+            <label>EXACT PUNCH OUT TIME</label>
+            <input type="time" id="wOut" value="18:00" oninput="triggerLiveCalculationPreview()">
         </div>
         <div class="field-group">
             <label>PAID ADVANCE AMOUNT (₹)</label>
@@ -312,7 +281,7 @@
     }
 
     function calculateAttendanceMetrics(inT, lOut, lIn, outT, wage, otRate, mode) {
-        if(inT === "00:00" || outT === "00:00") {
+        if(!inT || !outT || inT === "00:00" || outT === "00:00") {
             return { netMinutes: 0, hrsStr: "00:00", otHrsStr: "00:00", status: 'A', earned: 0, otEarned: 0 };
         }
 
