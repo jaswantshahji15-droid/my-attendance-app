@@ -91,7 +91,7 @@
         </div>
         <div class="field-group">
             <label>PER DAY WAGES (₹)</label>
-            <input type="number" id="wWages" value="500" oninput="triggerLiveCalculationPreview()">
+            <input type="number" id="wWages" value="500" oninput="handleWagesChangeInput()">
         </div>
         <div class="field-group">
             <label>AUTO OT RATE/HR (₹)</label>
@@ -291,17 +291,23 @@
         let siteKeys = Object.keys(memoryDB);
         for(let i = 0; i < siteKeys.length; i++) {
             let sData = memoryDB[siteKeys[i]] || {};
-            
             let matchedKey = Object.keys(sData).find(k => k.toLowerCase() === inputName.toLowerCase());
             
             if(matchedKey && sData[matchedKey]) {
                 document.getElementById('wWages').value = sData[matchedKey].baseWages || 500;
-                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || 150;
+                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || Math.round((sData[matchedKey].baseWages || 500) / 8 * 2);
                 document.getElementById('wShift').value = sData[matchedKey].shiftMode || "8hr";
                 triggerLiveCalculationPreview();
-                break;
+                return;
             }
         }
+    }
+
+    function handleWagesChangeInput() {
+        let wages = parseFloat(document.getElementById('wWages').value) || 0;
+        let autoOt = Math.round((wages / 8) * 2);
+        document.getElementById('wOtRate').value = autoOt;
+        triggerLiveCalculationPreview();
     }
 
     function calculateAttendanceMetrics(inT, lOut, lIn, outT, wage, otRate, mode) {
