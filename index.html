@@ -87,7 +87,7 @@
     <div class="form-title">📝 1. Daily Shift Records & Advance Transaction Ledger Form</div>
     <div class="grid-inputs">
         <div class="field-group">
-            <label>WORKER PROFILE NAME</label>
+            <label>WORKER PROFILE NAME (Auto-Fill Engine)</label>
             <input type="text" id="wName" placeholder="Enter Full Name" oninput="checkAndAutofillWorkerData()">
         </div>
         <div class="field-group">
@@ -110,8 +110,7 @@
             <input type="date" id="wDate" onchange="triggerLiveCalculationPreview()">
         </div>
     </div>
-
-    <div class="grid-inputs">
+        <div class="grid-inputs">
         <div class="field-group">
             <label>PUNCH IN TIME</label>
             <select id="wIn" onchange="triggerLiveCalculationPreview()">
@@ -165,7 +164,8 @@
         </div>
         <button class="btn btn-absent" onclick="markFieldsAsAbsent()">✖ Mark Absent (A)</button>
     </div>
-        <div class="preview-card">
+
+    <div class="preview-card">
         <div class="preview-stat">Total Work Mins<span id="pvMins">480 mins</span></div>
         <div class="preview-stat">Shift Work Hours<span id="pvHrs">08:00h</span></div>
         <div class="preview-stat">OT Hours Calculated<span id="pvOtHrs">00:00h</span></div>
@@ -284,19 +284,21 @@
         document.getElementById('wLIn').value = "00:00";
         document.getElementById('wOut').value = "00:00";
         triggerLiveCalculationPreview();
-    }
-
-    function checkAndAutofillWorkerData() {
+    }}
+        function checkAndAutofillWorkerData() {
         let inputName = document.getElementById('wName').value.trim();
         if(!inputName) return;
 
         let siteKeys = Object.keys(memoryDB);
         for(let i = 0; i < siteKeys.length; i++) {
             let sData = memoryDB[siteKeys[i]] || {};
-            if(sData[inputName]) {
-                document.getElementById('wWages').value = sData[inputName].baseWages || 500;
-                document.getElementById('wOtRate').value = sData[inputName].hourlyOtRate || 150;
-                document.getElementById('wShift').value = sData[inputName].shiftMode || "8hr";
+            
+            let matchedKey = Object.keys(sData).find(k => k.toLowerCase() === inputName.toLowerCase());
+            
+            if(matchedKey && sData[matchedKey]) {
+                document.getElementById('wWages').value = sData[matchedKey].baseWages || 500;
+                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || 150;
+                document.getElementById('wShift').value = sData[matchedKey].shiftMode || "8hr";
                 triggerLiveCalculationPreview();
                 break;
             }
@@ -321,18 +323,19 @@
             earned = (netMinutes / 480) * wage;
         }
         else if (totalHours >= 7.5 && totalHours <= 8.5) { status = 'P'; earned = wage; }
-        else if (totalHours > 8.5 && totalHours <= 11.0) {
-            status = 'P'; earned = wage; otMinutes = netMinutes - 480; 
-            otEarned = (otMinutes / 60) * otRate;
+        else if (totalHours > 8.5) {
+            status = 'P'; earned = wage; 
+            otMinutes = netMinutes - 480; 
+            if(otMinutes > 0) {
+                otEarned = (otMinutes / 60) * otRate;
+            }
         }
-        else if (totalHours > 11.0 && totalHours <= 12.0) { status = 'P'; earned = wage; otMinutes = 240; otEarned = 4 * otRate; }
-        else if (totalHours > 12.0 && totalHours <= 13.5) { status = 'P'; earned = wage; otMinutes = netMinutes - 480; otEarned = (otMinutes / 60) * otRate; }
-        else if (totalHours > 13.5) { status = 'PP'; earned = wage * 2; otMinutes = netMinutes - 480; otEarned = wage; }
 
         let toTimeStr = (m) => { return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; };
         return { netMinutes, hrsStr: toTimeStr(netMinutes), otHrsStr: toTimeStr(otMinutes), status, earned, otEarned };
     }
-        function triggerLiveCalculationPreview() {
+
+    function triggerLiveCalculationPreview() {
         let baseWages = parseFloat(document.getElementById('wWages').value) || 0;
         let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
         let shiftMode = document.getElementById('wShift').value;
@@ -397,11 +400,11 @@
             let wObj = siteDataMap[wKey];
             let metricsDef = [
                 { name: "In", key: "inTime" }, { name: "Lunch Out", key: "lOutTime" }, { name: "Lunch In", key: "lInTime" },
-                { name: "Out", key: "outTime" }, { name: "Hours Worked", key: "hrsWorked" }, { name: "OT", key: "otHours" },
+                { name: "Out", key: "outTime" }, { name: "Hours Worked", key: "hrsWorked" }, { name: "OT Hours", key: "otHours" },
                 { name: "Advance", key: "advance" }, { name: "Status", key: "status" }
             ];
 
-            let grossWages = 0, totalAdv = 0, pDays = 0, aDays = 0;
+            let baseWagesEarned = 0, totalOtEarned = 0, totalAdv = 0, pDays = 0, aDays = 0;
 
             for(let d=start; d<=end; d++) {
                 let tk = String(d).padStart(2,'0');
@@ -409,13 +412,16 @@
                 let adv = (wObj.advances && wObj.advances[tk]) ? parseFloat(wObj.advances[tk]) : 0;
                 totalAdv += adv;
                 if(att) {
-                    grossWages += (parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0));
+                    baseWagesEarned += parseFloat(att.earned || 0);
+                    totalOtEarned += parseFloat(att.otEarned || 0);
                     if(att.status === 'A') aDays++; else pDays++;
                 }
             }
 
+            let grossWages = baseWagesEarned + totalOtEarned;
+
             let titleRow = document.createElement('tr');
-            titleRow.innerHTML = `<td colspan="${(end-start)+3}" class="worker-section-header">👤 Name: ${wKey} (Rate: ₹${wObj.baseWages}/d, ${wObj.shiftMode === '7hr'?'7h':'8h'} Shift)</td>`;
+            titleRow.innerHTML = `<td colspan="${(end-start)+3}" class="worker-section-header">👤 Name: ${wKey} (Rate: ₹${wObj.baseWages}/d, OT Rate: ₹${wObj.hourlyOtRate || 150}/h)</td>`;
             tableBody.appendChild(titleRow);
 
             metricsDef.forEach((m, idx) => {
@@ -442,8 +448,10 @@
                     tr.className = "master-sync-row";
                     rowHtml += `<td rowspan="8" style="background:#f8fafc; text-align:left; vertical-align:middle; padding-left:8px;">
                         <div style="font-size:10px; font-weight:bold; margin-bottom:4px; background:#e2e8f0; padding:3px; border-radius:4px;">Days: <span style="color:#16a34a">P:${pDays}</span> | <span style="color:#dc2626">A:${aDays}</span></div>
-                        <div style="font-weight:bold; color:#1e3a8a;">Gross: ₹${grossWages.toFixed(0)}</div>
-                        <div style="font-weight:bold; color:#dc2626; margin-top:2px;">Adv: ₹${totalAdv.toFixed(0)}</div>
+                        <div style="font-size:11px; font-weight:bold; color:#475569;">Wages: ₹${baseWagesEarned.toFixed(0)}</div>
+                        <div style="font-size:11px; font-weight:bold; color:#0284c7; margin-top:1px;">OT Earned: ₹${totalOtEarned.toFixed(0)}</div>
+                        <div style="font-weight:bold; color:#1e3a8a; margin-top:2px; border-top:1px dashed #cbd5e1; padding-top:2px;">Gross: ₹${grossWages.toFixed(0)}</div>
+                        <div style="font-weight:bold; color:#dc2626; margin-top:1px;">Adv: ₹${totalAdv.toFixed(0)}</div>
                         <div style="font-weight:bold; color:#16a34a; font-size:12px; margin-top:4px; border-top:1px solid #cbd5e1; padding-top:4px;">Net Pay: ₹${(grossWages - totalAdv).toFixed(0)}</div>
                     </td>`;
                 }
@@ -466,16 +474,30 @@
         let dayToken = dateVal.split("-")[2];
 
         if(!memoryDB[currentSite]) memoryDB[currentSite] = {};
-        if(!memoryDB[currentSite][name]) memoryDB[currentSite][name] = { baseWages, hourlyOtRate: otRate, shiftMode, attendance: {}, advances: {} };
+        
+        if(!memoryDB[currentSite][name]) {
+            memoryDB[currentSite][name] = { baseWages, hourlyOtRate: otRate, shiftMode, attendance: {}, advances: {} };
+        } else {
+            memoryDB[currentSite][name].baseWages = baseWages;
+            memoryDB[currentSite][name].hourlyOtRate = otRate;
+            memoryDB[currentSite][name].shiftMode = shiftMode;
+        }
 
         let metrics = calculateAttendanceMetrics(document.getElementById('wIn').value, document.getElementById('wLOut').value, document.getElementById('wLIn').value, document.getElementById('wOut').value, baseWages, otRate, shiftMode);
+
+        if(!memoryDB[currentSite][name].attendance) memoryDB[currentSite][name].attendance = {};
+        if(!memoryDB[currentSite][name].advances) memoryDB[currentSite][name].advances = {};
 
         memoryDB[currentSite][name].attendance[dayToken] = {
             inTime: document.getElementById('wIn').value, lOutTime: document.getElementById('wLOut').value, lInTime: document.getElementById('wLIn').value, outTime: document.getElementById('wOut').value,
             hrsWorked: metrics.hrsStr, otHours: metrics.otHrsStr, status: metrics.status, earned: metrics.earned, otEarned: metrics.otEarned
         };
 
-        if(advance > 0) memoryDB[currentSite][name].advances[dayToken] = advance;
+        if(advance > 0) {
+            memoryDB[currentSite][name].advances[dayToken] = advance;
+        } else {
+            delete memoryDB[currentSite][name].advances[dayToken];
+        }
 
         document.getElementById('wName').value = "";
         document.getElementById('wAdv').value = "0";
@@ -520,13 +542,17 @@
                 { label: "Advance", isAdv: true }, { label: "Status", field: "status" }
             ];
 
-            let gross = 0, advTotal = 0;
+            let baseEarned = 0, otEarned = 0, advTotal = 0;
             for(let d=1; d<=maxDays; d++) {
                 let tk = String(d).padStart(2,'0');
                 let att = wObj.attendance?.[tk];
                 advTotal += parseFloat(wObj.advances?.[tk] || 0);
-                if(att) gross += (parseFloat(att.earned || 0) + parseFloat(att.otEarned || 0));
+                if(att) {
+                    baseEarned += parseFloat(att.earned || 0);
+                    otEarned += parseFloat(att.otEarned || 0);
+                }
             }
+            let gross = baseEarned + otEarned;
 
             mDef.forEach((row, idx) => {
                 let rStr = idx === 0 ? `"${wKey}",` : ",";
@@ -539,7 +565,9 @@
                     else { rStr += `,${att?.[row.field] || '-'}`; }
                 }
 
-                if(idx === 4) rStr += `,Gross Wages: ₹${gross.toFixed(0)}`;
+                if(idx === 3) rStr += `,Normal Wages: ₹${baseEarned.toFixed(0)}`;
+                else if(idx === 4) rStr += `,OT Earnings: ₹${otEarned.toFixed(0)}`;
+                else if(idx === 5) rStr += `,Gross Total: ₹${gross.toFixed(0)}`;
                 else if(idx === 6) rStr += `,Total Advance: ₹${advTotal.toFixed(0)}`;
                 else if(idx === 7) rStr += `,Net Payable: ₹${(gross - advTotal).toFixed(0)}`;
                 else rStr += ",";
