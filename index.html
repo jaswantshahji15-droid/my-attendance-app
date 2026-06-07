@@ -296,7 +296,7 @@
             
             if(matchedKey && sData[matchedKey]) {
                 document.getElementById('wWages').value = sData[matchedKey].baseWages || 500;
-                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || Math.round((sData[matchedKey].baseWages || 500) / 8 * 2);
+                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || Math.round((sData[matchedKey].baseWages || 500) / 8);
                 document.getElementById('wShift').value = sData[matchedKey].shiftMode || "8hr";
                 triggerLiveCalculationPreview();
                 return;
@@ -306,7 +306,7 @@
 
     function handleWagesChangeInput() {
         let wages = parseFloat(document.getElementById('wWages').value) || 0;
-        let autoOt = Math.round((wages / 8) * 2);
+        let autoOt = Math.round(wages / 8);
         document.getElementById('wOtRate').value = autoOt;
         triggerLiveCalculationPreview();
     }
