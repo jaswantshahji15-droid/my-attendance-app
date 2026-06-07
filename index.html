@@ -195,19 +195,20 @@
         </table>
     </div>
 
-    <div class="form-title" style="color:#dc2626;">⚠️ Correction Engine (Galti Thik Karein)</div>
+    <div class="form-title" style="color:#dc2626;">⚠️ Correction Engine (Galti Thik Karein & Worker Hatayein)</div>
     <div class="delete-section">
         <div class="grid-inputs" style="margin-bottom:0;">
             <div class="field-group">
                 <label>TARGET WORKER NAME</label>
-                <input type="text" id="delName" placeholder="Enter matching name precisely">
+                <input type="text" id="delName" placeholder="Enter worker full name precisely">
             </div>
             <div class="field-group">
                 <label>TARGET CALENDAR DATE</label>
                 <input type="date" id="delDate">
             </div>
-            <div class="field-group" style="justify-content: flex-end;">
+            <div class="field-group" style="flex-direction: row; gap: 10px; justify-content: flex-end; align-items: flex-end;">
                 <button class="btn btn-danger" onclick="deleteTargetRecord()">🗑️ Purge Selected Date Entry</button>
+                <button class="btn btn-danger" style="background:#b91c1c;" onclick="removeEntireWorkerProfile()">👤🗑️ Delete Entire Worker Profile</button>
             </div>
         </div>
     </div>
@@ -528,27 +529,106 @@
         }
     }
 
+    function removeEntireWorkerProfile() {
+        let name = document.getElementById('delName').value.trim();
+        if(!name) { alert("Pehle hatane ke liye TARGET WORKER NAME fill karein!"); return; }
+
+        if(memoryDB[currentSite] && memoryDB[currentSite][name]) {
+            if(confirm(`⚠️ WARNING: Kya aap such me "${name}" ka poora profile record aur attendance data hamesha ke liye is site se hatana chahte hain?`)) {
+                delete memoryDB[currentSite][name];
+                document.getElementById('delName').value = "";
+                pushUpdatedStateToCloud();
+                alert(`Worker "${name}" ka profile successfully delete kar diya gaya hai.`);
+            }
+        } else {
+            alert("Is naam ka koi worker active site par nahi mila. Kripya sahi naam enter karein.");
+        }
+    }
+
     function exportDataToExcel() {
         let siteDataMap = memoryDB[currentSite] || {};
         let workerKeys = Object.keys(siteDataMap);
-        if(workerKeys.length === 0) return;
+        if(workerKeys.length === 0) { alert("Export karne ke liye koi data nahi hai!"); return; }
 
-        let csvContent = "data:text/csv;charset=utf-8,";
         let dateVal = document.getElementById('wDate').value || "2026-01-01";
         let maxDays = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
 
-        let topHeader = "Worker Name,Wages,OT Rate,Day Metrics Summary";
-        csvContent += topHeader + "\n";
+        let csvContent = "\uFEFF"; 
+        
+        let header1 = "Worker Profile Master,Metrics,";
+        for(let d=1; d<=maxDays; d++) { header1 += `Day ${String(d).padStart(2,'0')},`; }
+        header1 += "Total Attendance,Total Base Wages,Total OT Earnings,Gross Earnings,Total Advance Paid,Net Payable Amount\n";
+        csvContent += header1;
 
         workerKeys.forEach(wKey => {
             let wObj = siteDataMap[wKey];
-            let rowStr = `"${wKey}","₹${wObj.baseWages || 500}","₹${wObj.hourlyOtRate || 150}"`;
-            csvContent += rowStr + "\n";
+            let metricsDef = [
+                { label: "Punch In", key: "inTime" },
+                { label: "Lunch Out", key: "lOutTime" },
+                { label: "Lunch In", key: "lInTime" },
+                { label: "Punch Out", key: "outTime" },
+                { label: "Hours Worked", key: "hrsWorked" },
+                { label: "OT Hours", key: "otHours" },
+                { label: "OT Amount (₹)", key: "otEarned" },
+                { label: "Advance (₹)", isAdv: true },
+                { label: "Status Badge", key: "status" }
+            ];
+
+            let grossEarnings = 0, totalOtEarned = 0, advancesPaid = 0;
+            let pCount = 0, hdCount = 0, aCount = 0;
+
+            for(let d=1; d<=maxDays; d++) {
+                let tk = String(d).padStart(2,'0');
+                let attRecord = wObj.attendance?.[tk];
+                let advRecord = parseFloat(wObj.advances?.[tk] || 0);
+
+                advancesPaid += advRecord;
+                if(attRecord) {
+                    grossEarnings += parseFloat(attRecord.earned || 0);
+                    totalOtEarned += parseFloat(attRecord.otEarned || 0);
+                    if(attRecord.status === 'P') pCount++;
+                    else if(attRecord.status === 'HD') hdCount++;
+                    else if(attRecord.status === 'A') aCount++;
+                }
+            }
+
+            let grandGross = grossEarnings + totalOtEarned;
+            let netPayable = grandGross - advancesPaid;
+
+            metricsDef.forEach((m, idx) => {
+                let rowStr = idx === 0 ? `"${wKey} (Rate: ₹${wObj.baseWages || 500}/d | OT: ₹${wObj.hourlyOtRate || 150}/h)",` : ",";
+                rowStr += `"${m.label}",`;
+
+                for(let d=1; d<=maxDays; d++) {
+                    let tk = String(d).padStart(2,'0');
+                    let attRecord = wObj.attendance?.[tk];
+                    let advRecord = parseFloat(wObj.advances?.[tk] || 0);
+
+                    if(m.isAdv) {
+                        rowStr += advRecord > 0 ? `"₹${advRecord}",` : "-,";
+                    } else if(attRecord) {
+                        let val = attRecord[m.key] !== undefined ? attRecord[m.key] : "-";
+                        rowStr += `"${val}",`;
+                    } else {
+                        rowStr += "-,";
+                    }
+                }
+
+                if(idx === 0) {
+                    rowStr += `"P:${pCount} HD:${hdCount} A:${aCount}","₹${grossEarnings.toFixed(0)}","₹${totalOtEarned.toFixed(0)}","₹${grandGross.toFixed(0)}","₹${advancesPaid.toFixed(0)}","₹${netPayable.toFixed(0)}"`;
+                } else {
+                    rowStr += ",,,,,";
+                }
+
+                csvContent += rowStr + "\n";
+            });
         });
 
+        let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Register.csv`);
+        let url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Full_Matrix_Master_Register.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
