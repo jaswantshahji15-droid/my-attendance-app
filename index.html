@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shramik Sync Master v12.0</title>
+    <title>Shramik Sync Master v13.0</title>
 
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 12px; color: #334155; }
@@ -18,6 +18,7 @@
         .sync-offline { color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; }
 
         .setup-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .filter-box { background: #eff6ff; border: 1px dashed #3b82f6; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .form-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin: 15px 0 10px 0; border-left: 4px solid #2563eb; padding-left: 8px; }
 
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
@@ -60,7 +61,7 @@
 </head>
 <body>
     <div class="container">
-    <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Master v12.0" onchange="pushUpdatedStateToCloud()">
+    <input type="text" id="mainHeading" class="editable-header" value="Shramik Sync Master v13.0" onchange="pushUpdatedStateToCloud()">
     <div id="siteIndicator" class="site-indicator">Site Matrix: Site 1</div>
 
     <div id="syncStatus" class="status-box sync-offline">🔄 Connecting to Master Database System...</div>
@@ -85,8 +86,13 @@
     <div class="form-title">📝 1. Daily Shift Records & Advance Transaction Ledger Form</div>
     <div class="grid-inputs">
         <div class="field-group">
-            <label>WORKER PROFILE NAME</label>
-            <input type="text" id="wName" placeholder="Enter Full Name" oninput="checkAndAutofillWorkerData()">
+            <label>WORKER PROFILE NAME (Smart Suggestions)</label>
+            <input type="text" id="wName" list="workerSuggestions" placeholder="Type character to search..." oninput="checkAndAutofillWorkerData()">
+            <datalist id="workerSuggestions"></datalist>
+        </div>
+        <div class="field-group">
+            <label>CONTACT NUMBER (Optional)</label>
+            <input type="tel" id="wPhone" placeholder="Enter 10 Digit Mobile">
         </div>
         <div class="field-group">
             <label>PER DAY WAGES (₹)</label>
@@ -142,7 +148,30 @@
 
     <button class="btn btn-save" onclick="saveAttendanceRecord()">💾 Commit Entry & Dispatch Live Sync</button>
 
-    <div class="form-title">📊 2. Operational Cross-Matrix Performance Master Grid</div>
+    <div class="form-title">🔍 2. Live Grid Search Control & Advanced Filter Engine</div>
+    <div class="filter-box">
+        <div class="grid-inputs" style="margin-bottom:0;">
+            <div class="field-group">
+                <label>SEARCH BY WORKER NAME</label>
+                <input type="text" id="filterName" placeholder="Type worker name..." oninput="buildPerformanceGridStructure()">
+            </div>
+            <div class="field-group">
+                <label>FILTER BY SPECIFIC DAY</label>
+                <select id="filterDay" onchange="buildPerformanceGridStructure()">
+                    <option value="ALL">Show All Days</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>FILTER BY MONTH/YEAR</label>
+                <input type="month" id="filterMonth" onchange="handleMonthFilterSwitch()">
+            </div>
+            <div class="field-group" style="justify-content: flex-end;">
+                <button class="btn btn-danger" style="background:#475569;" onclick="resetAllFiltersEngine()">🔄 Reset All Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-title">📊 3. Operational Cross-Matrix Performance Master Grid</div>
     
     <div id="cycleTabsArea" class="cycle-tabs" style="display:none;">
         <div id="tab1" class="tab-item active" onclick="changeDayCycleSegment(1)">Block 1 (Day 1 - 10)</div>
@@ -194,6 +223,10 @@
         let today = new Date();
         document.getElementById('wDate').valueAsDate = today;
         document.getElementById('delDate').valueAsDate = today;
+        
+        let y = today.getFullYear();
+        let m = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filterMonth').value = `${y}-${m}`;
     }
         function calculateAttendanceMetrics(inT, lOut, lIn, outT, wage, otRate, mode) {
         if(!inT || !outT || inT === "00:00" || outT === "00:00") {
@@ -208,45 +241,35 @@
         let status = 'A', earned = 0, otMinutes = 0, otEarned = 0;
 
         // --- POINT 1 LOGIC ENGINE ---
-        if (netMinutes > 0 && netMinutes < 420) { // 1 Min se 6:59 Hours tak
+        if (netMinutes > 0 && netMinutes < 420) { 
             let perHrWage = wage / 8;
-            earned = totalHours * perHrWage; // Hourly basis payment
-            
-            // 4 ghante se 5 ghante tak (240 mins se 300 mins) status HD rahega baki me P rahega
-            if (netMinutes >= 240 && netMinutes <= 300) {
-                status = 'HD';
-            } else {
-                status = 'P';
-            }
+            earned = totalHours * perHrWage; 
+            if (netMinutes >= 240 && netMinutes <= 300) { status = 'HD'; } else { status = 'P'; }
         } 
-        else if (netMinutes >= 420 && netMinutes <= 509) { // 7:00 Hours se 8:29 Hours tak
+        else if (netMinutes >= 420 && netMinutes <= 509) { 
             status = 'P';
-            earned = wage; // Fixed Full Day Wages
+            earned = wage; 
         }
         // --- POINT 2 LOGIC ENGINE (OVERTIME SYSTEM) ---
-        else if (netMinutes >= 510 && netMinutes < 660) { // 8:30 Hours se 10:59 Hours tak
+        else if (netMinutes >= 510 && netMinutes < 660) { 
             status = 'P';
             earned = wage;
-            otMinutes = netMinutes - 480; // Per hour basis overtime
-            if (otMinutes > 0) {
-                otEarned = (otMinutes / 60) * otRate;
-            }
+            otMinutes = netMinutes - 480; 
+            if (otMinutes > 0) { otEarned = (otMinutes / 60) * otRate; }
         }
-        else if (netMinutes >= 660 && netMinutes < 870) { // 11:00 Hours se 14:29 Hours tak
+        else if (netMinutes >= 660 && netMinutes < 870) { 
             status = 'P';
-            earned = wage + (wage * 0.5); // Extra Half Day (Total 1.5 Dhyadi)
-            
-            // Agar time 12:00 se 14:29 tak hai toh normal OT per hour chalega continuous base pe
+            earned = wage + (wage * 0.5); 
             if (netMinutes >= 720) {
                 otMinutes = netMinutes - 480;
                 otEarned = (otMinutes / 60) * otRate;
-                earned = wage; // Reset to base wage because continuous OT is active
+                earned = wage; 
             }
         }
-        else if (netMinutes >= 870) { // 14:30 Hours hote hi Direct Double Dhyadi
+        else if (netMinutes >= 870) { 
             status = 'P';
-            earned = wage * 2; // Double Dhyadi (2.0 Wages)
-            otEarned = 0; // Overtime merged into double wage
+            earned = wage * 2; 
+            otEarned = 0; 
         }
 
         let toTimeStr = (m) => { return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}h`; };
@@ -264,95 +287,133 @@
         document.getElementById('pvOtHrs').innerText = metrics.otHrsStr;
         document.getElementById('pvStatus').innerText = metrics.status;
         document.getElementById('pvOtEarned').innerText = "₹" + metrics.otEarned.toFixed(0);
-        }
-        function initializeSystemNetwork() {
-        setSystemDefaultDates();
-        let localData = localStorage.getItem("shramikLocalCache");
-        if(localData) {
-            let parsed = JSON.parse(localData);
-            if(parsed.memoryDB) memoryDB = parsed.memoryDB;
-            if(parsed.siteNames) siteNames = parsed.siteNames;
-        }
-        renderAppUI();
-        triggerLiveCalculationPreview();
+    }
 
-        if (typeof firebase === 'undefined') return;
-        try {
-            firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
-            let dbRef = firebase.database().ref("MatrixAttendanceSystem");
-            dbRef.on('value', (snap) => {
-                let data = snap.val();
-                if(data) {
-                    if(data.memoryDB) memoryDB = data.memoryDB;
-                    if(data.siteNames) siteNames = data.siteNames;
-                    if(data.mainHeading) document.getElementById('mainHeading').value = data.mainHeading;
-                    localStorage.setItem("shramikLocalCache", JSON.stringify({memoryDB, siteNames}));
-                }
-                let statusBox = document.getElementById('syncStatus');
-                statusBox.innerText = "🟢 Live Cloud Sync Dashboard Connected Successfully";
-                statusBox.className = "status-box sync-active";
-                renderAppUI();
+    function updateDatalistSuggestions() {
+        let dl = document.getElementById('workerSuggestions');
+        dl.innerHTML = '';
+        let uniqueNames = new Set();
+        Object.keys(memoryDB).forEach(s => {
+            Object.keys(memoryDB[s] || {}).forEach(name => uniqueNames.add(name));
+        });
+        uniqueNames.forEach(name => {
+            let opt = document.createElement('option');
+            opt.value = name;
+            dl.appendChild(opt);
+        });
+    }
+
+    function updateDaysDropdownFilter(maxDays) {
+        let sel = document.getElementById('filterDay');
+        let currentSel = sel.value;
+        sel.innerHTML = '<option value="ALL">Show All Days</option>';
+        for(let d=1; d<=maxDays; d++) {
+            let val = String(d).padStart(2, '0');
+            sel.innerHTML += `<value="${val}">Day ${val}</option>`;
+            let opt = document.createElement('option');
+            opt.value = val; opt.innerText = `Day ${val}`;
+            sel.appendChild(opt);
+        }
+        sel.value = currentSel;
+    }
+        function checkAndAutofillWorkerData() {
+        let inputName = document.getElementById('wName').value.trim();
+        if(!inputName) return;
+
+        let siteKeys = Object.keys(memoryDB);
+        for(let i = 0; i < siteKeys.length; i++) {
+            let sData = memoryDB[siteKeys[i]] || {};
+            let matchedKey = Object.keys(sData).find(k => k.toLowerCase() === inputName.toLowerCase());
+            
+            if(matchedKey && sData[matchedKey]) {
+                document.getElementById('wWages').value = sData[matchedKey].baseWages || 500;
+                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || Math.round((sData[matchedKey].baseWages || 500) / 8);
+                document.getElementById('wShift').value = sData[matchedKey].shiftMode || "8hr";
+                document.getElementById('wPhone').value = sData[matchedKey].contactNo || "";
                 triggerLiveCalculationPreview();
-            });
-        } catch(e) { console.log("Network bypass active."); }
-    }
-
-    function pushUpdatedStateToCloud() {
-        localStorage.setItem("shramikLocalCache", JSON.stringify({memoryDB, siteNames}));
-        renderAppUI();
-        if(typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            let hText = document.getElementById('mainHeading').value.trim();
-            firebase.database().ref("MatrixAttendanceSystem").set({ memoryDB: memoryDB, siteNames: siteNames, mainHeading: hText });
+                return;
+            }
         }
     }
-
-    function markFieldsAsAbsent() {
-        document.getElementById('wIn').value = "00:00";
-        document.getElementById('wLOut').value = "00:00";
-        document.getElementById('wLIn').value = "00:00";
-        document.getElementById('wOut').value = "00:00";
-        triggerLiveCalculationPreview();
-    }
-
-    function switchSiteEngine() { currentSite = document.getElementById('selSite').value; currentCycleBlock = 1; renderAppUI(); }
-    function renameActiveSite() { let n=document.getElementById('siteRenameInput').value.trim(); if(!n)return; siteNames[currentSite]=n; document.getElementById('siteRenameInput').value=""; pushUpdatedStateToCloud(); }
-    function changeDayCycleSegment(b) { currentCycleBlock = b; renderAppUI(); }
 
     function buildPerformanceGridStructure() {
         let headRow = document.getElementById('tableHeadRow');
         let headerHtml = '<th class="worker-col">Worker Profile Master</th>';
-        let dayStart = 1, dayEnd = 31;
-        let dateVal = document.getElementById('wDate').value || "2026-01-01";
-        let maxDays = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
+        
+        let fMonthVal = document.getElementById('filterMonth').value || "2026-06";
+        let parts = fMonthVal.split("-");
+        let maxDays = new Date(parseInt(parts[0]), parseInt(parts[1]), 0).getDate();
+
+        updateDaysDropdownFilter(maxDays);
+        let fDay = document.getElementById('filterDay').value;
+
+        let dayStart = 1, dayEnd = maxDays;
 
         if(currentSite === 'site2') {
             if(currentCycleBlock === 1) { dayStart = 1; dayEnd = 10; }
             else if(currentCycleBlock === 2) { dayStart = 11; dayEnd = 20; }
             else if(currentCycleBlock === 3) { dayStart = 21; dayEnd = maxDays; }
-        } else { dayEnd = maxDays; }
+        }
 
-        for(let d = dayStart; d <= dayEnd; d++) { headerHtml += `<th style="width:75px; min-width:75px;">Day ${String(d).padStart(2,'0')}</th>`; }
+        if(fDay !== "ALL") {
+            let dNum = parseInt(fDay);
+            dayStart = dNum; dayEnd = dNum;
+        }
+
+        for(let d = dayStart; d <= dayEnd; d++) { 
+            headerHtml += `<th style="width:75px; min-width:75px;">Day ${String(d).padStart(2,'0')}</th>`; 
+        }
         headerHtml += '<th style="background:#1e3a8a; color:white; min-width:150px; width:150px;">Total Summary Ledger</th>';
         headRow.innerHTML = headerHtml;
+
         populateTableRowsData(dayStart, dayEnd);
-                   }
+    }
+
+    function handleMonthFilterSwitch() {
+        let fMonthVal = document.getElementById('filterMonth').value;
+        if(fMonthVal) {
+            let parts = fMonthVal.split("-");
+            let curDate = document.getElementById('wDate').value;
+            let dToken = curDate ? curDate.split("-")[2] : "01";
+            document.getElementById('wDate').value = `${parts[0]}-${parts[1]}-${dToken}`;
+        }
+        buildPerformanceGridStructure();
+    }
+
+    function resetAllFiltersEngine() {
+        document.getElementById('filterName').value = "";
+        document.getElementById('filterDay').value = "ALL";
+        let today = new Date();
+        let y = today.getFullYear();
+        let m = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filterMonth').value = `${y}-${m}`;
+        buildPerformanceGridStructure();
+            }
         function populateTableRowsData(start, end) {
         let tableBody = document.getElementById('tableBodyData');
         tableBody.innerHTML = '';
         let siteDataMap = memoryDB[currentSite] || {};
         let workerKeys = Object.keys(siteDataMap);
+
+        let searchName = document.getElementById('filterName').value.trim().toLowerCase();
+        if(searchName) {
+            workerKeys = workerKeys.filter(k => k.toLowerCase().includes(searchName));
+        }
+
         if(workerKeys.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#94a3b8; font-weight:bold;">No records logs found.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="40" style="padding:20px; color:#94a3b8; font-weight:bold;">No matching record logs found.</td></tr>`;
             return;
         }
 
         workerKeys.forEach(wKey => {
             let wObj = siteDataMap[wKey];
             let rowElement = document.createElement('tr');
-            let rowHtmlStr = `<td class="worker-col">
+            
+            rowHtmlStr = `<td class="worker-col">
                 <span style="color:#2563eb;">👤 <b>${wKey}</b></span><br>
+                <span style="font-size:10px; color:#475569;">📞 ${wObj.contactNo || 'No Phone'}</span><br>
                 <span style="font-size:10px; color:#64748b;">Rate: ₹${wObj.baseWages || 500}/d</span><br>
-                <span style="font-size:10px; color:#0284c7;">OT Rate: ₹${wObj.hourlyOtRate || 150}/h</span>
+                <span style="font-size:10px; color:#0284c7;">OT: ₹${wObj.hourlyOtRate || 150}/h</span>
             </td>`;
 
             let grossEarnings = 0, totalOtEarned = 0, advancesPaid = 0;
@@ -374,17 +435,13 @@
                     rowHtmlStr += `<td>
                         <span class="badge badge-${attRecord.status}">${attRecord.status}</span>
                         <div class="cell-box">
-                            In: ${attRecord.inTime || '-'}<br>
-                            Out: ${attRecord.outTime || '-'}<br>
-                            Work: ${attRecord.hrsWorked || '-'}<br>
-                            OT ₹: ${(parseFloat(attRecord.otEarned) || 0).toFixed(0)}<br>
+                            In: ${attRecord.inTime || '-'}<br>Out: ${attRecord.outTime || '-'}<br>
+                            Work: ${attRecord.hrsWorked || '-'}<br>OT: ₹${(parseFloat(attRecord.otEarned) || 0).toFixed(0)}<br>
                             Earn: ₹${(parseFloat(attRecord.earned) || 0).toFixed(0)}
                         </div>
                         ${advRecord > 0 ? `<div style="color:#dc2626; font-weight:bold; margin-top:2px;">Adv: ₹${advRecord}</div>` : ''}
                     </td>`;
-                } else {
-                    rowHtmlStr += `<td>- ${advRecord > 0 ? `<br><span style="color:#dc2626; font-weight:bold;">Adv: ₹${advRecord}</span>` : ''}</td>`;
-                }
+                } else { rowHtmlStr += `<td>- ${advRecord > 0 ? `<br><span style="color:#dc2626; font-weight:bold;">Adv: ₹${advRecord}</span>` : ''}</td>`; }
             }
 
             let grandGross = grossEarnings + totalOtEarned;
@@ -392,11 +449,11 @@
 
             rowHtmlStr += `<td style="background:#f8fafc; text-align:left;">
                 <div style="font-size:10px; color:#475569; margin-bottom:4px;">P: ${pCount} | HD: ${hdCount} | A: ${aCount}</div>
-                <div style="font-weight:bold; color:#1e3a8a;">Base Wage: ₹${grossEarnings.toFixed(0)}</div>
-                <div style="font-weight:bold; color:#0284c7;">Total OT: ₹${totalOtEarned.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#1e3a8a;">Base: ₹${grossEarnings.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#0284c7;">OT: ₹${totalOtEarned.toFixed(0)}</div>
                 <div style="font-weight:bold; color:#475569; border-top:1px dashed #cbd5e1; margin-top:3px; padding-top:2px;">Gross: ₹${grandGross.toFixed(0)}</div>
-                <div style="font-weight:bold; color:#dc2626;">Advance: ₹${advancesPaid.toFixed(0)}</div>
-                <div style="font-weight:bold; color:#16a34a; font-size:12px; border-top:1px solid #cbd5e1; margin-top:3px; padding-top:3px;">Net Pay: ₹${netPayable.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#dc2626;">Adv: ₹${advancesPaid.toFixed(0)}</div>
+                <div style="font-weight:bold; color:#16a34a; font-size:12px; border-top:1px solid #cbd5e1; margin-top:3px; padding-top:3px;">Net: ₹${netPayable.toFixed(0)}</div>
             </td>`;
 
             rowElement.innerHTML = rowHtmlStr;
@@ -406,6 +463,7 @@
 
     function saveAttendanceRecord() {
         let name = document.getElementById('wName').value.trim();
+        let phone = document.getElementById('wPhone').value.trim();
         let baseWages = parseFloat(document.getElementById('wWages').value) || 0;
         let otRate = parseFloat(document.getElementById('wOtRate').value) || 0;
         let shiftMode = document.getElementById('wShift').value;
@@ -417,11 +475,12 @@
         if(!memoryDB[currentSite]) memoryDB[currentSite] = {};
         
         if(!memoryDB[currentSite][name]) {
-            memoryDB[currentSite][name] = { baseWages, hourlyOtRate: otRate, shiftMode, attendance: {}, advances: {} };
+            memoryDB[currentSite][name] = { baseWages, hourlyOtRate: otRate, shiftMode, contactNo: phone, attendance: {}, advances: {} };
         } else {
             memoryDB[currentSite][name].baseWages = baseWages;
             memoryDB[currentSite][name].hourlyOtRate = otRate;
             memoryDB[currentSite][name].shiftMode = shiftMode;
+            memoryDB[currentSite][name].contactNo = phone;
         }
 
         let metrics = calculateAttendanceMetrics(document.getElementById('wIn').value, document.getElementById('wLOut').value, document.getElementById('wLIn').value, document.getElementById('wOut').value, baseWages, otRate, shiftMode);
@@ -433,29 +492,49 @@
             hrsWorked: metrics.hrsStr, otHours: metrics.otHrsStr, status: metrics.status, earned: metrics.earned, otEarned: metrics.otEarned
         };
 
-        if(advance > 0) { memoryDB[currentSite][name].advances[dayToken] = advance; } 
-        else { delete memoryDB[currentSite][name].advances[dayToken]; }
+        if(advance > 0) { memoryDB[currentSite][name].advances[dayToken] = advance; } else { delete memoryDB[currentSite][name].advances[dayToken]; }
 
         document.getElementById('wName').value = "";
+        document.getElementById('wPhone').value = "";
         document.getElementById('wAdv').value = "0";
         pushUpdatedStateToCloud();
         alert("Record Saved Successfully!");
     }
 
-    function checkAndAutofillWorkerData() {
-        let inputName = document.getElementById('wName').value.trim();
-        if(!inputName) return;
-        let siteKeys = Object.keys(memoryDB);
-        for(let i = 0; i < siteKeys.length; i++) {
-            let sData = memoryDB[siteKeys[i]] || {};
-            let matchedKey = Object.keys(sData).find(k => k.toLowerCase() === inputName.toLowerCase());
-            if(matchedKey && sData[matchedKey]) {
-                document.getElementById('wWages').value = sData[matchedKey].baseWages || 500;
-                document.getElementById('wOtRate').value = sData[matchedKey].hourlyOtRate || Math.round((sData[matchedKey].baseWages || 500) / 8);
-                document.getElementById('wShift').value = sData[matchedKey].shiftMode || "8hr";
-                triggerLiveCalculationPreview();
-                return;
-            }
+    function initializeSystemNetwork() {
+        setSystemDefaultDates();
+        let localData = localStorage.getItem("shramikLocalCache");
+        if(localData) {
+            let parsed = JSON.parse(localData);
+            if(parsed.memoryDB) memoryDB = parsed.memoryDB;
+            if(parsed.siteNames) siteNames = parsed.siteNames;
+        }
+        renderAppUI();
+        if (typeof firebase === 'undefined') return;
+        try {
+            firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+            firebase.database().ref("MatrixAttendanceSystem").on('value', (snap) => {
+                let data = snap.val();
+                if(data) {
+                    if(data.memoryDB) memoryDB = data.memoryDB;
+                    if(data.siteNames) siteNames = data.siteNames;
+                    if(data.mainHeading) document.getElementById('mainHeading').value = data.mainHeading;
+                    localStorage.setItem("shramikLocalCache", JSON.stringify({memoryDB, siteNames}));
+                }
+                document.getElementById('syncStatus').innerText = "🟢 Live Cloud Sync Dashboard Connected Successfully";
+                document.getElementById('syncStatus').className = "status-box sync-active";
+                updateDatalistSuggestions();
+                renderAppUI();
+            });
+        } catch(e) {}
+    }
+
+    function pushUpdatedStateToCloud() {
+        localStorage.setItem("shramikLocalCache", JSON.stringify({memoryDB, siteNames}));
+        updateDatalistSuggestions();
+        renderAppUI();
+        if(typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            firebase.database().ref("MatrixAttendanceSystem").set({ memoryDB: memoryDB, siteNames: siteNames, mainHeading: document.getElementById('mainHeading').value.trim() });
         }
     }
 
@@ -472,8 +551,8 @@
         let dayToken = dateVal.split("-")[2];
         if(memoryDB[currentSite] && memoryDB[currentSite][name]) {
             if(confirm(`Day ${dayToken} ka data delete karein?`)) {
-                if(memoryDB[currentSite][name].attendance) delete memoryDB[currentSite][name].attendance[dayToken];
-                if(memoryDB[currentSite][name].advances) delete memoryDB[currentSite][name].advances[dayToken];
+                delete memoryDB[currentSite][name].attendance?.[dayToken];
+                delete memoryDB[currentSite][name].advances?.[dayToken];
                 pushUpdatedStateToCloud();
             }
         }
@@ -481,7 +560,6 @@
 
     function removeEntireWorkerProfile() {
         let name = document.getElementById('delName').value.trim();
-        if(!name) { alert("Pehle hatane ke liye TARGET WORKER NAME fill karein!"); return; }
         if(memoryDB[currentSite] && memoryDB[currentSite][name]) {
             if(confirm(`⚠️ Profile delete karein "${name}"?`)) {
                 delete memoryDB[currentSite][name];
@@ -491,85 +569,48 @@
         }
     }
 
-    function renderAppUI() {
-        document.getElementById('selSite').value = currentSite;
-        for(let i=0; i<5; i++) {
-            let key = 'site' + (i+1);
-            if(document.getElementById('selSite').options[i]) document.getElementById('selSite').options[i].text = siteNames[key] || key;
-        }
-        document.getElementById('siteIndicator').innerText = "Site Matrix: " + (siteNames[currentSite] || currentSite);
-        document.getElementById('cycleTabsArea').style.display = (currentSite === 'site2') ? 'flex' : 'none';
-        buildPerformanceGridStructure();
-    }
+    function switchSiteEngine() { currentSite = document.getElementById('selSite').value; currentCycleBlock = 1; renderAppUI(); }
+    function renameActiveSite() { let n=document.getElementById('siteRenameInput').value.trim(); if(!n)return; siteNames[currentSite]=n; document.getElementById('siteRenameInput').value=""; pushUpdatedStateToCloud(); }
+    function changeDayCycleSegment(b) { currentCycleBlock = b; renderAppUI(); }
+    function markFieldsAsAbsent() { document.getElementById('wIn').value = "00:00"; document.getElementById('wLOut').value = "00:00"; document.getElementById('wLIn').value = "00:00"; document.getElementById('wOut').value = "00:00"; triggerLiveCalculationPreview(); }
+    function renderAppUI() { buildPerformanceGridStructure(); }
 
     function exportDataToExcel() {
         let siteDataMap = memoryDB[currentSite] || {};
         let workerKeys = Object.keys(siteDataMap);
-        if(workerKeys.length === 0) { alert("Export karne ke liye koi data nahi hai!"); return; }
-        let dateVal = document.getElementById('wDate').value || "2026-01-01";
-        let maxDays = new Date(parseInt(dateVal.split("-")[0]), parseInt(dateVal.split("-")[1]), 0).getDate();
+        if(workerKeys.length === 0) { alert("Export ke liye data nahi hai!"); return; }
+        let fMonthVal = document.getElementById('filterMonth').value || "2026-06";
+        let maxDays = new Date(parseInt(fMonthVal.split("-")[0]), parseInt(fMonthVal.split("-")[1]), 0).getDate();
 
-        let csvContent = "\uFEFF"; 
-        let header1 = "Worker Profile Master,Metrics,";
-        for(let d=1; d<=maxDays; d++) { header1 += `Day ${String(d).padStart(2,'0')},`; }
-        header1 += "Total Attendance,Total Base Wages,Total OT Earnings,Gross Earnings,Total Advance Paid,Net Payable Amount\n";
-        csvContent += header1;
+        let csvContent = "\uFEFFWorker Profile Master,Contact,Metrics,";
+        for(let d=1; d<=maxDays; d++) { csvContent += `Day ${String(d).padStart(2,'0')},`; }
+        csvContent += "Total Attendance,Total Base Wages,Total OT Earnings,Gross Earnings,Total Advance Paid,Net Payable Amount\n";
 
         workerKeys.forEach(wKey => {
             let wObj = siteDataMap[wKey];
-            let metricsDef = [
-                { label: "Punch In", key: "inTime" },
-                { label: "Punch Out", key: "outTime" },
-                { label: "Hours Worked", key: "hrsWorked" },
-                { label: "OT Amount (₹)", key: "otEarned" },
-                { label: "Advance (₹)", isAdv: true },
-                { label: "Status Badge", key: "status" }
-            ];
-
-            let grossEarnings = 0, totalOtEarned = 0, advancesPaid = 0;
-            let pCount = 0, hdCount = 0, aCount = 0;
+            let metricsDef = [{ label: "Punch In", key: "inTime" }, { label: "Punch Out", key: "outTime" }, { label: "Hours Worked", key: "hrsWorked" }, { label: "OT Amount", key: "otEarned" }, { label: "Advance", isAdv: true }, { label: "Status", key: "status" }];
+            let gross = 0, ot = 0, adv = 0, pC = 0, hdC = 0, aC = 0;
 
             for(let d=1; d<=maxDays; d++) {
-                let tk = String(d).padStart(2,'0');
-                let attRecord = wObj.attendance?.[tk];
-                let advRecord = parseFloat(wObj.advances?.[tk] || 0);
-                advancesPaid += advRecord;
-                if(attRecord) {
-                    grossEarnings += parseFloat(attRecord.earned || 0);
-                    totalOtEarned += parseFloat(attRecord.otEarned || 0);
-                    if(attRecord.status === 'P') pCount++;
-                    else if(attRecord.status === 'HD') hdCount++;
-                    else if(attRecord.status === 'A') aCount++;
-                }
-            }
-
-            let grandGross = grossEarnings + totalOtEarned;
-            let netPayable = grandGross - advancesPaid;
+                let tk = String(d).padStart(2,'0'); let att = wObj.attendance?.[tk]; let ad = parseFloat(wObj.advances?.[tk] || 0);
+                adv += ad; if(att) { gross += parseFloat(att.earned || 0); ot += parseFloat(att.otEarned || 0); if(att.status === 'P') pC++; else if(att.status === 'HD') hdC++; else if(att.status === 'A') aC++; }}
 
             metricsDef.forEach((m, idx) => {
-                let rowStr = idx === 0 ? `"${wKey} (Rate: ₹${wObj.baseWages || 500}/d)",` : ",";
-                rowStr += `"${m.label}",`;
+                let rowStr = idx === 0 ? `"${wKey}","${wObj.contactNo || '-'}","${m.label}",` : `,,Format: ${m.label},`;
                 for(let d=1; d<=maxDays; d++) {
                     let tk = String(d).padStart(2,'0');
-                    let attRecord = wObj.attendance?.[tk];
-                    let advRecord = parseFloat(wObj.advances?.[tk] || 0);
-                    if(m.isAdv) { rowStr += advRecord > 0 ? `"₹${advRecord}",` : "-,"; } 
-                    else if(attRecord) { rowStr += `"${attRecord[m.key] !== undefined ? attRecord[m.key] : "-"}",`; } 
-                    else { rowStr += "-,"; }
+                    if(m.isAdv) { rowStr += wObj.advances?.[tk] > 0 ? `"₹${wObj.advances[tk]}",` : "-,"; } 
+                    else { rowStr += `"${wObj.attendance?.[tk]?.[m.key] || '-'}",`; }
                 }
-                if(idx === 0) { rowStr += `"P:${pCount} HD:${hdCount} A:${aCount}","₹${grossEarnings.toFixed(0)}","₹${totalOtEarned.toFixed(0)}","₹${grandGross.toFixed(0)}","₹${advancesPaid.toFixed(0)}","₹${netPayable.toFixed(0)}"`; } 
-                else { rowStr += ",,,,,"; }
-                csvContent += rowStr + "\n";
+                rowStr += idx === 0 ? `"P:${pC} HD:${hdC} A:${aC}","₹${gross.toFixed(0)}","₹${ot.toFixed(0)}","₹${(gross+ot).toFixed(0)}","₹${adv.toFixed(0)}","₹${(gross+ot-adv).toFixed(0)}"\n` : ",,,,,,\n";
+                csvContent += rowStr;
             });
         });
 
         let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        let link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Matrix_Register.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        let link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
+        link.setAttribute("download", `${siteNames[currentSite].replace(/[^a-z0-9]/gi, '_')}_Master_Register.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     window.onload = initializeSystemNetwork;
